@@ -39,29 +39,29 @@ function LocalSeo() {
             {(locations.data ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground">No location records exist yet.</p>
             ) : (
-              <ul className="grid gap-4 lg:grid-cols-2">
+              <ul className="grid min-w-0 gap-4 lg:grid-cols-2">
                 {(locations.data ?? []).map((location) => (
                   <li
                     key={location.id}
-                    className="rounded-lg border border-border bg-background p-5"
+                    className="min-w-0 rounded-lg border border-border bg-background p-5"
                   >
                     <p className="font-semibold">{siteConfig.name}</p>
                     <p className="text-sm text-muted-foreground">{location.name}</p>
-                    <dl className="mt-3 grid gap-1 text-sm">
+                    <dl className="mt-3 grid min-w-0 gap-1 text-sm">
                       <div className="flex gap-2">
-                        <dt className="w-24 text-muted-foreground">Address</dt>
-                        <dd>{location.address ?? "Not set"}</dd>
+                        <dt className="w-24 shrink-0 text-muted-foreground">Address</dt>
+                        <dd className="min-w-0 break-words">{location.address ?? "Not set"}</dd>
                       </div>
                       <div className="flex gap-2">
-                        <dt className="w-24 text-muted-foreground">Phone</dt>
+                        <dt className="w-24 shrink-0 text-muted-foreground">Phone</dt>
                         <dd>{location.phone ?? "Not set"}</dd>
                       </div>
                       <div className="flex gap-2">
-                        <dt className="w-24 text-muted-foreground">Map</dt>
-                        <dd className="truncate">{location.mapUrl ?? "Not set"}</dd>
+                        <dt className="w-24 shrink-0 text-muted-foreground">Map</dt>
+                        <dd className="min-w-0 break-all">{location.mapUrl ?? "Not set"}</dd>
                       </div>
                       <div className="flex gap-2">
-                        <dt className="w-24 text-muted-foreground">Published</dt>
+                        <dt className="w-24 shrink-0 text-muted-foreground">Published</dt>
                         <dd>{location.published ? "Yes" : "No"}</dd>
                       </div>
                     </dl>
