@@ -261,7 +261,7 @@ function AvailableContentManager({ type }: { type: ContentType }) {
         onSubmit={() => save.mutate()}
       >
         {type.key === "doctors" ? <>
-          {editing?.id ? <Button asChild type="button" variant="outline" className="w-fit"><a href={`/doctors/${editing.values.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /> Live preview</a></Button> : null}
+          {editing?.id ? <Button asChild type="button" variant="outline" className="w-fit"><a href={`/doctors/${editing.values["slug"]}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /> Live preview</a></Button> : null}
           <Tabs defaultValue="basics">
             <TabsList className="h-auto w-full flex-wrap justify-start">
               <TabsTrigger value="basics">Basics</TabsTrigger><TabsTrigger value="profile">Profile</TabsTrigger><TabsTrigger value="contact">Contact</TabsTrigger><TabsTrigger value="seo">SEO</TabsTrigger><TabsTrigger value="sections">Sections</TabsTrigger>
