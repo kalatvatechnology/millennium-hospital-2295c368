@@ -74,10 +74,7 @@ function FilterFields({
       <div>
         <Label htmlFor={`${idPrefix}-doctor-department`}>Department</Label>
         <Select value={department} onValueChange={onDepartmentChange}>
-          <SelectTrigger
-            id={`${idPrefix}-doctor-department`}
-            className="mt-2 w-full bg-background"
-          >
+          <SelectTrigger id={`${idPrefix}-doctor-department`} className="mt-2 w-full bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -93,10 +90,7 @@ function FilterFields({
       <div>
         <Label htmlFor={`${idPrefix}-doctor-location`}>Location</Label>
         <Select value={location} onValueChange={onLocationChange}>
-          <SelectTrigger
-            id={`${idPrefix}-doctor-location`}
-            className="mt-2 w-full bg-background"
-          >
+          <SelectTrigger id={`${idPrefix}-doctor-location`} className="mt-2 w-full bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -192,11 +186,7 @@ function DirectoryDoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 
         <div className="mt-auto grid gap-2 pt-6 sm:grid-cols-2">
           <Button asChild>
-            <Link
-              to="/doctors/$slug"
-              params={{ slug: doctor.slug }}
-              hash="request-appointment"
-            >
+            <Link to="/doctors/$slug" params={{ slug: doctor.slug }} hash="request-appointment">
               Book appointment
             </Link>
           </Button>
