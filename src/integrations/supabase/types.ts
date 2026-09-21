@@ -380,6 +380,231 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_achievements: {
+        Row: {
+          achievement_type: string
+          created_at: string
+          description: string | null
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          id: string
+          organization: string | null
+          title: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          achievement_type: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          id?: string
+          organization?: string | null
+          title: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          achievement_type?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          id?: string
+          organization?: string | null
+          title?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_achievements_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_education: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          id: string
+          institution: string | null
+          qualification: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          id?: string
+          institution?: string | null
+          qualification: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          id?: string
+          institution?: string | null
+          qualification?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_education_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_experience: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          end_year: number | null
+          id: string
+          is_present: boolean
+          organization: string
+          position: string | null
+          start_year: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          end_year?: number | null
+          id?: string
+          is_present?: boolean
+          organization: string
+          position?: string | null
+          start_year?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          end_year?: number | null
+          id?: string
+          is_present?: boolean
+          organization?: string
+          position?: string | null
+          start_year?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_experience_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_faqs: {
+        Row: {
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          faq_id: string
+        }
+        Insert: {
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          faq_id: string
+        }
+        Update: {
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          faq_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_faqs_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_faqs_faq_id_fkey"
+            columns: ["faq_id"]
+            isOneToOne: false
+            referencedRelation: "faqs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_locations: {
+        Row: {
+          consultation_availability: string | null
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          location_id: string
+        }
+        Insert: {
+          consultation_availability?: string | null
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          location_id: string
+        }
+        Update: {
+          consultation_availability?: string | null
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_locations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_locations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_profile_change_requests: {
         Row: {
           changes: Json
@@ -430,22 +655,132 @@ export type Database = {
           },
         ]
       }
+      doctor_specializations: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          icon: string | null
+          id: string
+          professional_service_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          professional_service_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          professional_service_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_specializations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_specializations_professional_service_id_fkey"
+            columns: ["professional_service_id"]
+            isOneToOne: false
+            referencedRelation: "professional_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_statistics: {
+        Row: {
+          created_at: string
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          icon: string | null
+          id: string
+          label: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          label: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          label?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_statistics_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           bio: string | null
+          canonical_url: string | null
           created_at: string
           department_id: string | null
           designation: string | null
           display_order: number
           experience_years: number | null
           expertise: string[]
+          hero_image_alt: string | null
+          hero_image_url: string | null
           id: string
           languages: string[]
           location: string | null
           name: string
+          og_image_url: string | null
+          phone_number: string | null
           photo_url: string | null
+          profile_image_alt: string | null
           published: boolean
           qualifications: string[]
+          quote: string | null
+          quote_attribution: string | null
+          section_visibility: Json
+          seo_description: string | null
+          seo_title: string | null
+          short_introduction: string | null
           slug: string
           social_links: Json
           specialty: string | null
@@ -455,19 +790,31 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          canonical_url?: string | null
           created_at?: string
           department_id?: string | null
           designation?: string | null
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
+          hero_image_alt?: string | null
+          hero_image_url?: string | null
           id?: string
           languages?: string[]
           location?: string | null
           name: string
+          og_image_url?: string | null
+          phone_number?: string | null
           photo_url?: string | null
+          profile_image_alt?: string | null
           published?: boolean
           qualifications?: string[]
+          quote?: string | null
+          quote_attribution?: string | null
+          section_visibility?: Json
+          seo_description?: string | null
+          seo_title?: string | null
+          short_introduction?: string | null
           slug: string
           social_links?: Json
           specialty?: string | null
@@ -477,19 +824,31 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          canonical_url?: string | null
           created_at?: string
           department_id?: string | null
           designation?: string | null
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
+          hero_image_alt?: string | null
+          hero_image_url?: string | null
           id?: string
           languages?: string[]
           location?: string | null
           name?: string
+          og_image_url?: string | null
+          phone_number?: string | null
           photo_url?: string | null
+          profile_image_alt?: string | null
           published?: boolean
           qualifications?: string[]
+          quote?: string | null
+          quote_attribution?: string | null
+          section_visibility?: Json
+          seo_description?: string | null
+          seo_title?: string | null
+          short_introduction?: string | null
           slug?: string
           social_links?: Json
           specialty?: string | null
@@ -980,16 +1339,25 @@ export type Database = {
       }
       media_doctors: {
         Row: {
+          display_order: number
           doctor_id: string
+          enabled: boolean
           media_id: string
+          show_on_profile: boolean
         }
         Insert: {
+          display_order?: number
           doctor_id: string
+          enabled?: boolean
           media_id: string
+          show_on_profile?: boolean
         }
         Update: {
+          display_order?: number
           doctor_id?: string
+          enabled?: boolean
           media_id?: string
+          show_on_profile?: boolean
         }
         Relationships: [
           {
