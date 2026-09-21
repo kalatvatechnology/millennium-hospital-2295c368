@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { Award, BookOpen, BriefcaseMedical, ExternalLink, GraduationCap, MapPin, MessageCircle, Phone, Quote, Stethoscope, UserRound } from "lucide-react";
 import { PublicPage } from "@/components/layout/public-page";
 import { ContentSection, EmptyState } from "@/components/shared/page";
@@ -103,6 +104,6 @@ function DoctorDetail() {
   </PublicPage>;
 }
 
-function SectionTitle({ icon, eyebrow, title }: { icon: React.ReactNode; eyebrow: string; title: string }) {
+function SectionTitle({ icon, eyebrow, title }: { icon: ReactNode; eyebrow: string; title: string }) {
   return <div className="flex items-start gap-4"><span className="grid size-11 shrink-0 place-items-center rounded-lg bg-secondary text-primary">{icon}</span><div><p className="text-sm font-bold uppercase tracking-wider text-primary">{eyebrow}</p><h2 className="mt-1 text-3xl font-semibold">{title}</h2></div></div>;
 }

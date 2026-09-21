@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { AdminError, ConfirmDialog, DataTable, FilterSelect, FormModal, Pagination, SearchField, StatusBadge, type Column } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { useAdminSession } from "@/hooks/use-admin-session";
 import { deleteRecord, listRecords, saveRecord, type ContentType, type Field } from "@/lib/admin-content";
 import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
 import { userFacingDataError } from "@/lib/data/errors";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DoctorProfileSections } from "@/components/admin/doctor-profile-sections";
 
 const PAGE_SIZE = 20;
 
@@ -258,7 +260,24 @@ function AvailableContentManager({ type }: { type: ContentType }) {
         busy={save.isPending}
         onSubmit={() => save.mutate()}
       >
-        {type.fields
+        {type.key === "doctors" ? <>
+          {editing?.id ? <Button asChild type="button" variant="outline" className="w-fit"><a href={`/doctors/${editing.values.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /> Live preview</a></Button> : null}
+          <Tabs defaultValue="basics">
+            <TabsList className="h-auto w-full flex-wrap justify-start">
+              <TabsTrigger value="basics">Basics</TabsTrigger><TabsTrigger value="profile">Profile</TabsTrigger><TabsTrigger value="contact">Contact</TabsTrigger><TabsTrigger value="seo">SEO</TabsTrigger><TabsTrigger value="sections">Sections</TabsTrigger>
+            </TabsList>
+            {(["basics", "profile", "contact", "seo"] as const).map((group) => {
+              const names: Record<typeof group, string[]> = {
+                basics: ["name", "full_name", "slug", "photo_url", "hero_image_url", "profile_image_alt", "hero_image_alt", "designation", "specialty", "specialization", "department_id"],
+                profile: ["short_introduction", "bio", "qualifications", "experience_years", "expertise", "languages", "quote", "quote_attribution"],
+                contact: ["phone_number", "whatsapp_number", "whatsapp", "location", "location_info", "consultation_info", "social_links"],
+                seo: ["seo_title", "seo_description", "canonical_url", "og_image_url", "verification_status", "display_order", "published", "status"],
+              };
+              return <TabsContent key={group} value={group} className="grid gap-5 pt-4">{type.fields.filter((field) => names[group].includes(field.name) && !(field.publishControl && !canPublish)).map((field) => <FieldInput key={field.name} field={field} value={editing?.values[field.name]} onChange={(next) => setEditing((current) => current ? { ...current, values: { ...current.values, [field.name]: next } } : current)} />)}</TabsContent>;
+            })}
+            <TabsContent value="sections" className="pt-4">{editing?.id ? <DoctorProfileSections doctorId={editing.id} /> : <p className="text-sm text-muted-foreground">Save the doctor first, then add profile sections and relationships.</p>}</TabsContent>
+          </Tabs>
+        </> : type.fields
           .filter((field) => !(field.publishControl && !canPublish))
           .map((field) => (
             <FieldInput
