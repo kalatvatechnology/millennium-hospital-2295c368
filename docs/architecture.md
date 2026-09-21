@@ -1,52 +1,63 @@
-# Website architecture
+# The Millennium Hospital website
 
-## Purpose
-This project is the public website and future content management foundation for The Millennium Hospital. It separates reusable presentation, hospital settings, content placeholders, and page routes so each part can change without rewriting the whole site.
+## Project overview
+This project contains the hospital's public website and protected staff workspace. Public pages read only published hospital content from Lovable Cloud. Unknown details remain unpublished rather than being guessed.
 
-## Main folders
-- `src/routes` contains one file for each public or administration web address.
-- `src/components/layout` contains the shared public header, footer, and page shell.
-- `src/components/shared` contains reusable page headings and loading, error, and empty states.
-- `src/components/ui` contains low-level buttons and form controls.
-- `src/config/site.ts` is the single source for the hospital name, contact details, address, WhatsApp, and social links.
-- `src/content` holds temporary content shapes until a content database is connected.
+## Architecture
+- TanStack Start supplies server rendering and file-based routes.
+- React Query handles live content reads and loading/error states.
+- Tailwind CSS and shared UI components provide the visual system.
+- Lovable Cloud provides authentication, content records, enquiries, permissions, notifications, and audit records.
+- Public presentation lives in `src/components`; live queries and permission helpers live in `src/lib`.
 
-## Content safety
-Unknown hospital details are represented as `null`. The website hides them or says they are not yet published. Do not replace these values with guesses. Doctor, service, facility, review, and article collections remain empty until verified content is provided.
+## Routes
+Public routes cover the homepage, about, departments and profiles, doctors and profiles, professional and hospital service profiles, facilities and profiles, media, FAQs, reviews, articles and profiles, contact, privacy, and terms. Unknown public addresses use the application's not-found experience.
 
-## Public and administration areas
-Public pages use `PublicPage`, which supplies the website header and footer. Administration pages use their own quiet workspace style and are excluded from search indexing. Login and saved content are not active because no secure backend has been connected.
+The staff workspace at `/_admin` covers the dashboard, doctors, departments, both service types, facilities, locations, enquiries, media, FAQ categories, FAQs, reviews, articles, website pages, navigation, users and roles, notifications, profile requests, and audit logs.
 
-## Future content connection
-When a backend is added, keep private keys on the server. Public pages should read published records only. Administration pages and every create, edit, or delete action must verify the signed-in staff member on the server, not only in the browser.
+## Database structure
+Core records include departments, doctors, professional services, hospital services, facilities, locations, media, FAQs, reviews, articles, enquiries, forwarding records, and their many-to-many relationships. Staff support records include profiles, roles, notifications, audit logs, website pages, navigation items, and doctor profile-change requests.
 
-## Accessibility
-Pages use landmarks, heading order, labelled form fields, keyboard focus indicators, clear link names, reduced-motion support, and colour contrast intended to meet WCAG AA. New content should keep image descriptions meaningful and avoid using colour alone to convey information.
+Relationships use foreign keys and publishing fields. Public reads are restricted to published records. Enquiries are accepted publicly but remain private to authorised staff.
+
+## Roles and permissions
+Roles are `super_admin`, `admin`, `editor`, `writer`, `front_desk`, and `doctor`.
+
+- Super admin: full access, including role assignment.
+- Admin: delegated content, enquiry, and audit access; cannot grant roles.
+- Editor: content editing and publishing.
+- Writer: content drafting without publishing authority.
+- Front desk: enquiry-focused access.
+- Doctor: assigned clinical reviews and profile-change requests; cannot directly change the authoritative public profile.
+
+Screen permissions improve usability, but database row-level policies and publishing triggers are the security boundary. Staff actions write to the audit log.
+
+## Media and storage
+Content records support image URLs and external video URLs. Videos stay external. A managed upload workflow with replacement cleanup and orphan checks is not yet verified in this codebase; administrators should use only approved image URLs until that work is completed.
 
 ## Search visibility
-Every page supplies its own title, description, Open Graph title and description, page type, and Twitter card. Unpublished detail pages and all administration pages tell search engines not to index them.
-## Staff area and roles
+Content pages define page-specific titles, descriptions, Open Graph metadata, and Twitter cards. Admin and unpublished detail pages are excluded from indexing. `public/robots.txt` exists. Canonical URLs, a generated sitemap, complete structured data, and redirect rules still require production-domain verification.
 
-The staff area lives at `/_admin` and is protected by Supabase Auth plus database
-row-level security. Screen-level permission checks (`src/lib/permissions.ts`,
-`src/hooks/use-admin-session.ts`) only hide controls; the database policies are the
-real security boundary.
+## Security
+- No privileged backend key is shipped to the browser.
+- Authentication protects staff access.
+- Database policies enforce role restrictions for reads and writes.
+- Publishing triggers stop writers and clinical reviewers from publishing.
+- Doctors submit profile changes for approval instead of editing public records.
+- Public enquiry creation does not grant public enquiry reads.
 
-Roles (`app_role`): `super_admin`, `admin`, `editor`, `writer`, `front_desk`, `doctor`.
+## Content and legacy rules
+Legacy material is a research source only. Do not copy it without verification. Use the statuses Verified, Source Confirmed, Unverified, Conflicting, Pending Verification, and Archived during content review. Never invent clinicians, departments, qualifications, insurers, statistics, reviews, or medical claims. A testimonial-only name is not enough to create a clinician profile.
 
-- Super admin: everything, including granting and removing roles (`user_roles`).
-- Admin: all content, enquiries, audit logs; cannot change roles.
-- Editor: content plus publishing.
-- Writer: content, but the `enforce_publish_authority` trigger blocks publishing.
-- Front desk: enquiries only.
-- Doctor: own dashboard, clinical blog review (`restrict_doctor_blog_edits` limits
-  them to review fields), and profile change requests instead of direct edits to
-  their public profile.
+## Accessibility and performance
+The interface includes keyboard focus states, labelled controls, semantic headings, 44px touch targets, reduced-motion support, lazy-ready media presentation, stable card layouts, and mobile navigation. Desktop and mobile checks found no horizontal overflow on the homepage or staff sign-in screen.
 
-Supporting tables: `profiles` (created automatically on sign-up), `user_roles`,
-`audit_logs`, `notifications`, `doctor_profile_change_requests`, `locations`,
-`website_pages`, `navigation_items`.
+## Deployment requirements and unresolved items
+- Replace unpublished contact, map, opening-hours, and social fields with verified hospital information.
+- Add and verify real hospital imagery and meaningful alternative text.
+- Complete and test managed image upload, replacement, deletion, and orphan cleanup policies.
+- Verify canonical URLs, sitemap, structured data, redirects, broken links, and production analytics after a production domain is connected.
+- Perform final authenticated cross-role browser testing with designated staff accounts before launch.
 
-Verified by test: front desk cannot write content or grant roles, writers cannot
-publish, anonymous visitors cannot read audit logs or profiles, and every staff
-create/update/delete is written to the audit log.
+## Verification
+The latest TypeScript check passes, the preview build reports `build OK`, and desktop/mobile browser checks render without page errors or horizontal overflow. This is not a claim that production content, every authenticated role journey, storage cleanup, or domain-level SEO has been fully verified.

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Building2, CalendarDays, MapPin, Phone, Search, Stethoscope, UserRound } from "lucide-react";
+import type { ReactNode } from "react";
 import { PublicPage } from "@/components/layout/public-page";
 import { ContentSection, SectionHeading, UnpublishedPanel } from "@/components/shared/page";
 import { Async } from "@/components/shared/async";
@@ -41,9 +42,16 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function Grid({ children }: { children: React.ReactNode }) {
+function Grid({ children }: { children: ReactNode }) {
   return <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
 }
+
+const patientActions = [
+  { title: "Find a doctor", description: "Browse verified clinician profiles and specialties.", to: "/doctors" as const, icon: UserRound },
+  { title: "Find a department", description: "Explore the hospital's clinical departments.", to: "/departments" as const, icon: Building2 },
+  { title: "Explore services", description: "Understand professional and hospital services.", to: "/services" as const, icon: Stethoscope },
+  { title: "Request appointment", description: "Send an enquiry for the hospital team to follow up.", to: "/contact" as const, icon: CalendarDays, accent: true },
+];
 
 function HomePage() {
   const departments = useQuery(departmentsQuery);
@@ -59,20 +67,44 @@ function HomePage() {
   return (
     <PublicPage>
       {/* 1. Hero */}
-      <section className="border-b border-border bg-hero">
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <p className="text-sm font-semibold text-primary">{siteConfig.tagline}</p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight sm:text-6xl">
-            Care that listens. Expertise you can trust.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-            {siteConfig.name} brings departments, specialists and support services together so patients and families always
-            know where to turn.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-4">
-            <Button asChild size="lg"><Link to="/doctors">Find a doctor</Link></Button>
-            <Button asChild size="lg" variant="outline"><Link to="/contact">Make an enquiry</Link></Button>
+      <section className="border-b border-border bg-secondary">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+          <div className="grid items-end gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-md bg-background px-3 py-1.5 text-sm font-bold text-primary shadow-[var(--shadow-sm)]"><span className="size-2 rounded-full bg-brand-accent" />{siteConfig.tagline}</p>
+              <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-tight text-foreground sm:text-6xl">
+                Care that listens.<br /><span className="text-primary">Expertise you can trust.</span>
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+                {siteConfig.name} brings departments, specialists and support services together so patients and families always know where to turn.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/90"><Link to="/contact"><CalendarDays />Request appointment</Link></Button>
+                <Button asChild size="lg" variant="outline"><Link to="/doctors"><Search />Find a doctor</Link></Button>
+              </div>
+            </div>
+            <div className="rounded-lg border border-primary/15 bg-background p-6 shadow-[var(--shadow-lg)] sm:p-8">
+              <p className="text-xs font-bold uppercase text-primary">Start here</p>
+              <h2 className="mt-3 text-2xl font-semibold">How can we help today?</h2>
+              <p className="mt-3 leading-7 text-muted-foreground">Choose a care pathway to find the right information quickly.</p>
+              <div className="mt-6 grid gap-2">
+                {patientActions.slice(0, 3).map((action) => <Link key={action.to} to={action.to} className="flex min-h-12 items-center gap-3 rounded-md border border-border px-3 py-2.5 font-semibold text-foreground hover:border-primary/35 hover:bg-secondary"><action.icon className="size-5 text-primary" /><span>{action.title}</span><ArrowRight className="ml-auto size-4 text-muted-foreground" /></Link>)}
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-background">
+        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+          {patientActions.map((action) => (
+            <Link key={action.to} to={action.to} className={`group rounded-lg border p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] ${action.accent ? "border-brand-accent bg-brand-accent text-brand-accent-foreground" : "border-border bg-card text-foreground hover:border-primary/30"}`}>
+              <action.icon className={`size-6 ${action.accent ? "text-brand-accent-foreground" : "text-primary"}`} />
+              <h2 className="mt-5 text-lg font-semibold">{action.title}</h2>
+              <p className={`mt-2 text-sm leading-6 ${action.accent ? "text-brand-accent-foreground/80" : "text-muted-foreground"}`}>{action.description}</p>
+              <ArrowRight className="mt-4 size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          ))}
         </div>
       </section>
 
