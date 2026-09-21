@@ -136,6 +136,7 @@ function AdminProfileRequests() {
     <AdminShell
       title="Profile change requests"
       description="Doctors request changes here. Only content staff can apply them to the published profile."
+      requires={["content.write", "profile.request"]}
       actions={
         profile?.doctor_id ? (
           <Button onClick={() => setDrafting(Object.fromEntries(requestFields.map((field) => [field.name, ""])))}>Request a change</Button>

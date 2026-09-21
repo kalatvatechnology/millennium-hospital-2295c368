@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingState, EmptyState } from "@/components/shared/page";
 import { ROLE_LABELS, type Permission } from "@/lib/permissions";
 
-type NavItem = { label: string; to: string; permission: Permission | null };
+type NavItem = { label: string; to: string; permission: Permission | Permission[] | null };
 
 const navItems: NavItem[] = [
   { label: "Dashboard", to: "/_admin/dashboard", permission: null },
@@ -20,10 +20,10 @@ const navItems: NavItem[] = [
   { label: "Media & content", to: "/_admin/media", permission: "content.write" },
   { label: "FAQs", to: "/_admin/faqs", permission: "content.write" },
   { label: "Reviews", to: "/_admin/reviews", permission: "content.write" },
-  { label: "Blog", to: "/_admin/blog", permission: null },
+  { label: "Blog", to: "/_admin/blog", permission: ["content.write", "blog.review"] },
   { label: "Website pages", to: "/_admin/pages", permission: "content.write" },
   { label: "Navigation", to: "/_admin/navigation", permission: "content.write" },
-  { label: "Profile requests", to: "/_admin/profile-requests", permission: null },
+  { label: "Profile requests", to: "/_admin/profile-requests", permission: ["content.write", "profile.request"] },
   { label: "Users & roles", to: "/_admin/users", permission: "users.manage" },
   { label: "Notifications", to: "/_admin/notifications", permission: null },
   { label: "Audit logs", to: "/_admin/audit-logs", permission: "audit.read" },
@@ -38,7 +38,7 @@ export function AdminShell({
 }: {
   title: string;
   description?: string;
-  requires?: Permission;
+  requires?: Permission | Permission[];
   actions?: ReactNode;
   children: ReactNode;
 }) {
@@ -57,8 +57,10 @@ export function AdminShell({
     );
   }
 
-  const visible = navItems.filter((item) => item.permission === null || can(item.permission));
-  const allowed = !requires || can(requires);
+  const allows = (permission: Permission | Permission[] | null | undefined) =>
+    permission === null || permission === undefined ? true : Array.isArray(permission) ? permission.some(can) : can(permission);
+  const visible = navItems.filter((item) => allows(item.permission));
+  const allowed = allows(requires);
 
   return (
     <div className="min-h-screen bg-admin">

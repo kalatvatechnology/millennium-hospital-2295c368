@@ -214,6 +214,7 @@ function AdminBlog() {
     <AdminShell
       title="Blog"
       description="Draft articles, request clinical review, and publish approved content."
+      requires={["content.write", "blog.review"]}
       actions={canWrite ? <Button onClick={() => setEditing({ ...emptyPost })}><Plus className="size-4" /> New article</Button> : null}
     >
       <div className="flex flex-wrap items-end gap-4">
