@@ -126,7 +126,10 @@ function DirectoryDoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
               loading="lazy"
             />
           ) : (
-            <div className="grid size-full place-items-center bg-secondary text-primary" aria-hidden="true">
+            <div
+              className="grid size-full place-items-center bg-secondary text-primary"
+              aria-hidden="true"
+            >
               <div className="grid size-20 place-items-center rounded-full border border-primary/15 bg-background/70">
                 <UserRound className="size-10" />
               </div>
@@ -172,7 +175,9 @@ function DirectoryDoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 
         {doctor.expertise.length ? (
           <div className="mt-5">
-            <p className="text-xs font-semibold uppercase text-muted-foreground">Areas of expertise</p>
+            <p className="text-xs font-semibold uppercase text-muted-foreground">
+              Areas of expertise
+            </p>
             <p className="mt-2 text-sm leading-6">{doctor.expertise.join(" · ")}</p>
           </div>
         ) : null}
@@ -204,7 +209,11 @@ function DirectoryDoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 
 function DirectoryLoading() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label="Loading doctors">
+    <div
+      className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
+      role="status"
+      aria-label="Loading doctors"
+    >
       {Array.from({ length: 6 }, (_, index) => (
         <div key={index} className="overflow-hidden rounded-lg border border-border bg-card">
           <Skeleton className="aspect-[4/3] w-full rounded-none" />
@@ -236,20 +245,16 @@ function DoctorsPage() {
     () =>
       [
         ...new Set(
-          list.flatMap((doctor) =>
-            doctor.department?.name ? [doctor.department.name] : [],
-          ),
+          list.flatMap((doctor) => (doctor.department?.name ? [doctor.department.name] : [])),
         ),
       ].sort((a, b) => a.localeCompare(b)),
     [list],
   );
   const locations = useMemo(
     () =>
-      [
-        ...new Set(
-          list.flatMap((doctor) => (doctor.location ? [doctor.location] : [])),
-        ),
-      ].sort((a, b) => a.localeCompare(b)),
+      [...new Set(list.flatMap((doctor) => (doctor.location ? [doctor.location] : [])))].sort(
+        (a, b) => a.localeCompare(b),
+      ),
     [list],
   );
 
@@ -279,23 +284,23 @@ function DoctorsPage() {
 
     if (sort === "name") return [...matches].sort((a, b) => a.name.localeCompare(b.name));
     if (sort === "experience") {
-      return [...matches].sort(
-        (a, b) => (b.experience_years ?? -1) - (a.experience_years ?? -1),
-      );
+      return [...matches].sort((a, b) => (b.experience_years ?? -1) - (a.experience_years ?? -1));
     }
     return matches;
   }, [department, list, location, query, sort]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
-  const visibleDoctors = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  const visibleDoctors = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const resultStart = filtered.length ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
   const resultEnd = Math.min(currentPage * PAGE_SIZE, filtered.length);
   const activeFilterCount = Number(department !== "all") + Number(location !== "all");
-  const context = department !== "all" ? department : query.trim() ? `Results for “${query.trim()}”` : "Medical team";
+  const context =
+    department !== "all"
+      ? department
+      : query.trim()
+        ? `Results for “${query.trim()}”`
+        : "Medical team";
 
   function clearFilters() {
     setQuery("");
@@ -353,7 +358,9 @@ function DoctorsPage() {
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold">Filter doctors</h2>
                 {activeFilterCount ? (
-                  <span className="text-xs font-semibold text-primary">{activeFilterCount} active</span>
+                  <span className="text-xs font-semibold text-primary">
+                    {activeFilterCount} active
+                  </span>
                 ) : null}
               </div>
               <div className="mt-6">
@@ -387,7 +394,9 @@ function DoctorsPage() {
                     <SheetContent side="left" className="overflow-y-auto">
                       <SheetHeader>
                         <SheetTitle>Filter doctors</SheetTitle>
-                        <SheetDescription>Choose a department or published location.</SheetDescription>
+                        <SheetDescription>
+                          Choose a department or published location.
+                        </SheetDescription>
                       </SheetHeader>
                       <div className="mt-8">
                         <FilterFields
@@ -400,7 +409,9 @@ function DoctorsPage() {
                         />
                       </div>
                       <SheetFooter className="mt-8 gap-2">
-                        <Button variant="outline" onClick={clearFilters}>Clear all</Button>
+                        <Button variant="outline" onClick={clearFilters}>
+                          Clear all
+                        </Button>
                         <SheetClose asChild>
                           <Button onClick={applyFilters}>Apply filters</Button>
                         </SheetClose>
@@ -419,14 +430,13 @@ function DoctorsPage() {
                         ? "Doctors matching your current search and filters."
                         : "Browse published profiles and choose the right doctor for your care needs."}
                     </p>
-                    <p className="mt-3 hidden text-sm font-semibold lg:block">Total doctors: {filtered.length}</p>
+                    <p className="mt-3 hidden text-sm font-semibold lg:block">
+                      Total doctors: {filtered.length}
+                    </p>
                   </div>
                   <div className="w-full sm:w-48">
                     <Label htmlFor="doctor-sort">Sort by</Label>
-                    <Select
-                      value={sort}
-                      onValueChange={changeSort}
-                    >
+                    <Select value={sort} onValueChange={changeSort}>
                       <SelectTrigger id="doctor-sort" className="mt-2 w-full bg-card">
                         <SelectValue />
                       </SelectTrigger>
@@ -443,10 +453,15 @@ function DoctorsPage() {
               <div className="pt-8">
                 {doctors.isPending ? <DirectoryLoading /> : null}
                 {doctors.isError ? (
-                  <div className="rounded-lg border border-border bg-card px-6 py-14 text-center" role="alert">
+                  <div
+                    className="rounded-lg border border-border bg-card px-6 py-14 text-center"
+                    role="alert"
+                  >
                     <h2 className="text-2xl font-semibold">Doctor information is unavailable</h2>
                     <p className="mt-3 text-muted-foreground">Please try again in a moment.</p>
-                    <Button className="mt-6" onClick={() => doctors.refetch()}>Try again</Button>
+                    <Button className="mt-6" onClick={() => doctors.refetch()}>
+                      Try again
+                    </Button>
                   </div>
                 ) : null}
                 {doctors.isSuccess && visibleDoctors.length ? (
@@ -478,29 +493,44 @@ function DoctorsPage() {
               </div>
 
               {doctors.isSuccess && filtered.length ? (
-                <nav aria-label="Doctor results pagination" className="mt-10 border-t border-border pt-6">
+                <nav
+                  aria-label="Doctor results pagination"
+                  className="mt-10 border-t border-border pt-6"
+                >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-muted-foreground">
                       Showing {resultStart}–{resultEnd} of {filtered.length} doctors
                     </p>
                     {pageCount > 1 ? (
                       <div className="flex flex-wrap items-center gap-2">
-                        <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentPage === 1}
+                          onClick={() => setPage(currentPage - 1)}
+                        >
                           Previous
                         </Button>
-                        {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => (
-                          <Button
-                            key={pageNumber}
-                            variant={pageNumber === currentPage ? "default" : "outline"}
-                            size="sm"
-                            aria-current={pageNumber === currentPage ? "page" : undefined}
-                            aria-label={`Page ${pageNumber}`}
-                            onClick={() => setPage(pageNumber)}
-                          >
-                            {pageNumber}
-                          </Button>
-                        ))}
-                        <Button variant="outline" size="sm" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>
+                        {Array.from({ length: pageCount }, (_, index) => index + 1).map(
+                          (pageNumber) => (
+                            <Button
+                              key={pageNumber}
+                              variant={pageNumber === currentPage ? "default" : "outline"}
+                              size="sm"
+                              aria-current={pageNumber === currentPage ? "page" : undefined}
+                              aria-label={`Page ${pageNumber}`}
+                              onClick={() => setPage(pageNumber)}
+                            >
+                              {pageNumber}
+                            </Button>
+                          ),
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentPage === pageCount}
+                          onClick={() => setPage(currentPage + 1)}
+                        >
                           Next
                         </Button>
                       </div>
