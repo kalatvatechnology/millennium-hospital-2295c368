@@ -86,6 +86,7 @@ export const contentTypes: ContentType[] = [
       ...(usesProductionContract ? [
         { name: "consultation_info", label: "Consultation information", type: "textarea" as const },
         { name: "location_info", label: "Location information", type: "textarea" as const },
+        { name: "social_links", label: "Professional social links", type: "json" as const },
       ] : [{
         name: "verification_status",
         label: "Verification",
