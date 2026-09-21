@@ -5,6 +5,7 @@ import { Async } from "@/components/shared/async";
 import { ContentSection, EmptyState, PageIntro } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
 import { ArticleCharts, ArticleContent } from "@/components/blog/article-content";
+import { ArticleEngagement } from "@/components/blog/article-engagement";
 import { blogPostQuery } from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";
 
@@ -93,6 +94,11 @@ function ArticleDetail() {
                   ) : null}
                 </article>
                 <ArticleCharts charts={data.post.visualizations} />
+                <ArticleEngagement
+                  postId={data.post.id}
+                  engagementEnabled={data.post.engagement_enabled}
+                  commentsEnabled={data.post.comments_enabled}
+                />
               </ContentSection>
             </>
           )

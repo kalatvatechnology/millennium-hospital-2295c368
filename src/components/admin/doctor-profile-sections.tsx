@@ -44,8 +44,6 @@ const specializationsSection: Section = {
   fields: [
     { name: "title", label: "Title" },
     { name: "description", label: "Description", multiline: true },
-    { name: "image_url", label: "Image URL" },
-    { name: "image_alt", label: "Image alternative text" },
     { name: "icon", label: "Icon" },
   ],
 };
@@ -69,6 +67,8 @@ const educationSection: Section = {
     { name: "institution", label: "Institution" },
     { name: "year", label: "Year", type: "number" },
     { name: "description", label: "Description", multiline: true },
+    { name: "image_url", label: "Image URL" },
+    { name: "image_alt", label: "Image alternative text" },
   ],
 };
 const achievementsSection: Section = {
