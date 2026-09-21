@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicPage } from "@/components/layout/public-page";
-import { EmptyState, PageIntro, ContentSection } from "@/components/shared/page";
+import { ServiceCard } from "@/components/content/cards";
+import { EmptyState, PageIntro, ContentSection, SectionHeading } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
+import { services } from "@/content/placeholders";
 import { createPageMeta } from "@/lib/seo";
-export const Route = createFileRoute("/services/")({ head: () => ({ meta: createPageMeta("Services", "Explore verified clinical services at The Millennium Hospital.") }), component: ServicesPage });
-function ServicesPage(){return <PublicPage><PageIntro eyebrow="Care and treatment" title="Hospital services" description="Clear service information will be published here after clinical review."/><ContentSection><EmptyState title="Service information is being prepared" description="No clinical service details have been published yet. Please contact the hospital for current information." action={<Button asChild><Link to="/contact">Contact the hospital</Link></Button>}/></ContentSection></PublicPage>}
+export const Route = createFileRoute("/services/")({ head: () => ({ meta: createPageMeta("Services", "Explore professional and hospital services at The Millennium Hospital.") }), component: ServicesPage });
+function ServiceGroup({ type, title, description }: { type: "professional"|"hospital"; title: string; description: string }){const items=services.filter((service)=>service.type===type);return <section className="py-8"><SectionHeading eyebrow={type==="professional"?"Specialist support":"Hospital care"} title={title} description={description}/>{items.length?<div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">{items.map((service)=><ServiceCard key={service.slug} service={service}/>)}</div>:<EmptyState title={`${title} are being prepared`} description="No verified service details have been published yet."/>}</section>}
+function ServicesPage(){return <PublicPage><PageIntro eyebrow="Care and treatment" title="Services for patients and families" description="Browse professional services separately from wider hospital services."/><ContentSection><ServiceGroup type="professional" title="Professional services" description="Specialist clinical and professional support for individual care needs."/><div className="my-8 border-t border-border"/><ServiceGroup type="hospital" title="Hospital services" description="Clinical, diagnostic, and support services available across the hospital."/><div className="text-center"><Button asChild><Link to="/contact">Ask about a service</Link></Button></div></ContentSection></PublicPage>}
