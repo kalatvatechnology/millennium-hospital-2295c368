@@ -884,7 +884,7 @@ function ReviewSelector({
   });
   const [selected, setSelected] = useState<Set<string>>(new Set());
   useEffect(
-    () => setSelected(new Set((query.data?.selections ?? []).map((row: Row) => row.review_id))),
+    () => setSelected(new Set((query.data?.selections ?? []).map((row: Row) => row["review_id"]))),
     [doctorId, query.data],
   );
   const save = async () => {
@@ -932,7 +932,7 @@ function ReviewSelector({
                 <span>
                   <span className="font-medium">{row.author_name}</span>
                   <span className="ml-2 text-xs uppercase text-muted-foreground">
-                    {String(row.source_type ?? "review source")}
+                    {String(row["source_type"] ?? "review source")}
                   </span>
                   <span className="mt-1 line-clamp-2 block text-muted-foreground">
                     {row.content}
