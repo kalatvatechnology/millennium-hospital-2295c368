@@ -38,3 +38,5 @@
 - [x] Align approved reviews, media grids, select labels, and facility image descriptions
 - [ ] Verify individual Admin responsibility delegation against approved backend permissions
 - [x] Redesign only the public Doctors directory with real-data search, filters, sorting, pagination, premium cards, and responsive states
+
+- [ ] Create and verify the CMS-driven hospital demonstration content without schema or production changes
