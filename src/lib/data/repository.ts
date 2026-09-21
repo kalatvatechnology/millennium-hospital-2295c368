@@ -114,13 +114,15 @@ export async function listDoctors(): Promise<Doctor[]> {
   });
 }
 
-export async function getDoctor(slug: string) {
+export async function getDoctor(slug: string, preview = false) {
   const selection = usesProductionContract
     ? "*, doctor_departments(departments(id,name,slug))"
     : "*, department:departments(id,name,slug)";
-  const row = one(
-    await published(db.from("doctors").select(selection).eq("slug", slug)).maybeSingle(),
-  );
+  // Preview skips the publication filter only; row access is still enforced by
+  // database policies, so signed-out visitors never receive unpublished rows.
+  const base = db.from("doctors").select(selection).eq("slug", slug);
+  const row = one(await (preview ? base : published(base)).maybeSingle());
+
   if (!row) return null;
   const links = Array.isArray(row["doctor_departments"]) ? row["doctor_departments"] : [];
   const doctor = mapDoctor(row, links[0]?.departments);
