@@ -26,6 +26,6 @@
 - [ ] Verify managed image upload, replacement, deletion, and orphan cleanup policies
 - [ ] Complete production-domain SEO checks: canonicals, sitemap, structured data, redirects, and links
 - [ ] Complete final authenticated browser checks for every staff role before launch
-- [ ] Prepare a frontend-only production compatibility layer without connecting to or changing production
-- [ ] Adapt public queries, enquiry handling, roles, permissions, and supported admin modules to production contracts
-- [ ] Isolate modules without production backend support and document all remaining connection blockers and product decisions
+- [x] Prepare a frontend-only production compatibility layer without connecting to or changing production
+- [x] Adapt public queries, enquiry handling, roles, permissions, and supported admin modules to production contracts
+- [x] Isolate modules without production backend support and document all remaining connection blockers and product decisions

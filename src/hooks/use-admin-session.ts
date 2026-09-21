@@ -39,7 +39,7 @@ export function useAdminSession() {
         : Promise.resolve({ data: null, error: null });
       const [roleResult, profileResult] = await Promise.all([rolePromise, profilePromise]);
       if (!active) return;
-      setRoles((roleResult.data ?? []).map((row) => row.role).filter(isRole));
+      setRoles((roleResult.data ?? []).map((row: { role: unknown }) => row.role).filter(isRole));
       setProfile(profileResult.data ?? null);
       setLoading(false);
     })();
