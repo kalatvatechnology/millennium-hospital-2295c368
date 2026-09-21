@@ -78,6 +78,7 @@ export const contentTypes: ContentType[] = [
         required: true,
       },
       { name: "slug", label: "Web address (slug)", type: "text", required: true },
+      { name: "department_id", label: "Department", type: "select", options: [] },
       { name: "photo_url", label: "Photo URL", type: "text" },
       { name: "qualifications", label: "Qualifications (comma separated)", type: "list" },
       { name: "designation", label: "Designation", type: "text" },
