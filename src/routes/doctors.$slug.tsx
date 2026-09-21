@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import {
   Award,
@@ -29,7 +30,14 @@ import { doctorQuery } from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/doctors/$slug")({
-  loader: ({ context, params }) => context.queryClient.ensureQueryData(doctorQuery(params.slug)),
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } =>
+    search["preview"] === true || search["preview"] === "1" ? { preview: true } : {},
+  loaderDeps: ({ search }) => ({ preview: search.preview === true }),
+  // Preview data is fetched in the browser with the signed-in staff session,
+  // so it is never rendered on the server for anonymous visitors.
+  loader: ({ context, params, deps }) =>
+    deps.preview ? null : context.queryClient.ensureQueryData(doctorQuery(params.slug, false)),
+
   head: ({ loaderData }) => {
     const doctor = loaderData?.doctor;
     const title = doctor?.seo_title ?? doctor?.name ?? "Doctor profile";
@@ -38,10 +46,12 @@ export const Route = createFileRoute("/doctors/$slug")({
       doctor?.short_introduction ??
       doctor?.bio ??
       "View a clinician profile at The Millennium Hospital.";
+    const unpublished = !doctor || doctor.status !== "published";
     return {
       meta: [
         ...createPageMeta(title, description),
         ...(doctor?.og_image_url ? [{ property: "og:image", content: doctor.og_image_url }] : []),
+        ...(unpublished ? [{ name: "robots", content: "noindex, nofollow" }] : []),
       ],
       links: doctor?.canonical_url ? [{ rel: "canonical", href: doctor.canonical_url }] : [],
     };
@@ -54,7 +64,22 @@ const years = (start: number | null, end: number | null, present: boolean) =>
   [start, present ? "Present" : end].filter(Boolean).join(" – ");
 
 function DoctorDetail() {
-  const data = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const search = Route.useSearch();
+  const preview = Boolean(search.preview);
+  const loaded = Route.useLoaderData();
+  const previewQuery = useQuery({ ...doctorQuery(slug, true), enabled: preview });
+  const data = preview ? (previewQuery.data ?? null) : loaded;
+
+  if (preview && previewQuery.isPending)
+    return (
+      <PublicPage>
+        <ContentSection>
+          <p className="text-muted-foreground">Loading profile preview…</p>
+        </ContentSection>
+      </PublicPage>
+    );
+
   if (!data)
     return (
       <PublicPage>
@@ -71,76 +96,214 @@ function DoctorDetail() {
         </ContentSection>
       </PublicPage>
     );
+
   const { doctor } = data;
   const phone = doctor.phone_number?.replace(/[^+\d]/g, "");
   const whatsapp = doctor.whatsapp_number?.replace(/\D/g, "");
-  const heroImage = doctor.hero_image_url ?? doctor.photo_url;
+  const portrait = doctor.photo_url ?? doctor.hero_image_url;
+  const portraitAlt =
+    doctor.profile_image_alt ?? doctor.hero_image_alt ?? `Portrait of ${doctor.name}`;
   const qualifications = doctor.qualifications.length > 0;
+  const showStatistics =
+    visible(doctor.section_visibility, "statistics") && data.statistics.length > 0;
+  const showQuote = visible(doctor.section_visibility, "quote") && Boolean(doctor.quote);
+  const showAbout =
+    Boolean(doctor.bio) ||
+    qualifications ||
+    doctor.languages.length > 0 ||
+    Boolean(doctor.department) ||
+    Boolean(doctor.experience_years) ||
+    Object.keys(doctor.social_links).length > 0;
+  const showSpecializations =
+    visible(doctor.section_visibility, "specializations") &&
+    (data.specializations.length > 0 || doctor.expertise.length > 0);
+  const showServices = visible(doctor.section_visibility, "services") && data.services.length > 0;
+  const showExperience =
+    visible(doctor.section_visibility, "experience") && data.experience.length > 0;
+  const showEducation =
+    visible(doctor.section_visibility, "education") && data.education.length > 0;
+  const showAchievements =
+    visible(doctor.section_visibility, "achievements") && data.achievements.length > 0;
+  const showLocations =
+    visible(doctor.section_visibility, "locations") && data.locations.length > 0;
+  const showReviews = visible(doctor.section_visibility, "reviews") && data.reviews.length > 0;
+  const showMedia = visible(doctor.section_visibility, "media") && data.media.length > 0;
+  const showFaqs = visible(doctor.section_visibility, "faqs") && data.faqs.length > 0;
+
+  const navItems = [
+    showAbout ? { id: "about", label: "About" } : null,
+    showSpecializations ? { id: "specializations", label: "Specializations" } : null,
+    showServices ? { id: "services", label: "Services" } : null,
+    showExperience ? { id: "experience", label: "Experience" } : null,
+    showEducation ? { id: "education", label: "Education" } : null,
+    showAchievements ? { id: "achievements", label: "Achievements" } : null,
+    showLocations ? { id: "locations", label: "Locations" } : null,
+    showMedia ? { id: "media", label: "Media" } : null,
+    showReviews ? { id: "reviews", label: "Reviews" } : null,
+    showFaqs ? { id: "faqs", label: "FAQs" } : null,
+  ].filter((item): item is { id: string; label: string } => item !== null);
+
+  const primaryLocation = data.locations[0] ?? null;
 
   return (
     <PublicPage>
-      <section className="relative overflow-hidden border-b border-border bg-secondary">
-        <div className="absolute inset-y-0 right-0 hidden w-2/5 bg-primary/5 lg:block" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(22rem,.9fr)] lg:px-8 lg:py-20">
-          <div className="order-2 lg:order-1">
-            <Link to="/doctors" className="text-sm font-semibold text-primary hover:underline">
-              Our doctors
-            </Link>
-            <p className="mt-6 text-sm font-bold uppercase tracking-[.18em] text-primary">
-              {doctor.specialty ?? doctor.department?.name ?? "Medical team"}
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              {doctor.name}
-            </h1>
-            {doctor.designation ? (
-              <p className="mt-4 text-xl text-muted-foreground">{doctor.designation}</p>
-            ) : null}
-            {doctor.short_introduction ? (
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                {doctor.short_introduction}
-              </p>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild>
-                <a href="#request-appointment">Request an appointment</a>
-              </Button>
-              {phone ? (
-                <Button asChild variant="outline">
-                  <a href={`tel:${phone}`}>
-                    <Phone className="size-4" /> Call
-                  </a>
-                </Button>
+      {doctor.status !== "published" ? (
+        <div className="bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground">
+          Staff preview — this profile is not published and is hidden from search engines.
+        </div>
+      ) : null}
+
+      <section className="border-b border-border bg-secondary">
+        <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-14 lg:px-8 lg:pb-16">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <li>
+                <Link to="/" className="hover:text-primary hover:underline">
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link to="/doctors" className="hover:text-primary hover:underline">
+                  Doctors
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="font-semibold text-foreground">
+                {doctor.name}
+              </li>
+            </ol>
+          </nav>
+
+          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,17rem)_minmax(0,1fr)_minmax(0,19rem)] lg:items-start lg:gap-10">
+            <div className="mx-auto w-full max-w-xs lg:mx-0">
+              <div className="grid aspect-[4/5] place-items-center overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-lg)]">
+                {portrait ? (
+                  <img
+                    src={portrait}
+                    alt={portraitAlt}
+                    className="size-full object-cover"
+                    loading="eager"
+                  />
+                ) : (
+                  <div className="grid place-items-center gap-2 p-6 text-center">
+                    <UserRound className="size-14 text-muted-foreground" aria-hidden="true" />
+                    <span className="text-sm text-muted-foreground">
+                      Photograph not yet provided
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              {(doctor.specialty ?? doctor.department) ? (
+                <p className="text-sm font-bold uppercase tracking-[.18em] text-primary">
+                  {doctor.specialty ?? doctor.department?.name}
+                </p>
               ) : null}
-              {whatsapp ? (
-                <Button asChild variant="outline">
-                  <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer">
-                    <MessageCircle className="size-4" /> WhatsApp
-                  </a>
-                </Button>
+              <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
+                {doctor.name}
+              </h1>
+              {qualifications ? (
+                <p className="mt-3 text-base font-medium text-foreground">
+                  {doctor.qualifications.join(", ")}
+                </p>
+              ) : null}
+              {doctor.designation ? (
+                <p className="mt-2 text-lg text-muted-foreground">{doctor.designation}</p>
+              ) : null}
+              {doctor.short_introduction ? (
+                <p className="mt-5 max-w-2xl leading-8 text-muted-foreground">
+                  {doctor.short_introduction}
+                </p>
+              ) : null}
+              {showQuote ? (
+                <figure className="mt-6 max-w-2xl border-l-4 border-brand-accent pl-4">
+                  <blockquote className="text-lg font-medium italic leading-8">
+                    “{doctor.quote}”
+                  </blockquote>
+                  {doctor.quote_attribution ? (
+                    <figcaption className="mt-2 text-sm text-muted-foreground">
+                      — {doctor.quote_attribution}
+                    </figcaption>
+                  ) : null}
+                </figure>
               ) : null}
             </div>
-          </div>
-          <div className="order-1 mx-auto w-full max-w-md lg:order-2">
-            <div className="grid aspect-[4/5] place-items-center overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-lg)]">
-              {heroImage ? (
-                <img
-                  src={heroImage}
-                  alt={
-                    doctor.hero_image_alt ??
-                    doctor.profile_image_alt ??
-                    `Portrait of ${doctor.name}`
-                  }
-                  className="size-full object-cover"
-                />
-              ) : (
-                <UserRound className="size-16 text-muted-foreground" />
-              )}
-            </div>
+
+            <aside className="rounded-2xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]">
+              <h2 className="text-lg font-semibold">Consult {doctor.name}</h2>
+              <div className="mt-5 grid gap-3">
+                <Button asChild size="lg">
+                  <a href="#request-appointment">Book appointment</a>
+                </Button>
+                {whatsapp ? (
+                  <Button asChild size="lg" variant="outline">
+                    <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer">
+                      <MessageCircle className="size-4" aria-hidden="true" /> WhatsApp
+                    </a>
+                  </Button>
+                ) : null}
+                {phone ? (
+                  <Button asChild size="lg" variant="outline">
+                    <a href={`tel:${phone}`}>
+                      <Phone className="size-4" aria-hidden="true" /> Call
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+              {primaryLocation ? (
+                <div className="mt-6 border-t border-border pt-5">
+                  <p className="flex items-start gap-2 text-sm font-semibold">
+                    <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {primaryLocation.name}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {[
+                      primaryLocation.address_line,
+                      primaryLocation.city,
+                      primaryLocation.state,
+                      primaryLocation.postal_code,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                  {primaryLocation.consultation_availability ? (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {primaryLocation.consultation_availability}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </aside>
           </div>
         </div>
       </section>
 
-      {visible(doctor.section_visibility, "statistics") && data.statistics.length ? (
+      {navItems.length > 1 ? (
+        <nav
+          aria-label="Profile sections"
+          className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur"
+        >
+          <div className="mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
+            <ul className="flex min-w-max gap-1 py-2">
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    className="inline-block rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+      ) : null}
+
+      {showStatistics ? (
         <section aria-label="Profile highlights" className="border-b border-border bg-background">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-border px-4 sm:px-6 md:grid-cols-4 lg:px-8">
             {data.statistics.map((item) => (
@@ -153,13 +316,9 @@ function DoctorDetail() {
         </section>
       ) : null}
 
-      {doctor.bio ||
-      qualifications ||
-      doctor.languages.length ||
-      doctor.department ||
-      doctor.experience_years ||
-      Object.keys(doctor.social_links).length ? (
+      {showAbout ? (
         <ContentSection>
+          <div id="about" className="scroll-mt-24" />
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,.7fr)]">
             {doctor.bio ? (
               <div className="max-w-3xl">
@@ -207,7 +366,7 @@ function DoctorDetail() {
                   <div>
                     <dt className="font-semibold">Location</dt>
                     <dd className="mt-1 flex gap-2 text-muted-foreground">
-                      <MapPin className="mt-0.5 size-4 shrink-0" />
+                      <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                       {doctor.location}
                     </dd>
                   </div>
@@ -226,7 +385,7 @@ function DoctorDetail() {
                         className="inline-flex items-center gap-1 text-sm font-semibold capitalize text-primary hover:underline"
                       >
                         {label.replace(/_/g, " ")}
-                        <ExternalLink className="size-3.5" />
+                        <ExternalLink className="size-3.5" aria-hidden="true" />
                       </a>
                     ))}
                   </div>
@@ -237,29 +396,16 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "quote") && doctor.quote ? (
+      {showSpecializations ? (
         <ContentSection muted>
-          <figure className="mx-auto max-w-4xl text-center">
-            <Quote className="mx-auto size-10 text-primary" />
-            <blockquote className="mt-6 text-2xl font-medium leading-10 sm:text-3xl">
-              “{doctor.quote}”
-            </blockquote>
-            {doctor.quote_attribution ? (
-              <figcaption className="mt-5 text-sm font-semibold text-muted-foreground">
-                — {doctor.quote_attribution}
-              </figcaption>
-            ) : null}
-          </figure>
-        </ContentSection>
-      ) : null}
-
-      {visible(doctor.section_visibility, "specializations") &&
-      (data.specializations.length || doctor.expertise.length) ? (
-        <ContentSection>
+          <div id="specializations" className="scroll-mt-24" />
           <SectionTitle icon={<Stethoscope />} eyebrow="Clinical focus" title="Specializations" />
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.specializations.map((item) => (
-              <article key={item.id} className="rounded-xl border border-border p-6">
+              <article
+                key={item.id}
+                className="rounded-xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]"
+              >
                 <h3 className="text-lg font-semibold">{item.title}</h3>
                 {item.description ? (
                   <p className="mt-3 leading-7 text-muted-foreground">{item.description}</p>
@@ -267,7 +413,10 @@ function DoctorDetail() {
               </article>
             ))}
             {doctor.expertise.map((item) => (
-              <article key={item} className="rounded-xl border border-border p-6">
+              <article
+                key={item}
+                className="rounded-xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]"
+              >
                 <h3 className="font-semibold">{item}</h3>
               </article>
             ))}
@@ -275,8 +424,9 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "services") && data.services.length ? (
-        <ContentSection muted>
+      {showServices ? (
+        <ContentSection>
+          <div id="services" className="scroll-mt-24" />
           <SectionTitle
             icon={<BriefcaseMedical />}
             eyebrow="Care offered"
@@ -290,8 +440,9 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "experience") && data.experience.length ? (
-        <ContentSection>
+      {showExperience ? (
+        <ContentSection muted>
+          <div id="experience" className="scroll-mt-24" />
           <SectionTitle icon={<BriefcaseMedical />} eyebrow="Career" title="Experience" />
           <div className="mt-8 max-w-4xl border-l-2 border-primary/25 pl-6">
             {data.experience.map((item) => (
@@ -313,12 +464,13 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "education") && data.education.length ? (
-        <ContentSection muted>
+      {showEducation ? (
+        <ContentSection>
+          <div id="education" className="scroll-mt-24" />
           <SectionTitle icon={<GraduationCap />} eyebrow="Training" title="Education" />
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {data.education.map((item) => (
-              <article key={item.id} className="rounded-xl border border-border bg-background p-6">
+              <article key={item.id} className="rounded-xl border border-border p-6">
                 <p className="text-sm font-semibold text-primary">{item.year ?? ""}</p>
                 <h3 className="mt-1 text-lg font-semibold">{item.qualification}</h3>
                 {item.institution ? (
@@ -333,12 +485,16 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "achievements") && data.achievements.length ? (
-        <ContentSection>
+      {showAchievements ? (
+        <ContentSection muted>
+          <div id="achievements" className="scroll-mt-24" />
           <SectionTitle icon={<Award />} eyebrow="Recognition" title="Achievements & memberships" />
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {data.achievements.map((item) => (
-              <article key={item.id} className="rounded-xl border border-border p-6">
+              <article
+                key={item.id}
+                className="rounded-xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]"
+              >
                 <p className="text-xs font-bold uppercase tracking-wider text-primary">
                   {item.achievement_type}
                 </p>
@@ -348,21 +504,22 @@ function DoctorDetail() {
                     {[item.organization, item.year].filter(Boolean).join(" · ")}
                   </p>
                 ) : null}
+                {item.description ? (
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                ) : null}
               </article>
             ))}
           </div>
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "locations") && data.locations.length ? (
-        <ContentSection muted>
+      {showLocations ? (
+        <ContentSection>
+          <div id="locations" className="scroll-mt-24" />
           <SectionTitle icon={<MapPin />} eyebrow="Consultation" title="Locations" />
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {data.locations.map((location) => (
-              <article
-                key={location.id}
-                className="rounded-xl border border-border bg-background p-6"
-              >
+              <article key={location.id} className="rounded-xl border border-border p-6">
                 <h3 className="text-xl font-semibold">{location.name}</h3>
                 <p className="mt-3 leading-7 text-muted-foreground">
                   {[location.address_line, location.city, location.state, location.postal_code]
@@ -375,6 +532,9 @@ function DoctorDetail() {
                   </p>
                 ) : null}
                 <div className="mt-5 flex flex-wrap gap-3">
+                  <Button asChild size="sm">
+                    <a href="#request-appointment">Book appointment</a>
+                  </Button>
                   {location.phone ? (
                     <Button asChild size="sm" variant="outline">
                       <a href={`tel:${location.phone.replace(/[^+\d]/g, "")}`}>Call location</a>
@@ -394,8 +554,19 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      {visible(doctor.section_visibility, "reviews") && data.reviews.length ? (
+      {showMedia ? (
+        <ContentSection muted>
+          <div id="media" className="scroll-mt-24" />
+          <SectionTitle icon={<BookOpen />} eyebrow="Watch & read" title="Media" />
+          <div className="mt-8">
+            <MediaGrid items={data.media} />
+          </div>
+        </ContentSection>
+      ) : null}
+
+      {showReviews ? (
         <ContentSection>
+          <div id="reviews" className="scroll-mt-24" />
           <SectionTitle icon={<Quote />} eyebrow="Approved feedback" title="Patient reviews" />
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {data.reviews.map((review) => (
@@ -404,16 +575,10 @@ function DoctorDetail() {
           </div>
         </ContentSection>
       ) : null}
-      {visible(doctor.section_visibility, "media") && data.media.length ? (
+
+      {showFaqs ? (
         <ContentSection muted>
-          <SectionTitle icon={<BookOpen />} eyebrow="Watch & read" title="Media" />
-          <div className="mt-8">
-            <MediaGrid items={data.media} />
-          </div>
-        </ContentSection>
-      ) : null}
-      {visible(doctor.section_visibility, "faqs") && data.faqs.length ? (
-        <ContentSection>
+          <div id="faqs" className="scroll-mt-24" />
           <SectionTitle
             icon={<BookOpen />}
             eyebrow="Helpful information"
@@ -432,7 +597,7 @@ function DoctorDetail() {
         </ContentSection>
       ) : null}
 
-      <ContentSection muted>
+      <ContentSection>
         <div id="request-appointment" className="mx-auto max-w-2xl scroll-mt-24">
           <EnquiryForm
             presetDoctorId={doctor.id}
@@ -442,6 +607,29 @@ function DoctorDetail() {
           />
         </div>
       </ContentSection>
+
+      <div className="h-20 lg:hidden" aria-hidden="true" />
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur lg:hidden">
+        <div className="flex items-center gap-2">
+          <Button asChild className="flex-1">
+            <a href="#request-appointment">Book appointment</a>
+          </Button>
+          {whatsapp ? (
+            <Button asChild variant="outline" size="icon" aria-label="Chat on WhatsApp">
+              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer">
+                <MessageCircle className="size-5" aria-hidden="true" />
+              </a>
+            </Button>
+          ) : null}
+          {phone ? (
+            <Button asChild variant="outline" size="icon" aria-label={`Call ${doctor.name}`}>
+              <a href={`tel:${phone}`}>
+                <Phone className="size-5" aria-hidden="true" />
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      </div>
     </PublicPage>
   );
 }

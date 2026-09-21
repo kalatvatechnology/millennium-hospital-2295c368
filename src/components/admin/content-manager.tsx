@@ -481,7 +481,12 @@ function AvailableContentManager({ type }: { type: ContentType }) {
           <>
             {editing?.id ? (
               <Button asChild type="button" variant="outline" className="w-fit">
-                <a href={`/doctors/${editing.values["slug"]}`} target="_blank" rel="noreferrer">
+                <a
+                  href={`/doctors/${editing.values["slug"]}?preview=1`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+
                   <ExternalLink className="size-4" /> Live preview
                 </a>
               </Button>
