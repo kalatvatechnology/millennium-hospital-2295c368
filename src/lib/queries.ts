@@ -5,7 +5,8 @@ import {
   getDoctor,
   getEnquiryOptions,
   getFacility,
-  getService,
+  getHospitalService,
+  getProfessionalService,
   listBlogPosts,
   listDepartments,
   listDoctors,
@@ -24,8 +25,8 @@ export const doctorsQuery = queryOptions({ queryKey: ["doctors"], queryFn: listD
 export const doctorQuery = (slug: string) => queryOptions({ queryKey: ["doctor", slug], queryFn: () => getDoctor(slug) });
 export const professionalServicesQuery = queryOptions({ queryKey: ["professional-services"], queryFn: listProfessionalServices });
 export const hospitalServicesQuery = queryOptions({ queryKey: ["hospital-services"], queryFn: listHospitalServices });
-export const professionalServiceQuery = (slug: string) => queryOptions({ queryKey: ["professional-service", slug], queryFn: () => getService(slug, "professional") });
-export const hospitalServiceQuery = (slug: string) => queryOptions({ queryKey: ["hospital-service", slug], queryFn: () => getService(slug, "hospital") });
+export const professionalServiceQuery = (slug: string) => queryOptions({ queryKey: ["professional-service", slug], queryFn: () => getProfessionalService(slug) });
+export const hospitalServiceQuery = (slug: string) => queryOptions({ queryKey: ["hospital-service", slug], queryFn: () => getHospitalService(slug) });
 export const facilitiesQuery = queryOptions({ queryKey: ["facilities"], queryFn: listFacilities });
 export const facilityQuery = (slug: string) => queryOptions({ queryKey: ["facility", slug], queryFn: () => getFacility(slug) });
 export const mediaQuery = (options?: { homeOnly?: boolean }) => queryOptions({ queryKey: ["media", options?.homeOnly ?? false], queryFn: () => listMedia(options?.homeOnly) });

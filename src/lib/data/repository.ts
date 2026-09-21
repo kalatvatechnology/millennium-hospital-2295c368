@@ -28,8 +28,8 @@ export async function getDepartment(slug: string) {
   if (!department) return null;
   if (!usesProductionContract) {
     const [doctorResult, serviceResult] = await Promise.all([
-      published(db.from("doctors").select("*, department:departments(id,name,slug)").eq("department_id", department.id)).order("display_order"),
-      db.from("professional_service_departments").select("professional_services(*)").eq("department_id", department.id),
+      published(db.from("doctors").select("*, department:departments(id,name,slug)").eq("department_id", department["id"])).order("display_order"),
+      db.from("professional_service_departments").select("professional_services(*)").eq("department_id", department["id"]),
     ]);
     return {
       department: mapDepartment(department),
@@ -38,8 +38,8 @@ export async function getDepartment(slug: string) {
     };
   }
   const [doctorLinks, serviceLinks] = await Promise.all([
-    db.from("doctor_departments").select("doctors(*)").eq("department_id", department.id),
-    db.from("department_services").select("services(*)").eq("department_id", department.id),
+    db.from("doctor_departments").select("doctors(*)").eq("department_id", department["id"]),
+    db.from("department_services").select("services(*)").eq("department_id", department["id"]),
   ]);
   const summary = mapDepartment(department);
   return {
@@ -110,12 +110,12 @@ export async function listHospitalServices(): Promise<Service[]> {
   return rows(await order(published(db.from("hospital_services").select("*")))).map(mapService);
 }
 
-export async function getService(slug: string, legacyKind: "professional" | "hospital") {
+async function getServiceRecord(slug: string, legacyKind: "professional" | "hospital") {
   const table = usesProductionContract ? "services" : legacyKind === "professional" ? "professional_services" : "hospital_services";
   const service = one(await published(db.from(table).select("*").eq("slug", slug)).maybeSingle());
   if (!service) return null;
   const mapped = mapService(service);
-  if (legacyKind === "hospital") return mapped;
+  if (legacyKind === "hospital") return { service: mapped, departments: [] as Department[], doctors: [] as Doctor[] };
   if (!usesProductionContract) {
     const [departments, doctors] = await Promise.all([
       db.from("professional_service_departments").select("departments(*)").eq("professional_service_id", mapped.id),
@@ -147,10 +147,10 @@ export async function getFacility(slug: string) {
   if (!facility) return null;
   if (usesProductionContract) return { facility: mapFacility(facility), doctors: [], departments: [], professionalServices: [], hospitalServices: [] };
   const [doctors, departments, professional, hospital] = await Promise.all([
-    db.from("facility_doctors").select("doctors(*, department:departments(id,name,slug))").eq("facility_id", facility.id),
-    db.from("facility_departments").select("departments(*)").eq("facility_id", facility.id),
-    db.from("facility_professional_services").select("professional_services(*)").eq("facility_id", facility.id),
-    db.from("facility_hospital_services").select("hospital_services(*)").eq("facility_id", facility.id),
+    db.from("facility_doctors").select("doctors(*, department:departments(id,name,slug))").eq("facility_id", facility["id"]),
+    db.from("facility_departments").select("departments(*)").eq("facility_id", facility["id"]),
+    db.from("facility_professional_services").select("professional_services(*)").eq("facility_id", facility["id"]),
+    db.from("facility_hospital_services").select("hospital_services(*)").eq("facility_id", facility["id"]),
   ]);
   return {
     facility: mapFacility(facility),
@@ -200,6 +200,15 @@ export async function getBlogPost(slug: string): Promise<{ post: BlogPost; docto
   if (!post) return null;
   const related = rows(await db.from("blog_post_doctors").select("doctors(name,slug,published)").eq("post_id", post["id"]));
   return { post: post as BlogPost, doctors: related.map((item) => item["doctors"]).filter((item) => item?.published === true) };
+}
+
+export async function getProfessionalService(slug: string) {
+  return getServiceRecord(slug, "professional");
+}
+
+export async function getHospitalService(slug: string): Promise<Service | null> {
+  const result = await getServiceRecord(slug, "hospital");
+  return result?.service ?? null;
 }
 
 export async function getEnquiryOptions() {

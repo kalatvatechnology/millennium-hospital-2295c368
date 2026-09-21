@@ -26,9 +26,9 @@ function FaqPage() {
         >
           {(data) => {
             const groups = data.categories
-              .map((category) => ({ category, items: data.faqs.filter((faq) => faq.category_id === category.id) }))
+              .map((category) => ({ category, items: data.faqs.filter((faq) => faq.category === category.name) }))
               .filter((group) => group.items.length);
-            const ungrouped = data.faqs.filter((item) => !item.category_id || !data.categories.some((c) => c.id === item.category_id));
+            const ungrouped = data.faqs.filter((item) => !item.category || !data.categories.some((c) => c.name === item.category));
             return (
               <div className="mx-auto grid max-w-3xl gap-12">
                 {groups.map(({ category, items }) => (

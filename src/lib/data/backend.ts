@@ -1,6 +1,6 @@
 export type BackendTarget = "local" | "production";
 
-const requestedTarget = import.meta.env.VITE_MILLENNIUM_BACKEND_TARGET;
+const requestedTarget = import.meta.env["VITE_MILLENNIUM_BACKEND_TARGET"];
 
 /**
  * Production is deliberately opt-in. This preparation must not connect to the

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isRole, permissionsForRoles, type Permission, type Role } from "@/lib/permissions";
+import { backendFeatures } from "@/lib/data/backend";
 
 type Profile = { id: string; full_name: string | null; email: string | null; doctor_id: string | null };
 
@@ -32,10 +33,11 @@ export function useAdminSession() {
     let active = true;
     setLoading(true);
     void (async () => {
-      const [roleResult, profileResult] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", session.user.id),
-        supabase.from("profiles").select("id, full_name, email, doctor_id").eq("id", session.user.id).maybeSingle(),
-      ]);
+      const rolePromise = (supabase as any).from("user_roles").select("role").eq("user_id", session.user.id);
+      const profilePromise = backendFeatures.profiles
+        ? supabase.from("profiles").select("id, full_name, email, doctor_id").eq("id", session.user.id).maybeSingle()
+        : Promise.resolve({ data: null, error: null });
+      const [roleResult, profileResult] = await Promise.all([rolePromise, profilePromise]);
       if (!active) return;
       setRoles((roleResult.data ?? []).map((row) => row.role).filter(isRole));
       setProfile(profileResult.data ?? null);

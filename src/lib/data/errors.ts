@@ -1,7 +1,7 @@
 export type DataErrorKind = "permission" | "authentication" | "invalid_value" | "unavailable" | "query";
 
 export class DataAccessError extends Error {
-  constructor(public readonly kind: DataErrorKind, message: string, public readonly cause?: unknown) {
+  constructor(public readonly kind: DataErrorKind, message: string, public readonly originalError?: unknown) {
     super(message);
     this.name = "DataAccessError";
   }
