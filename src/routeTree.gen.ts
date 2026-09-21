@@ -44,8 +44,10 @@ import { Route as AdminPagesRouteImport } from './routes/[_]admin.pages'
 import { Route as AdminProfessionalServicesRouteImport } from './routes/[_]admin.professional-services'
 import { Route as AdminProfileRequestsRouteImport } from './routes/[_]admin.profile-requests'
 import { Route as AdminReviewsRouteImport } from './routes/[_]admin.reviews'
+import { Route as AdminSeoRouteImport } from './routes/[_]admin.seo'
 import { Route as AdminSeoAnalyticsRouteImport } from './routes/[_]admin.seo-analytics'
 import { Route as AdminSeoHistoryRouteImport } from './routes/[_]admin.seo-history'
+import { Route as AdminSeoKeywordsRouteImport } from './routes/[_]admin.seo-keywords'
 import { Route as AdminUsersRouteImport } from './routes/[_]admin.users'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -61,6 +63,7 @@ import { Route as AdminBlogCommentsCommentIdRouteImport } from './routes/[_]admi
 import { Route as AdminBlogIndexRouteImport } from './routes/[_]admin.blog.index'
 import { Route as AdminDoctorsIndexRouteImport } from './routes/[_]admin.doctors.index'
 import { Route as AdminProfileRequestsRequestIdRouteImport } from './routes/[_]admin.profile-requests.$requestId'
+import { Route as AdminSeoKeywordKeywordIdRouteImport } from './routes/[_]admin.seo-keyword.$keywordId'
 import { Route as AdminUsersUserIdRouteImport } from './routes/[_]admin.users.$userId'
 import { Route as ServicesHospitalSlugRouteImport } from './routes/services.hospital.$slug'
 import { Route as ServicesProfessionalSlugRouteImport } from './routes/services.professional.$slug'
@@ -244,6 +247,11 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/reviews',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSeoRoute = AdminSeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSeoAnalyticsRoute = AdminSeoAnalyticsRouteImport.update({
   id: '/seo-analytics',
   path: '/seo-analytics',
@@ -252,6 +260,11 @@ const AdminSeoAnalyticsRoute = AdminSeoAnalyticsRouteImport.update({
 const AdminSeoHistoryRoute = AdminSeoHistoryRouteImport.update({
   id: '/seo-history',
   path: '/seo-history',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSeoKeywordsRoute = AdminSeoKeywordsRouteImport.update({
+  id: '/seo-keywords',
+  path: '/seo-keywords',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -331,6 +344,12 @@ const AdminProfileRequestsRequestIdRoute =
     path: '/$requestId',
     getParentRoute: () => AdminProfileRequestsRoute,
   } as any)
+const AdminSeoKeywordKeywordIdRoute =
+  AdminSeoKeywordKeywordIdRouteImport.update({
+    id: '/seo-keyword/$keywordId',
+    path: '/seo-keyword/$keywordId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
   id: '/$userId',
   path: '/$userId',
@@ -400,8 +419,10 @@ export interface FileRoutesByFullPath {
   '/_admin/professional-services': typeof AdminProfessionalServicesRoute
   '/_admin/profile-requests': typeof AdminProfileRequestsRouteWithChildren
   '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
+  '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -415,6 +436,7 @@ export interface FileRoutesByFullPath {
   '/services/': typeof ServicesIndexRoute
   '/_admin/blog-comments/$commentId': typeof AdminBlogCommentsCommentIdRoute
   '/_admin/profile-requests/$requestId': typeof AdminProfileRequestsRequestIdRoute
+  '/_admin/seo-keyword/$keywordId': typeof AdminSeoKeywordKeywordIdRoute
   '/_admin/users/$userId': typeof AdminUsersUserIdRoute
   '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
@@ -451,8 +473,10 @@ export interface FileRoutesByTo {
   '/_admin/professional-services': typeof AdminProfessionalServicesRoute
   '/_admin/profile-requests': typeof AdminProfileRequestsRouteWithChildren
   '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
+  '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -466,6 +490,7 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesIndexRoute
   '/_admin/blog-comments/$commentId': typeof AdminBlogCommentsCommentIdRoute
   '/_admin/profile-requests/$requestId': typeof AdminProfileRequestsRequestIdRoute
+  '/_admin/seo-keyword/$keywordId': typeof AdminSeoKeywordKeywordIdRoute
   '/_admin/users/$userId': typeof AdminUsersUserIdRoute
   '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
@@ -512,8 +537,10 @@ export interface FileRoutesById {
   '/_admin/professional-services': typeof AdminProfessionalServicesRoute
   '/_admin/profile-requests': typeof AdminProfileRequestsRouteWithChildren
   '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
+  '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -527,6 +554,7 @@ export interface FileRoutesById {
   '/services/': typeof ServicesIndexRoute
   '/_admin/blog-comments/$commentId': typeof AdminBlogCommentsCommentIdRoute
   '/_admin/profile-requests/$requestId': typeof AdminProfileRequestsRequestIdRoute
+  '/_admin/seo-keyword/$keywordId': typeof AdminSeoKeywordKeywordIdRoute
   '/_admin/users/$userId': typeof AdminUsersUserIdRoute
   '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
@@ -574,8 +602,10 @@ export interface FileRouteTypes {
     | '/_admin/professional-services'
     | '/_admin/profile-requests'
     | '/_admin/reviews'
+    | '/_admin/seo'
     | '/_admin/seo-analytics'
     | '/_admin/seo-history'
+    | '/_admin/seo-keywords'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -589,6 +619,7 @@ export interface FileRouteTypes {
     | '/services/'
     | '/_admin/blog-comments/$commentId'
     | '/_admin/profile-requests/$requestId'
+    | '/_admin/seo-keyword/$keywordId'
     | '/_admin/users/$userId'
     | '/services/hospital/$slug'
     | '/services/professional/$slug'
@@ -625,8 +656,10 @@ export interface FileRouteTypes {
     | '/_admin/professional-services'
     | '/_admin/profile-requests'
     | '/_admin/reviews'
+    | '/_admin/seo'
     | '/_admin/seo-analytics'
     | '/_admin/seo-history'
+    | '/_admin/seo-keywords'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -640,6 +673,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/_admin/blog-comments/$commentId'
     | '/_admin/profile-requests/$requestId'
+    | '/_admin/seo-keyword/$keywordId'
     | '/_admin/users/$userId'
     | '/services/hospital/$slug'
     | '/services/professional/$slug'
@@ -685,8 +719,10 @@ export interface FileRouteTypes {
     | '/_admin/professional-services'
     | '/_admin/profile-requests'
     | '/_admin/reviews'
+    | '/_admin/seo'
     | '/_admin/seo-analytics'
     | '/_admin/seo-history'
+    | '/_admin/seo-keywords'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -700,6 +736,7 @@ export interface FileRouteTypes {
     | '/services/'
     | '/_admin/blog-comments/$commentId'
     | '/_admin/profile-requests/$requestId'
+    | '/_admin/seo-keyword/$keywordId'
     | '/_admin/users/$userId'
     | '/services/hospital/$slug'
     | '/services/professional/$slug'
@@ -975,6 +1012,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/seo': {
+      id: '/_admin/seo'
+      path: '/seo'
+      fullPath: '/_admin/seo'
+      preLoaderRoute: typeof AdminSeoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/seo-analytics': {
       id: '/_admin/seo-analytics'
       path: '/seo-analytics'
@@ -987,6 +1031,13 @@ declare module '@tanstack/react-router' {
       path: '/seo-history'
       fullPath: '/_admin/seo-history'
       preLoaderRoute: typeof AdminSeoHistoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/seo-keywords': {
+      id: '/_admin/seo-keywords'
+      path: '/seo-keywords'
+      fullPath: '/_admin/seo-keywords'
+      preLoaderRoute: typeof AdminSeoKeywordsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/users': {
@@ -1093,6 +1144,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/_admin/profile-requests/$requestId'
       preLoaderRoute: typeof AdminProfileRequestsRequestIdRouteImport
       parentRoute: typeof AdminProfileRequestsRoute
+    }
+    '/_admin/seo-keyword/$keywordId': {
+      id: '/_admin/seo-keyword/$keywordId'
+      path: '/seo-keyword/$keywordId'
+      fullPath: '/_admin/seo-keyword/$keywordId'
+      preLoaderRoute: typeof AdminSeoKeywordKeywordIdRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_admin/users/$userId': {
       id: '/_admin/users/$userId'
@@ -1224,10 +1282,13 @@ interface AdminRouteChildren {
   AdminProfessionalServicesRoute: typeof AdminProfessionalServicesRoute
   AdminProfileRequestsRoute: typeof AdminProfileRequestsRouteWithChildren
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSeoRoute: typeof AdminSeoRoute
   AdminSeoAnalyticsRoute: typeof AdminSeoAnalyticsRoute
   AdminSeoHistoryRoute: typeof AdminSeoHistoryRoute
+  AdminSeoKeywordsRoute: typeof AdminSeoKeywordsRoute
   AdminUsersRoute: typeof AdminUsersRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminSeoKeywordKeywordIdRoute: typeof AdminSeoKeywordKeywordIdRoute
   AdminContentContentTypeRecordIdRoute: typeof AdminContentContentTypeRecordIdRoute
 }
 
@@ -1252,10 +1313,13 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProfessionalServicesRoute: AdminProfessionalServicesRoute,
   AdminProfileRequestsRoute: AdminProfileRequestsRouteWithChildren,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSeoRoute: AdminSeoRoute,
   AdminSeoAnalyticsRoute: AdminSeoAnalyticsRoute,
   AdminSeoHistoryRoute: AdminSeoHistoryRoute,
+  AdminSeoKeywordsRoute: AdminSeoKeywordsRoute,
   AdminUsersRoute: AdminUsersRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
+  AdminSeoKeywordKeywordIdRoute: AdminSeoKeywordKeywordIdRoute,
   AdminContentContentTypeRecordIdRoute: AdminContentContentTypeRecordIdRoute,
 }
 
