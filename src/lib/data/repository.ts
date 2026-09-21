@@ -216,12 +216,12 @@ export async function getEnquiryOptions() {
     const [doctors, departments, services] = await Promise.all([
       published(db.from("doctors").select("id,full_name,slug,whatsapp")).order("full_name"),
       published(db.from("departments").select("id,name")).order("name"),
-      published(db.from("services").select("id,name,title")).order("name"),
+      published(db.from("services").select("id,title")).order("title"),
     ]);
     return {
       doctors: rows(doctors).map((row) => ({ id: String(row["id"]), name: String(row["full_name"]), slug: String(row["slug"]), whatsapp_number: row["whatsapp"] ?? null })),
       departments: rows(departments).map((row) => ({ id: String(row["id"]), name: String(row["name"]) })),
-      services: rows(services).map((row) => ({ id: String(row["id"]), name: String(row["title"] ?? row["name"]) })),
+      services: rows(services).map((row) => ({ id: String(row["id"]), name: String(row["title"]) })),
     };
   }
   const [doctors, departments, professional, hospital] = await Promise.all([

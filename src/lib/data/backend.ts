@@ -44,6 +44,7 @@ export const backendFeatures = {
   websitePages: !usesProductionContract,
   navigation: !usesProductionContract,
   profileRequests: !usesProductionContract,
+  userManagement: true,
 } as const;
 
 export const productionPermissionFunctions = {

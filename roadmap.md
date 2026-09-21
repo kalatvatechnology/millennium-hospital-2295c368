@@ -29,3 +29,6 @@
 - [x] Prepare a frontend-only production compatibility layer without connecting to or changing production
 - [x] Adapt public queries, enquiry handling, roles, permissions, and supported admin modules to production contracts
 - [x] Isolate modules without production backend support and document all remaining connection blockers and product decisions
+- [ ] Centralize production permission checks and supported staff data access without connecting production
+- [ ] Resolve confirmed service-query and compatibility lint blockers
+- [ ] Re-run local type, build, lint, public, and staff validation
