@@ -67,6 +67,7 @@ export function DoctorWorkspace() {
   const [baseline, setBaseline] = useState<any>(blankDoctor());
   const [social, setSocial] = useState<SocialRow[]>([]);
   const [socialBaseline, setSocialBaseline] = useState<SocialRow[]>([]);
+  const [detailReset, setDetailReset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
@@ -97,13 +98,23 @@ export function DoctorWorkspace() {
     },
     onSuccess: (savedId) => {
       setError(null); setBaseline(clone(values)); setSocialBaseline(clone(social));
+      setDetailReset((current) => current + 1);
       void queryClient.invalidateQueries({ queryKey: ["admin-doctor", savedId] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-profile-section"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-profile-relation"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", "doctors"] });
       if (isNew) void navigate({ to: "/_admin/doctors/$doctorId/$section", params: { doctorId: savedId, section: "profile" }, replace: true });
     },
     onError: (cause: Error) => setError(userFacingDataError(cause)),
   });
-  const cancel = () => { setValues(clone(baseline)); setSocial(clone(socialBaseline)); setError(null); void queryClient.invalidateQueries({ queryKey: ["doctor-profile-section"] }); void queryClient.invalidateQueries({ queryKey: ["doctor-profile-relation"] }); };
+  const cancel = () => {
+    setValues(clone(baseline));
+    setSocial(clone(socialBaseline));
+    setDetailReset((current) => current + 1);
+    setError(null);
+  };
   const set = (name: string, value: any) =>
     setValues((current: Record<string, any>) => ({ ...current, [name]: value }));
   const imageOptions = useMemo(() => (media.data ?? []).flatMap((item: any) => item.thumbnail_url ? [{ value: item.thumbnail_url, label: item.title }] : []), [media.data]);
@@ -120,8 +131,8 @@ export function DoctorWorkspace() {
           <AdminError message={error} />
           <div className="mt-6">
             {section === "profile" ? <div className="grid gap-5 lg:grid-cols-2">{profileFields.map(([name, label, kind]) => <Field key={name} name={name} label={label} kind={kind} value={name === "qualifications" && Array.isArray(values[name]) ? values[name].join(", ") : values[name]} onChange={(value) => set(name, value)} />)}<div><Label htmlFor="doctor-department">Department</Label><Select value={values.department_id || "none"} onValueChange={(value) => set("department_id", value === "none" ? null : value)}><SelectTrigger id="doctor-department" className="mt-2"><SelectValue placeholder="Select a department" /></SelectTrigger><SelectContent><SelectItem value="none">No department selected</SelectItem>{(departments.data ?? []).map((item: any) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent></Select></div><ImageEditor label="Profile image" value={values.photo_url ?? ""} alt={values.profile_image_alt ?? ""} options={imageOptions} ratio="4:5" onValue={(value) => set("photo_url", value)} onAlt={(value) => set("profile_image_alt", value)} /></div> : null}
-            {section === "hero" ? <div className="grid gap-6"><ImageEditor label="Hero image" value={values.hero_image_url ?? ""} alt={values.hero_image_alt ?? ""} options={imageOptions} ratio="Current profile header crop" onValue={(value) => set("hero_image_url", value)} onAlt={(value) => set("hero_image_alt", value)} /><Field name="quote" label="Doctor quote" kind="textarea" value={values.quote} onChange={(value) => set("quote", value)} /><Field name="quote_attribution" label="Quote attribution" kind="text" value={values.quote_attribution} onChange={(value) => set("quote_attribution", value)} />{!isNew ? <DoctorProfileSections ref={detailRef} doctorId={doctorId} activeTab="hero" /> : null}</div> : null}
-            {detailTab && section !== "hero" && !isNew ? <DoctorProfileSections ref={detailRef} doctorId={doctorId} activeTab={detailTab} /> : null}
+            {section === "hero" ? <div className="grid gap-6"><ImageEditor label="Hero image" value={values.hero_image_url ?? ""} alt={values.hero_image_alt ?? ""} options={imageOptions} ratio="Current profile header crop" onValue={(value) => set("hero_image_url", value)} onAlt={(value) => set("hero_image_alt", value)} /><Field name="quote" label="Doctor quote" kind="textarea" value={values.quote} onChange={(value) => set("quote", value)} /><Field name="quote_attribution" label="Quote attribution" kind="text" value={values.quote_attribution} onChange={(value) => set("quote_attribution", value)} />{!isNew ? <DoctorProfileSections key={`hero-${detailReset}`} ref={detailRef} doctorId={doctorId} activeTab="hero" /> : null}</div> : null}
+            {detailTab && section !== "hero" && !isNew ? <DoctorProfileSections key={`${detailTab}-${detailReset}`} ref={detailRef} doctorId={doctorId} activeTab={detailTab} /> : null}
             {section === "social-media" ? <SocialEditor rows={social} onChange={setSocial} /> : null}
             {section === "seo" ? <div className="grid gap-5"><Field name="seo_title" label="SEO title" kind="text" value={values.seo_title} onChange={(value) => set("seo_title", value)} /><Field name="seo_description" label="SEO description" kind="textarea" value={values.seo_description} onChange={(value) => set("seo_description", value)} /><Field name="canonical_url" label="Canonical URL" kind="text" value={values.canonical_url} onChange={(value) => set("canonical_url", value)} /><ImageEditor label="Open Graph image" value={values.og_image_url ?? ""} alt="" options={imageOptions} ratio="Social sharing image" onValue={(value) => set("og_image_url", value)} /></div> : null}
             {section === "publishing" ? <div className="grid max-w-2xl gap-5"><div><Label htmlFor="verification">Verification</Label><Select value={values.verification_status ?? "unverified"} onValueChange={(value) => set("verification_status", value)}><SelectTrigger id="verification" className="mt-2"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unverified">Needs verification</SelectItem><SelectItem value="pending">Pending verification</SelectItem><SelectItem value="verified">Verified</SelectItem></SelectContent></Select></div><Field name="display_order" label="Display order" kind="number" value={values.display_order} onChange={(value) => set("display_order", Number(value))} /><label className="flex items-center gap-3 rounded-md border border-border p-4"><Switch checked={Boolean(values.published)} disabled={!canPublish} onCheckedChange={(checked) => set("published", checked)} /><span><span className="block font-medium">Published</span><span className="block text-sm text-muted-foreground">{canPublish ? "Controls public visibility." : "Only an Editor, Admin, or Super Admin can change this."}</span></span></label></div> : null}
