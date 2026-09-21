@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Building2, CalendarDays, MapPin, Search, Stethoscope, UserRound } from "lucide-react";
+import { ArrowRight, Building2, CalendarDays, MapPin, Phone, Search, Stethoscope, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { PublicPage } from "@/components/layout/public-page";
 import { ContentSection, SectionHeading, UnpublishedPanel } from "@/components/shared/page";
