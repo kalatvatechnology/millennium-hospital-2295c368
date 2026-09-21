@@ -45,6 +45,19 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 const PAGE_SIZE = 20;
+const doctorProfileTabs: DoctorProfileTab[] = [
+  "hero",
+  "specializations",
+  "experience",
+  "achievements",
+  "locations",
+  "media",
+  "reviews",
+];
+
+function isDoctorProfileTab(value: string): value is DoctorProfileTab {
+  return doctorProfileTabs.some((tab) => tab === value);
+}
 
 function emptyValues(type: ContentType) {
   const values: Record<string, any> = {};
@@ -602,27 +615,13 @@ function AvailableContentManager({ type }: { type: ContentType }) {
                   />
                 </div>
               </TabsContent>
-              {(
-                [
-                  "hero",
-                  "specializations",
-                  "experience",
-                  "achievements",
-                  "locations",
-                  "media",
-                  "reviews",
-                ] as DoctorProfileTab[]
-              ).map((tab) => (
-                <div
-                  key={tab}
-                  hidden={doctorTab !== tab}
-                  className={tab === "hero" ? "mt-5" : "mt-4"}
-                >
+              {isDoctorProfileTab(doctorTab) ? (
+                <div className={doctorTab === "hero" ? "mt-5" : "mt-4"}>
                   {editing?.id ? (
                     <DoctorProfileSections
                       ref={doctorSectionsRef}
                       doctorId={editing.id}
-                      activeTab={tab}
+                      activeTab={doctorTab}
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">
@@ -630,7 +629,7 @@ function AvailableContentManager({ type }: { type: ContentType }) {
                     </p>
                   )}
                 </div>
-              ))}
+              ) : null}
             </Tabs>
           </>
         ) : (
