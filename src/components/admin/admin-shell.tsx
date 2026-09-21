@@ -6,6 +6,7 @@ import { useAdminSession } from "@/hooks/use-admin-session";
 import { Button } from "@/components/ui/button";
 import { LoadingState, EmptyState } from "@/components/shared/page";
 import { ROLE_LABELS, type Permission } from "@/lib/permissions";
+import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 
 type NavItem = { label: string; to: string; permission: Permission | Permission[] | null };
 
@@ -14,19 +15,19 @@ const navItems: NavItem[] = [
   { label: "Doctors", to: "/_admin/doctors", permission: "content.write" },
   { label: "Departments", to: "/_admin/departments", permission: "content.write" },
   { label: "Professional services", to: "/_admin/professional-services", permission: "content.write" },
-  { label: "Hospital services", to: "/_admin/hospital-services", permission: "content.write" },
+  ...(usesProductionContract ? [] : [{ label: "Hospital services", to: "/_admin/hospital-services", permission: "content.write" as Permission }]),
   { label: "Facilities", to: "/_admin/facilities", permission: "content.write" },
   { label: "Locations", to: "/_admin/locations", permission: "content.write" },
   { label: "Appointment enquiries", to: "/_admin/enquiries", permission: "enquiries.manage" },
   { label: "Media & content", to: "/_admin/media", permission: "content.write" },
   { label: "FAQs", to: "/_admin/faqs", permission: "content.write" },
   { label: "Reviews", to: "/_admin/reviews", permission: "content.write" },
-  { label: "Blog", to: "/_admin/blog", permission: ["content.write", "blog.review"] },
-  { label: "Website pages", to: "/_admin/pages", permission: "content.write" },
-  { label: "Navigation", to: "/_admin/navigation", permission: "content.write" },
-  { label: "Profile requests", to: "/_admin/profile-requests", permission: ["content.write", "profile.request"] },
-  { label: "Users & roles", to: "/_admin/users", permission: "users.manage" },
-  { label: "Notifications", to: "/_admin/notifications", permission: null },
+  ...(backendFeatures.blog ? [{ label: "Blog", to: "/_admin/blog", permission: ["content.write", "blog.review"] as Permission[] }] : []),
+  ...(backendFeatures.websitePages ? [{ label: "Website pages", to: "/_admin/pages", permission: "content.write" as Permission }] : []),
+  ...(backendFeatures.navigation ? [{ label: "Navigation", to: "/_admin/navigation", permission: "content.write" as Permission }] : []),
+  ...(backendFeatures.profileRequests ? [{ label: "Profile requests", to: "/_admin/profile-requests", permission: ["content.write", "profile.request"] as Permission[] }] : []),
+  ...(backendFeatures.profiles ? [{ label: "Users & roles", to: "/_admin/users", permission: "users.manage" as Permission }] : []),
+  ...(backendFeatures.notifications ? [{ label: "Notifications", to: "/_admin/notifications", permission: null }] : []),
   { label: "Audit logs", to: "/_admin/audit-logs", permission: "audit.read" },
 ];
 

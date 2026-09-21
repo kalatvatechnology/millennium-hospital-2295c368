@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/lib/audit";
 import { ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
+import { backendFeatures } from "@/lib/data/backend";
+import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
 
 export const Route = createFileRoute("/_admin/users")({
   head: () => ({ meta: [...createPageMeta("Users and roles", "Manage staff accounts and their roles."), { name: "robots", content: "noindex, nofollow" }] }),
@@ -22,6 +24,11 @@ const PAGE_SIZE = 20;
 type ProfileRow = { id: string; full_name: string | null; email: string | null; doctor_id: string | null; active: boolean };
 
 function AdminUsers() {
+  if (!backendFeatures.profiles) return <AdminFeatureUnavailable title="Users and roles" />;
+  return <AvailableUsers />;
+}
+
+function AvailableUsers() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -82,11 +89,11 @@ function AdminUsers() {
       const toAdd = editing.roles.filter((role) => !existing.includes(role));
       const toRemove = existing.filter((role) => !editing.roles.includes(role));
       if (toRemove.length) {
-        const { error: removeError } = await supabase.from("user_roles").delete().eq("user_id", userId).in("role", toRemove);
+        const { error: removeError } = await (supabase as any).from("user_roles").delete().eq("user_id", userId).in("role", toRemove);
         if (removeError) throw new Error(removeError.message);
       }
       if (toAdd.length) {
-        const { error: addError } = await supabase.from("user_roles").insert(toAdd.map((role) => ({ user_id: userId, role })));
+        const { error: addError } = await (supabase as any).from("user_roles").insert(toAdd.map((role) => ({ user_id: userId, role })));
         if (addError) throw new Error(addError.message);
       }
       const { error: profileError } = await supabase.from("profiles").update({ doctor_id: editing.doctorId || null }).eq("id", userId);

@@ -1,8 +1,11 @@
-export const ROLES = ["super_admin", "admin", "editor", "writer", "front_desk", "doctor"] as const;
+export const ROLES = ["founder", "co_founder", "brand_super_admin", "super_admin", "admin", "editor", "writer", "front_desk", "doctor"] as const;
 
 export type Role = (typeof ROLES)[number];
 
 export const ROLE_LABELS: Record<Role, string> = {
+  founder: "Founder",
+  co_founder: "Co-founder",
+  brand_super_admin: "Brand super admin",
   super_admin: "Super admin",
   admin: "Admin",
   editor: "Editor",
@@ -12,6 +15,9 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
+  founder: "Production role governed by the hospital role hierarchy.",
+  co_founder: "Production role governed by the hospital role hierarchy.",
+  brand_super_admin: "Production role governed by the hospital role hierarchy.",
   super_admin: "Full control, including staff accounts and roles.",
   admin: "Manages content, enquiries and activity records.",
   editor: "Creates, edits and publishes website content.",
@@ -31,6 +37,9 @@ export type Permission =
   | "profile.request";
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+  founder: ["content.read", "content.write", "content.publish", "enquiries.manage", "users.manage", "audit.read"],
+  co_founder: ["content.read", "content.write", "content.publish", "enquiries.manage", "users.manage", "audit.read"],
+  brand_super_admin: ["content.read", "content.write", "content.publish", "enquiries.manage", "users.manage", "audit.read"],
   super_admin: [
     "content.read",
     "content.write",

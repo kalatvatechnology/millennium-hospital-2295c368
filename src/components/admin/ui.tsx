@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/page";
 import { cn } from "@/lib/utils";
+import { userFacingDataError } from "@/lib/data/errors";
 
 export type Column<T> = { key: string; header: string; cell: (row: T) => ReactNode; className?: string };
 
@@ -227,4 +228,8 @@ export function AdminError({ message }: { message: string | null }) {
       {message}
     </p>
   );
+}
+
+export function AdminDataError({ error }: { error: unknown }) {
+  return <AdminError message={error ? userFacingDataError(error) : null} />;
 }

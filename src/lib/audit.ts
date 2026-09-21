@@ -1,5 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
-
+/**
+ * Compatibility shim only. The production database writes audit entries from
+ * triggers, so frontend code must never insert into audit_logs directly.
+ */
 export async function logAction(input: {
   action: string;
   entityTable?: string;
@@ -7,16 +9,5 @@ export async function logAction(input: {
   summary?: string;
   metadata?: Record<string, unknown>;
 }) {
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  if (!user) return;
-  await supabase.from("audit_logs").insert({
-    actor_id: user.id,
-    actor_email: user.email ?? null,
-    action: input.action,
-    entity_table: input.entityTable ?? null,
-    entity_id: input.entityId ?? null,
-    summary: input.summary ?? null,
-    metadata: (input.metadata ?? {}) as never,
-  });
+  void input;
 }

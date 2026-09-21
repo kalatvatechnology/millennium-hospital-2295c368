@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/lib/audit";
+import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
+import { classifyDataError } from "@/lib/data/errors";
 
 export type FieldType = "text" | "textarea" | "number" | "boolean" | "list" | "select";
 
@@ -23,10 +25,23 @@ export type ContentType = {
   orderBy: string;
   subtitleField?: string;
   fields: Field[];
+  available?: boolean;
 };
 
 const orderField: Field = { name: "display_order", label: "Display order", type: "number" };
-const publishedField: Field = { name: "published", label: "Published", type: "boolean", publishControl: true };
+const publishedField: Field = usesProductionContract
+  ? {
+      name: "status",
+      label: "Status",
+      type: "select",
+      publishControl: true,
+      options: [
+        { value: "draft", label: "Draft" },
+        { value: "published", label: "Published" },
+        { value: "archived", label: "Archived" },
+      ],
+    }
+  : { name: "published", label: "Published", type: "boolean", publishControl: true };
 
 export const contentTypes: ContentType[] = [
   {
@@ -52,23 +67,26 @@ export const contentTypes: ContentType[] = [
     label: "Doctors",
     singular: "doctor",
     description: "Authoritative doctor profiles. Doctors cannot edit these directly.",
-    titleField: "name",
-    subtitleField: "specialty",
+    titleField: usesProductionContract ? "full_name" : "name",
+    subtitleField: usesProductionContract ? "specialization" : "specialty",
     orderBy: "display_order",
     fields: [
-      { name: "name", label: "Full name", type: "text", required: true },
+      { name: usesProductionContract ? "full_name" : "name", label: "Full name", type: "text", required: true },
       { name: "slug", label: "Web address (slug)", type: "text", required: true },
       { name: "photo_url", label: "Photo URL", type: "text" },
       { name: "qualifications", label: "Qualifications (comma separated)", type: "list" },
       { name: "designation", label: "Designation", type: "text" },
-      { name: "specialty", label: "Specialty", type: "text" },
+      { name: usesProductionContract ? "specialization" : "specialty", label: "Specialty", type: "text" },
       { name: "experience_years", label: "Years of experience", type: "number" },
       { name: "bio", label: "Biography", type: "textarea" },
       { name: "expertise", label: "Areas of expertise (comma separated)", type: "list" },
       { name: "languages", label: "Languages (comma separated)", type: "list" },
       { name: "location", label: "Location", type: "text" },
-      { name: "whatsapp_number", label: "WhatsApp number", type: "text" },
-      {
+      { name: usesProductionContract ? "whatsapp" : "whatsapp_number", label: "WhatsApp number", type: "text" },
+      ...(usesProductionContract ? [
+        { name: "consultation_info", label: "Consultation information", type: "textarea" as const },
+        { name: "location_info", label: "Location information", type: "textarea" as const },
+      ] : [{
         name: "verification_status",
         label: "Verification",
         type: "select",
@@ -77,14 +95,14 @@ export const contentTypes: ContentType[] = [
           { value: "pending", label: "Pending verification" },
           { value: "verified", label: "Verified" },
         ],
-      },
+      } as Field]),
       orderField,
       publishedField,
     ],
   },
   {
     key: "professional-services",
-    table: "professional_services",
+    table: usesProductionContract ? "services" : "professional_services",
     label: "Professional services",
     singular: "professional service",
     description: "Specialist professional services, kept separate from hospital services.",
@@ -103,6 +121,7 @@ export const contentTypes: ContentType[] = [
   {
     key: "hospital-services",
     table: "hospital_services",
+    available: !usesProductionContract,
     label: "Hospital services",
     singular: "hospital service",
     description: "Clinical, diagnostic and support services offered by the hospital.",
@@ -162,17 +181,17 @@ export const contentTypes: ContentType[] = [
   },
   {
     key: "media",
-    table: "media_items",
+    table: usesProductionContract ? "media_content" : "media_items",
     label: "Media & content",
     singular: "media item",
     description: "Videos, reels and podcasts. Video files stay on their original platform.",
     titleField: "title",
-    subtitleField: "media_type",
+    subtitleField: usesProductionContract ? "platform" : "media_type",
     orderBy: "display_order",
     fields: [
       { name: "title", label: "Title", type: "text", required: true },
       {
-        name: "media_type",
+        name: usesProductionContract ? "platform" : "media_type",
         label: "Type",
         type: "select",
         required: true,
@@ -180,12 +199,13 @@ export const contentTypes: ContentType[] = [
           { value: "youtube", label: "YouTube video" },
           { value: "reel", label: "Reel" },
           { value: "podcast", label: "Podcast" },
+          { value: "article", label: "Article" },
         ],
       },
       { name: "url", label: "Link", type: "text", required: true },
       { name: "thumbnail_url", label: "Thumbnail URL", type: "text" },
       { name: "description", label: "Description", type: "textarea" },
-      { name: "show_on_home", label: "Show on home page", type: "boolean" },
+      { name: usesProductionContract ? "show_on_homepage" : "show_on_home", label: "Show on home page", type: "boolean" },
       orderField,
       publishedField,
     ],
@@ -193,6 +213,7 @@ export const contentTypes: ContentType[] = [
   {
     key: "faq-categories",
     table: "faq_categories",
+    available: backendFeatures.faqCategories,
     label: "FAQ categories",
     singular: "FAQ category",
     description: "Groups used to organise frequently asked questions.",
@@ -217,6 +238,7 @@ export const contentTypes: ContentType[] = [
     fields: [
       { name: "question", label: "Question", type: "text", required: true },
       { name: "answer", label: "Answer", type: "textarea", required: true },
+      ...(usesProductionContract ? [{ name: "category", label: "Category", type: "text" as const }] : []),
       orderField,
       publishedField,
     ],
@@ -246,12 +268,18 @@ export const contentTypes: ContentType[] = [
       { name: "rating", label: "Rating out of 5", type: "number" },
       { name: "source", label: "Source", type: "text" },
       orderField,
-      { name: "show_publicly", label: "Show publicly", type: "boolean", publishControl: true },
+      ...(usesProductionContract
+        ? [
+            { name: "is_featured", label: "Featured", type: "boolean" as const },
+            publishedField,
+          ]
+        : [{ name: "show_publicly", label: "Show publicly", type: "boolean" as const, publishControl: true }]),
     ],
   },
   {
     key: "pages",
     table: "website_pages",
+    available: backendFeatures.websitePages,
     label: "Website pages",
     singular: "page",
     description: "Standalone pages controlled by the hospital.",
@@ -282,6 +310,7 @@ export const contentTypes: ContentType[] = [
   {
     key: "navigation",
     table: "navigation_items",
+    available: backendFeatures.navigation,
     label: "Navigation",
     singular: "navigation link",
     description: "Links shown in the website menus.",
@@ -312,15 +341,17 @@ export function contentTypeByKey(key: string) {
 }
 
 export async function listRecords(type: ContentType) {
+  if (type.available === false) return [];
   const { data, error } = await (supabase as any).from(type.table).select("*").order(type.orderBy).limit(1000);
-  if (error) throw new Error(error.message);
+  if (error) throw classifyDataError(error);
   return (data ?? []) as Record<string, any>[];
 }
 
 export async function saveRecord(type: ContentType, id: string | null, values: Record<string, any>) {
+  if (type.available === false) throw classifyDataError(new Error("table does not exist"));
   const query = (supabase as any).from(type.table);
   const { error } = id ? await query.update(values).eq("id", id) : await query.insert(values);
-  if (error) throw new Error(error.message);
+  if (error) throw classifyDataError(error);
   await logAction({
     action: id ? "update" : "create",
     entityTable: type.table,
@@ -330,7 +361,8 @@ export async function saveRecord(type: ContentType, id: string | null, values: R
 }
 
 export async function deleteRecord(type: ContentType, id: string, title?: string) {
+  if (type.available === false) throw classifyDataError(new Error("table does not exist"));
   const { error } = await (supabase as any).from(type.table).delete().eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw classifyDataError(error);
   await logAction({ action: "delete", entityTable: type.table, entityId: id, summary: `Deleted ${type.singular}: ${title ?? id}` });
 }

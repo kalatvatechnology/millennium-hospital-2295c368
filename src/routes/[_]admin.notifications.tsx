@@ -5,6 +5,8 @@ import { DataTable, StatusBadge, type Column } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { createPageMeta } from "@/lib/seo";
+import { backendFeatures } from "@/lib/data/backend";
+import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
 
 export const Route = createFileRoute("/_admin/notifications")({
   head: () => ({ meta: [...createPageMeta("Notifications", "Messages for your staff account."), { name: "robots", content: "noindex, nofollow" }] }),
@@ -12,6 +14,11 @@ export const Route = createFileRoute("/_admin/notifications")({
 });
 
 function AdminNotifications() {
+  if (!backendFeatures.notifications) return <AdminFeatureUnavailable title="Notifications" />;
+  return <AvailableNotifications />;
+}
+
+function AvailableNotifications() {
   const queryClient = useQueryClient();
   const notifications = useQuery({
     queryKey: ["admin-notifications"],

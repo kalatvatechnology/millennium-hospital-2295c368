@@ -7,8 +7,8 @@ This project contains the hospital's public website and protected staff workspac
 - TanStack Start supplies server rendering and file-based routes.
 - React Query handles live content reads and loading/error states.
 - Tailwind CSS and shared UI components provide the visual system.
-- Lovable Cloud provides authentication, content records, enquiries, permissions, notifications, and audit records.
-- Public presentation lives in `src/components`; live queries and permission helpers live in `src/lib`.
+- Lovable Cloud remains the active preview backend. The audited production backend is deliberately not connected by this preparation.
+- Public presentation lives in `src/components`; stable UI models, field mappers, error handling, and local/production repositories live in `src/lib/data`.
 
 ## Routes
 Public routes cover the homepage, about, departments and profiles, doctors and profiles, professional and hospital service profiles, facilities and profiles, media, FAQs, reviews, articles and profiles, contact, privacy, and terms. Unknown public addresses use the application's not-found experience.
@@ -16,12 +16,12 @@ Public routes cover the homepage, about, departments and profiles, doctors and p
 The staff workspace at `/_admin` covers the dashboard, doctors, departments, both service types, facilities, locations, enquiries, media, FAQ categories, FAQs, reviews, articles, website pages, navigation, users and roles, notifications, profile requests, and audit logs.
 
 ## Database structure
-Core records include departments, doctors, professional services, hospital services, facilities, locations, media, FAQs, reviews, articles, enquiries, forwarding records, and their many-to-many relationships. Staff support records include profiles, roles, notifications, audit logs, website pages, navigation items, and doctor profile-change requests.
+The current preview retains its existing records. The prepared production contract maps doctors, departments, one services collection, facilities, media content, plain-text FAQ categories, reviews, appointment enquiries, user roles, audit logs, and the confirmed doctor/department/service junction tables.
 
 Relationships use foreign keys and publishing fields. Public reads are restricted to published records. Enquiries are accepted publicly but remain private to authorised staff.
 
 ## Roles and permissions
-Roles are `super_admin`, `admin`, `editor`, `writer`, `front_desk`, and `doctor`.
+Recognised production roles are `founder`, `co_founder`, `brand_super_admin`, `super_admin`, `admin`, `front_desk`, `doctor`, `writer`, and `editor`.
 
 - Super admin: full access, including role assignment.
 - Admin: delegated content, enquiry, and audit access; cannot grant roles.
@@ -30,7 +30,7 @@ Roles are `super_admin`, `admin`, `editor`, `writer`, `front_desk`, and `doctor`
 - Front desk: enquiry-focused access.
 - Doctor: assigned clinical reviews and profile-change requests; cannot directly change the authoritative public profile.
 
-Screen permissions improve usability, but database row-level policies and publishing triggers are the security boundary. Staff actions write to the audit log.
+Screen permissions improve usability, but database row-level policies, role hierarchy helpers, and publishing controls are the security boundary. Production audit logs are trigger-owned and the frontend never inserts them.
 
 ## Media and storage
 Content records support image URLs and external video URLs. Videos stay external. A managed upload workflow with replacement cleanup and orphan checks is not yet verified in this codebase; administrators should use only approved image URLs until that work is completed.
@@ -53,6 +53,12 @@ Legacy material is a research source only. Do not copy it without verification. 
 The interface includes keyboard focus states, labelled controls, semantic headings, 44px touch targets, reduced-motion support, lazy-ready media presentation, stable card layouts, and mobile navigation. Desktop and mobile checks found no horizontal overflow on the homepage or staff sign-in screen.
 
 ## Deployment requirements and unresolved items
+- Keep the compatibility target on `local` until the production URL/key are supplied through the deployment environment and an authorised connection window is approved.
+- Decide how the single production services collection should feed the two existing service experiences; no unverified type column has been invented.
+- Confirm the business meaning and capture flow for `registered_contact_number`; it is kept distinct and is not populated from the general contact number.
+- Confirm any intended mapping for legacy enquiry states. `cancelled` is never mapped to `spam`.
+- Production has no confirmed backend for blog/resources, clinical review, FAQ category management, profiles, enquiry forwarding records, notifications, website pages, navigation management, or profile requests. These are isolated rather than simulated.
+- Production facility and media relationships beyond the confirmed doctor/department/service junctions require schema confirmation.
 - Replace unpublished contact, map, opening-hours, and social fields with verified hospital information.
 - Add and verify real hospital imagery and meaningful alternative text.
 - Complete and test managed image upload, replacement, deletion, and orphan cleanup policies.
@@ -60,4 +66,4 @@ The interface includes keyboard focus states, labelled controls, semantic headin
 - Perform final authenticated cross-role browser testing with designated staff accounts before launch.
 
 ## Verification
-The latest TypeScript check passes, the preview build reports `build OK`, and desktop/mobile browser checks render without page errors or horizontal overflow. This is not a claim that production content, every authenticated role journey, storage cleanup, or domain-level SEO has been fully verified.
+The preview remains connected only to the current Lovable backend. A production connection, generated production types, role-function verification, authenticated cross-role checks, storage mutation checks, and data validation remain required before launch.

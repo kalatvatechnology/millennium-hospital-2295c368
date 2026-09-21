@@ -5,6 +5,7 @@ const typeLabel: Record<MediaItem["media_type"], string> = {
   youtube: "Video",
   reel: "Reel",
   podcast: "Podcast",
+  article: "Article",
 };
 
 export function MediaCard({ item }: { item: MediaItem }) {

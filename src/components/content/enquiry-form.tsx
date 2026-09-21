@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, MessageCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { enquiryOptionsQuery } from "@/lib/queries";
+import { submitEnquiry } from "@/lib/data/repository";
+import { userFacingDataError } from "@/lib/data/errors";
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +22,7 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
   const [familyMember, setFamilyMember] = useState("");
   const [doctorId, setDoctorId] = useState(presetDoctorId ?? NONE);
   const [departmentId, setDepartmentId] = useState(NONE);
-  const [professionalServiceId, setProfessionalServiceId] = useState(NONE);
-  const [hospitalServiceId, setHospitalServiceId] = useState(NONE);
+  const [serviceId, setServiceId] = useState(NONE);
   const [preferredAt, setPreferredAt] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +37,7 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
     setFamilyMember("");
     setDoctorId(presetDoctorId ?? NONE);
     setDepartmentId(NONE);
-    setProfessionalServiceId(NONE);
-    setHospitalServiceId(NONE);
+    setServiceId(NONE);
     setPreferredAt("");
     setMessage("");
     setSent(null);
@@ -54,25 +53,23 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
     setSubmitting(true);
     const value = (id: string) => (id === NONE ? null : id);
     const enquiryId = crypto.randomUUID();
-    const { error: insertError } = await supabase
-      .from("enquiries")
-      .insert({
+    try {
+      await submitEnquiry({
         id: enquiryId,
-        patient_name: patientName.trim(),
-        contact_number: contactNumber.trim(),
-        family_member_name: familyMember.trim() || null,
-        doctor_id: value(doctorId),
-        department_id: value(departmentId),
-        professional_service_id: value(professionalServiceId),
-        hospital_service_id: value(hospitalServiceId),
-        preferred_at: preferredAt ? new Date(preferredAt).toISOString() : null,
+        patientName: patientName.trim(),
+        contactNumber: contactNumber.trim(),
+        registeredContactNumber: null,
+        familyMemberName: familyMember.trim() || null,
+        preferredDoctorId: value(doctorId),
+        preferredDepartmentId: value(departmentId),
+        preferredServiceId: value(serviceId),
+        preferredAt: preferredAt ? new Date(preferredAt).toISOString() : null,
         message: message.trim() || null,
         source,
-        status: "pending_forwarding",
       });
-    if (insertError) {
+    } catch (submitError) {
       setSubmitting(false);
-      return setError("We couldn't send your enquiry. Please try again or call the hospital.");
+      return setError(userFacingDataError(submitError));
     }
 
     const target = doctor?.whatsapp_number ?? siteConfig.contact.whatsapp;
@@ -86,15 +83,6 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
       message.trim() ? `Message: ${message.trim()}` : null,
     ].filter(Boolean);
     const whatsappUrl = target ? `https://wa.me/${target.replace(/\D/g, "")}?text=${encodeURIComponent(lines.join("\n"))}` : null;
-
-    await supabase.from("enquiry_forwardings").insert({
-      enquiry_id: enquiryId,
-      channel: "whatsapp",
-      target_label: doctor ? doctor.name : "Hospital reception",
-      target_number: target,
-      status: whatsappUrl ? "prepared" : "failed",
-      note: whatsappUrl ? null : "No WhatsApp number published yet.",
-    });
 
     setSubmitting(false);
     setSent({ whatsappUrl });
@@ -169,26 +157,14 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
             </Select>
           </div>
         ) : null}
-        {list?.professionalServices.length ? (
+        {list?.services.length ? (
           <div>
-            <Label>Professional service (optional)</Label>
-            <Select value={professionalServiceId} onValueChange={setProfessionalServiceId}>
+            <Label>Service (optional)</Label>
+            <Select value={serviceId} onValueChange={setServiceId}>
               <SelectTrigger className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE}>No preference</SelectItem>
-                {list.professionalServices.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : null}
-        {list?.hospitalServices.length ? (
-          <div>
-            <Label>Hospital service (optional)</Label>
-            <Select value={hospitalServiceId} onValueChange={setHospitalServiceId}>
-              <SelectTrigger className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE}>No preference</SelectItem>
-                {list.hospitalServices.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}
+                {list.services.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

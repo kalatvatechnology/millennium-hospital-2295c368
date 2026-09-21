@@ -7,13 +7,14 @@ import { LoadingState } from "@/components/shared/page";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
+import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 
 export const Route = createFileRoute("/_admin/dashboard")({
   head: () => ({ meta: [...createPageMeta("Staff dashboard", "Hospital content and enquiry overview."), { name: "robots", content: "noindex, nofollow" }] }),
   component: AdminDashboard,
 });
 
-const contentTables = [
+const localContentTables = [
   { table: "departments", label: "Departments" },
   { table: "doctors", label: "Doctors" },
   { table: "professional_services", label: "Professional services" },
@@ -25,6 +26,16 @@ const contentTables = [
   { table: "blog_posts", label: "Blog posts" },
 ] as const;
 
+const productionContentTables = [
+  { table: "departments", label: "Departments" },
+  { table: "doctors", label: "Doctors" },
+  { table: "services", label: "Services" },
+  { table: "facilities", label: "Facilities" },
+  { table: "media_content", label: "Media items" },
+  { table: "faqs", label: "FAQs" },
+  { table: "reviews", label: "Reviews" },
+] as const;
+
 function AdminDashboard() {
   const { roles, can, profile } = useAdminSession();
   const isDoctorOnly = roles.length > 0 && roles.every((role) => role === "doctor");
@@ -34,8 +45,8 @@ function AdminDashboard() {
     enabled: !isDoctorOnly,
     queryFn: async () => {
       const entries = await Promise.all(
-        contentTables.map(async ({ table, label }) => {
-          const { count } = await supabase.from(table).select("id", { count: "exact", head: true });
+        (usesProductionContract ? productionContentTables : localContentTables).map(async ({ table, label }) => {
+          const { count } = await (supabase as any).from(table).select("id", { count: "exact", head: true });
           return { label, count: count ?? 0 };
         }),
       );
@@ -47,14 +58,16 @@ function AdminDashboard() {
     queryKey: ["admin-enquiry-count"],
     enabled: can("enquiries.manage"),
     queryFn: async () => {
-      const { count } = await supabase.from("enquiries").select("id", { count: "exact", head: true }).in("status", ["submitted", "pending_forwarding"]);
+      const table = usesProductionContract ? "appointment_enquiries" : "enquiries";
+      const activeStatuses = usesProductionContract ? ["new", "in_progress"] : ["submitted", "pending_forwarding"];
+      const { count } = await (supabase as any).from(table).select("id", { count: "exact", head: true }).in("status", activeStatuses);
       return count ?? 0;
     },
   });
 
   const doctorWork = useQuery({
     queryKey: ["admin-doctor-work", profile?.doctor_id],
-    enabled: Boolean(profile?.doctor_id),
+    enabled: Boolean(profile?.doctor_id && backendFeatures.blog && backendFeatures.profileRequests),
     queryFn: async () => {
       const [reviews, requests] = await Promise.all([
         supabase.from("blog_posts").select("id", { count: "exact", head: true }).eq("clinical_reviewer_id", profile?.doctor_id ?? "").eq("clinical_review_status", "pending"),
