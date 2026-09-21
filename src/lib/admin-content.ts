@@ -88,6 +88,13 @@ export const contentTypes: ContentType[] = [
       },
       { name: "experience_years", label: "Years of experience", type: "number" },
       { name: "bio", label: "Biography", type: "textarea" },
+      { name: "short_introduction", label: "Short introduction", type: "textarea" },
+      { name: "hero_image_url", label: "Hero image URL", type: "text" },
+      { name: "hero_image_alt", label: "Hero image alternative text", type: "text" },
+      { name: "profile_image_alt", label: "Profile image alternative text", type: "text" },
+      { name: "quote", label: "Doctor quote", type: "textarea" },
+      { name: "quote_attribution", label: "Quote attribution", type: "text" },
+      { name: "phone_number", label: "Phone number", type: "text" },
       { name: "expertise", label: "Areas of expertise (comma separated)", type: "list" },
       { name: "languages", label: "Languages (comma separated)", type: "list" },
       { name: "location", label: "Location", type: "text" },
@@ -122,6 +129,14 @@ export const contentTypes: ContentType[] = [
               ],
             } as Field,
           ]),
+      ...(!usesProductionContract
+        ? [
+            { name: "seo_title", label: "SEO title", type: "text" as const },
+            { name: "seo_description", label: "SEO description", type: "textarea" as const },
+            { name: "canonical_url", label: "Canonical URL", type: "text" as const },
+            { name: "og_image_url", label: "Open Graph image URL", type: "text" as const },
+          ]
+        : []),
       orderField,
       publishedField,
     ],
