@@ -30,8 +30,8 @@ function FacilityDetail() {
               {data.facility.images.length ? (
                 <ContentSection>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {data.facility.images.map((image) => (
-                      <img key={image} src={image} alt={data.facility.name} className="aspect-[4/3] w-full border border-border object-cover" loading="lazy" />
+                    {data.facility.images.map((image, index) => (
+                      <img key={image} src={image} alt={`${data.facility.name} — view ${index + 1}`} className="aspect-[4/3] w-full border border-border object-cover" loading="lazy" />
                     ))}
                   </div>
                 </ContentSection>

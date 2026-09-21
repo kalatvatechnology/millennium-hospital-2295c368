@@ -19,6 +19,7 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
   const options = useQuery(enquiryOptionsQuery);
   const [patientName, setPatientName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+  const [registeredContactNumber, setRegisteredContactNumber] = useState("");
   const [familyMember, setFamilyMember] = useState("");
   const [doctorId, setDoctorId] = useState(presetDoctorId ?? NONE);
   const [departmentId, setDepartmentId] = useState(NONE);
@@ -34,6 +35,7 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
   const reset = () => {
     setPatientName("");
     setContactNumber("");
+    setRegisteredContactNumber("");
     setFamilyMember("");
     setDoctorId(presetDoctorId ?? NONE);
     setDepartmentId(NONE);
@@ -58,7 +60,7 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
         id: enquiryId,
         patientName: patientName.trim(),
         contactNumber: contactNumber.trim(),
-        registeredContactNumber: null,
+        registeredContactNumber: registeredContactNumber.trim() || null,
         familyMemberName: familyMember.trim() || null,
         preferredDoctorId: value(doctorId),
         preferredDepartmentId: value(departmentId),
@@ -77,6 +79,9 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
       `New enquiry from the ${siteConfig.name} website`,
       `Patient: ${patientName.trim()}`,
       `Contact: ${contactNumber.trim()}`,
+      registeredContactNumber.trim()
+        ? `Registered contact: ${registeredContactNumber.trim()}`
+        : null,
       familyMember.trim() ? `Family member: ${familyMember.trim()}` : null,
       doctor ? `Doctor: ${doctor.name}` : null,
       preferredAt ? `Preferred time: ${preferredAt.replace("T", " ")}` : null,
@@ -130,14 +135,29 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
           <Input id="contact-number" required inputMode="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="mt-2 bg-background" autoComplete="tel" />
         </div>
         <div>
+          <Label htmlFor="registered-contact-number">Registered contact number (optional)</Label>
+          <Input
+            id="registered-contact-number"
+            inputMode="tel"
+            value={registeredContactNumber}
+            onChange={(event) => setRegisteredContactNumber(event.target.value)}
+            className="mt-2 bg-background"
+            autoComplete="tel"
+            aria-describedby="registered-contact-help"
+          />
+          <p id="registered-contact-help" className="mt-2 text-xs text-muted-foreground">
+            Enter this only if it is different and relevant to your hospital record.
+          </p>
+        </div>
+        <div>
           <Label htmlFor="family-member">Family member name (optional)</Label>
           <Input id="family-member" value={familyMember} onChange={(e) => setFamilyMember(e.target.value)} className="mt-2 bg-background" />
         </div>
         {!presetDoctorId && list?.doctors.length ? (
           <div>
-            <Label>Doctor (optional)</Label>
+            <Label htmlFor="preferred-doctor">Doctor (optional)</Label>
             <Select value={doctorId} onValueChange={setDoctorId}>
-              <SelectTrigger className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
+              <SelectTrigger id="preferred-doctor" className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE}>No preference</SelectItem>
                 {list.doctors.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
@@ -147,9 +167,9 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
         ) : null}
         {list?.departments.length ? (
           <div>
-            <Label>Department (optional)</Label>
+            <Label htmlFor="preferred-department">Department (optional)</Label>
             <Select value={departmentId} onValueChange={setDepartmentId}>
-              <SelectTrigger className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
+              <SelectTrigger id="preferred-department" className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE}>No preference</SelectItem>
                 {list.departments.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
@@ -159,9 +179,9 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
         ) : null}
         {list?.services.length ? (
           <div>
-            <Label>Service (optional)</Label>
+            <Label htmlFor="preferred-service">Service (optional)</Label>
             <Select value={serviceId} onValueChange={setServiceId}>
-              <SelectTrigger className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
+              <SelectTrigger id="preferred-service" className="mt-2 w-full bg-background"><SelectValue placeholder="No preference" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE}>No preference</SelectItem>
                 {list.services.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}

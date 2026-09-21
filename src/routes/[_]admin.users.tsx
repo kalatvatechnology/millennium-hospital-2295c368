@@ -44,6 +44,14 @@ export const Route = createFileRoute("/_admin/users")({
 });
 
 const PAGE_SIZE = 20;
+const OPERATIONAL_ROLES: Role[] = [
+  "super_admin",
+  "admin",
+  "front_desk",
+  "doctor",
+  "writer",
+  "editor",
+];
 
 function AdminUsers() {
   if (!backendFeatures.userManagement) return <AdminFeatureUnavailable title="Users and roles" />;
@@ -200,7 +208,7 @@ function AvailableUsers() {
       >
         <fieldset className="grid gap-3">
           <legend className="text-sm font-medium">Roles</legend>
-          {ROLES.map((role) => (
+          {OPERATIONAL_ROLES.map((role) => (
             <label key={role} className="flex items-start gap-3">
               <Checkbox
                 checked={editing?.roles.includes(role) ?? false}

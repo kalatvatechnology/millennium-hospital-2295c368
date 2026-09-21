@@ -20,36 +20,21 @@ const navItems: NavItem[] = [
     to: "/_admin/professional-services",
     permission: "content.write",
   },
-  ...(usesProductionContract
-    ? []
-    : [
-        {
-          label: "Hospital services",
-          to: "/_admin/hospital-services",
-          permission: "content.write" as Permission,
-        },
-      ]),
+  {
+    label: "Hospital services",
+    to: "/_admin/hospital-services",
+    permission: "content.write",
+  },
   { label: "Facilities", to: "/_admin/facilities", permission: "content.write" },
-  { label: "Locations", to: "/_admin/locations", permission: "content.write" },
   { label: "Appointment enquiries", to: "/_admin/enquiries", permission: "enquiries.manage" },
   { label: "Media & content", to: "/_admin/media", permission: "content.write" },
   { label: "FAQs", to: "/_admin/faqs", permission: "content.write" },
   { label: "Reviews", to: "/_admin/reviews", permission: "content.write" },
-  ...(backendFeatures.blog
-    ? [
-        {
-          label: "Blog",
-          to: "/_admin/blog",
-          permission: ["content.write", "blog.review"] as Permission[],
-        },
-      ]
-    : []),
-  ...(backendFeatures.websitePages
-    ? [{ label: "Website pages", to: "/_admin/pages", permission: "content.write" as Permission }]
-    : []),
-  ...(backendFeatures.navigation
-    ? [{ label: "Navigation", to: "/_admin/navigation", permission: "content.write" as Permission }]
-    : []),
+  {
+    label: "Blog / resources",
+    to: "/_admin/blog",
+    permission: ["content.write", "blog.review"],
+  },
   ...(backendFeatures.profileRequests
     ? [
         {
@@ -59,12 +44,7 @@ const navItems: NavItem[] = [
         },
       ]
     : []),
-  ...(backendFeatures.profiles
-    ? [{ label: "Users & roles", to: "/_admin/users", permission: "users.manage" as Permission }]
-    : []),
-  ...(backendFeatures.notifications
-    ? [{ label: "Notifications", to: "/_admin/notifications", permission: null }]
-    : []),
+  { label: "Users & roles", to: "/_admin/users", permission: "users.manage" },
   { label: "Audit logs", to: "/_admin/audit-logs", permission: "audit.read" },
 ];
 

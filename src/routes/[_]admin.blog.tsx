@@ -37,7 +37,8 @@ const emptyPost: PostForm = { id: null, slug: "", title: "", excerpt: "", body: 
 const PAGE_SIZE = 20;
 
 function AdminBlog() {
-  if (!backendFeatures.blog) return <AdminFeatureUnavailable title="Blog" />;
+  if (!backendFeatures.blog)
+    return <AdminFeatureUnavailable title="Blog / resources" frontendReady />;
   return <AvailableAdminBlog />;
 }
 

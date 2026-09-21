@@ -83,9 +83,9 @@ function DoctorsPage() {
             />
           </div>
           <div>
-            <Label>Specialty</Label>
+            <Label htmlFor="doctor-specialty">Specialty</Label>
             <Select value={specialty} onValueChange={setSpecialty}>
-              <SelectTrigger className="mt-2 w-full bg-background">
+              <SelectTrigger id="doctor-specialty" className="mt-2 w-full bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -99,9 +99,9 @@ function DoctorsPage() {
             </Select>
           </div>
           <div>
-            <Label>Department</Label>
+            <Label htmlFor="doctor-department">Department</Label>
             <Select value={department} onValueChange={setDepartment}>
-              <SelectTrigger className="mt-2 w-full bg-background">
+              <SelectTrigger id="doctor-department" className="mt-2 w-full bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

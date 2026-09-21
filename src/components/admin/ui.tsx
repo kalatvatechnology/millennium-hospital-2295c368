@@ -94,11 +94,12 @@ export function FilterSelect({
   onChange: (next: string) => void;
   options: { value: string; label: string }[];
 }) {
+  const id = `filter-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div className="min-w-44">
-      <Label>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="mt-2 w-full">
+        <SelectTrigger id={id} className="mt-2 w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
