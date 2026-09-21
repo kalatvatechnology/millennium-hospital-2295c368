@@ -32,3 +32,8 @@
 - [x] Centralize production permission checks and supported staff data access without connecting production
 - [x] Resolve confirmed service-query and compatibility lint blockers
 - [x] Re-run local type, build, lint, public, and staff validation
+- [x] Add the separate optional registered contact field without copying the primary number
+- [x] Keep Users & Roles independent and limit normal role choices to six operational roles
+- [x] Preserve Blog and Hospital Services as frontend-ready areas when backend support is pending
+- [x] Align approved reviews, media grids, select labels, and facility image descriptions
+- [ ] Verify individual Admin responsibility delegation against approved backend permissions

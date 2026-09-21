@@ -29,7 +29,7 @@ export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   co_founder: "Production role governed by the hospital role hierarchy.",
   brand_super_admin: "Production role governed by the hospital role hierarchy.",
   super_admin: "Full control, including staff accounts and roles.",
-  admin: "Manages content, enquiries and activity records.",
+  admin: "Receives only the responsibilities delegated by a super admin.",
   editor: "Creates, edits and publishes website content.",
   writer: "Creates and edits content, but cannot publish it.",
   front_desk: "Handles appointment enquiries.",

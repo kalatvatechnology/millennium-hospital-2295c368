@@ -71,31 +71,57 @@ export const contentTypes: ContentType[] = [
     subtitleField: usesProductionContract ? "specialization" : "specialty",
     orderBy: "display_order",
     fields: [
-      { name: usesProductionContract ? "full_name" : "name", label: "Full name", type: "text", required: true },
+      {
+        name: usesProductionContract ? "full_name" : "name",
+        label: "Full name",
+        type: "text",
+        required: true,
+      },
       { name: "slug", label: "Web address (slug)", type: "text", required: true },
       { name: "photo_url", label: "Photo URL", type: "text" },
       { name: "qualifications", label: "Qualifications (comma separated)", type: "list" },
       { name: "designation", label: "Designation", type: "text" },
-      { name: usesProductionContract ? "specialization" : "specialty", label: "Specialty", type: "text" },
+      {
+        name: usesProductionContract ? "specialization" : "specialty",
+        label: "Specialty",
+        type: "text",
+      },
       { name: "experience_years", label: "Years of experience", type: "number" },
       { name: "bio", label: "Biography", type: "textarea" },
       { name: "expertise", label: "Areas of expertise (comma separated)", type: "list" },
       { name: "languages", label: "Languages (comma separated)", type: "list" },
       { name: "location", label: "Location", type: "text" },
-      { name: usesProductionContract ? "whatsapp" : "whatsapp_number", label: "WhatsApp number", type: "text" },
-      ...(usesProductionContract ? [
-        { name: "consultation_info", label: "Consultation information", type: "textarea" as const },
-        { name: "location_info", label: "Location information", type: "textarea" as const },
-      ] : [{
-        name: "verification_status",
-        label: "Verification",
-        type: "select",
-        options: [
-          { value: "unverified", label: "Unverified" },
-          { value: "pending", label: "Pending verification" },
-          { value: "verified", label: "Verified" },
-        ],
-      } as Field]),
+      {
+        name: usesProductionContract ? "whatsapp" : "whatsapp_number",
+        label: "WhatsApp number",
+        type: "text",
+      },
+      ...(usesProductionContract
+        ? [
+            {
+              name: "consultation_info",
+              label: "Consultation information",
+              type: "textarea" as const,
+            },
+            { name: "location_info", label: "Location information", type: "textarea" as const },
+            {
+              name: "social_links",
+              label: "Professional social links (JSON)",
+              type: "textarea" as const,
+            },
+          ]
+        : [
+            {
+              name: "verification_status",
+              label: "Verification",
+              type: "select",
+              options: [
+                { value: "unverified", label: "Unverified" },
+                { value: "pending", label: "Pending verification" },
+                { value: "verified", label: "Verified" },
+              ],
+            } as Field,
+          ]),
       orderField,
       publishedField,
     ],
@@ -205,7 +231,11 @@ export const contentTypes: ContentType[] = [
       { name: "url", label: "Link", type: "text", required: true },
       { name: "thumbnail_url", label: "Thumbnail URL", type: "text" },
       { name: "description", label: "Description", type: "textarea" },
-      { name: usesProductionContract ? "show_on_homepage" : "show_on_home", label: "Show on home page", type: "boolean" },
+      {
+        name: usesProductionContract ? "show_on_homepage" : "show_on_home",
+        label: "Show on home page",
+        type: "boolean",
+      },
       orderField,
       publishedField,
     ],
@@ -238,7 +268,9 @@ export const contentTypes: ContentType[] = [
     fields: [
       { name: "question", label: "Question", type: "text", required: true },
       { name: "answer", label: "Answer", type: "textarea", required: true },
-      ...(usesProductionContract ? [{ name: "category", label: "Category", type: "text" as const }] : []),
+      ...(usesProductionContract
+        ? [{ name: "category", label: "Category", type: "text" as const }]
+        : []),
       orderField,
       publishedField,
     ],
@@ -269,11 +301,15 @@ export const contentTypes: ContentType[] = [
       { name: "source", label: "Source", type: "text" },
       orderField,
       ...(usesProductionContract
-        ? [
-            { name: "is_featured", label: "Featured", type: "boolean" as const },
-            publishedField,
-          ]
-        : [{ name: "show_publicly", label: "Show publicly", type: "boolean" as const, publishControl: true }]),
+        ? [{ name: "is_featured", label: "Featured", type: "boolean" as const }, publishedField]
+        : [
+            {
+              name: "show_publicly",
+              label: "Show publicly",
+              type: "boolean" as const,
+              publishControl: true,
+            },
+          ]),
     ],
   },
   {
@@ -342,12 +378,20 @@ export function contentTypeByKey(key: string) {
 
 export async function listRecords(type: ContentType) {
   if (type.available === false) return [];
-  const { data, error } = await (supabase as any).from(type.table).select("*").order(type.orderBy).limit(1000);
+  const { data, error } = await (supabase as any)
+    .from(type.table)
+    .select("*")
+    .order(type.orderBy)
+    .limit(1000);
   if (error) throw classifyDataError(error);
   return (data ?? []) as Record<string, any>[];
 }
 
-export async function saveRecord(type: ContentType, id: string | null, values: Record<string, any>) {
+export async function saveRecord(
+  type: ContentType,
+  id: string | null,
+  values: Record<string, any>,
+) {
   if (type.available === false) throw classifyDataError(new Error("table does not exist"));
   const query = (supabase as any).from(type.table);
   const { error } = id ? await query.update(values).eq("id", id) : await query.insert(values);
@@ -364,5 +408,10 @@ export async function deleteRecord(type: ContentType, id: string, title?: string
   if (type.available === false) throw classifyDataError(new Error("table does not exist"));
   const { error } = await (supabase as any).from(type.table).delete().eq("id", id);
   if (error) throw classifyDataError(error);
-  await logAction({ action: "delete", entityTable: type.table, entityId: id, summary: `Deleted ${type.singular}: ${title ?? id}` });
+  await logAction({
+    action: "delete",
+    entityTable: type.table,
+    entityId: id,
+    summary: `Deleted ${type.singular}: ${title ?? id}`,
+  });
 }
