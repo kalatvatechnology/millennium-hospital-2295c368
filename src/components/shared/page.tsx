@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Activity, FileText, Search } from "lucide-react";
+import { Activity, ArrowRight, FileText, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export function PageIntro({ eyebrow, title, description }: { eyebrow?: string; title: string; description: string }) {
   return <section className="border-b border-border bg-surface"><div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">{eyebrow ? <p className="mb-3 text-sm font-semibold text-primary">{eyebrow}</p> : null}<h1 className="max-w-3xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl">{title}</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">{description}</p></div></section>;
@@ -14,4 +15,12 @@ export function ErrorState() { return <div className="py-16 text-center" role="a
 
 export function ContentSection({ children, muted = false }: { children: ReactNode; muted?: boolean }) {
   return <section className={muted ? "bg-surface" : "bg-background"}><div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">{children}</div></section>;
+}
+
+export function SectionHeading({ eyebrow, title, description, link }: { eyebrow: string; title: string; description: string; link?: { label: string; to: "/about" | "/blog" | "/contact" | "/doctors" | "/facilities" | "/faq" | "/reviews" | "/services" } }) {
+  return <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div className="max-w-2xl"><p className="text-sm font-semibold text-primary">{eyebrow}</p><h2 className="mt-3 text-3xl font-semibold sm:text-4xl">{title}</h2><p className="mt-4 leading-7 text-muted-foreground">{description}</p></div>{link ? <Link to={link.to} className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary">{link.label}<ArrowRight className="size-4" /></Link> : null}</div>;
+}
+
+export function UnpublishedPanel({ title, description }: { title: string; description: string }) {
+  return <div className="mt-8 border border-dashed border-border bg-background p-6"><p className="font-semibold">{title}</p><p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p></div>;
 }
