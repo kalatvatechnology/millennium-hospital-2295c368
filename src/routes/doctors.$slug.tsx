@@ -65,11 +65,11 @@ const years = (start: number | null, end: number | null, present: boolean) =>
 
 function DoctorDetail() {
   const { slug } = Route.useParams();
-  const { preview } = Route.useSearch();
+  const search = Route.useSearch();
+  const preview = Boolean(search.preview);
   const loaded = Route.useLoaderData();
-  const previewQuery = useQuery({ ...doctorQuery(slug, true), enabled: preview === true });
+  const previewQuery = useQuery({ ...doctorQuery(slug, true), enabled: preview });
   const data = preview ? (previewQuery.data ?? null) : loaded;
-  console.log("DBG", preview, previewQuery.status, previewQuery.fetchStatus, String(previewQuery.error));
 
   if (preview && previewQuery.isPending)
     return (
