@@ -17,7 +17,7 @@ export function ContentSection({ children, muted = false }: { children: ReactNod
   return <section className={muted ? "bg-surface" : "bg-background"}><div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">{children}</div></section>;
 }
 
-export function SectionHeading({ eyebrow, title, description, link }: { eyebrow: string; title: string; description: string; link?: { label: string; to: "/about" | "/blog" | "/contact" | "/doctors" | "/facilities" | "/faq" | "/reviews" | "/services" } }) {
+export function SectionHeading({ eyebrow, title, description, link }: { eyebrow: string; title: string; description: string; link?: { label: string; to: "/about" | "/blog" | "/contact" | "/departments" | "/doctors" | "/facilities" | "/faq" | "/media" | "/reviews" | "/services" } }) {
   return <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div className="max-w-2xl"><p className="text-sm font-semibold text-primary">{eyebrow}</p><h2 className="mt-3 text-3xl font-semibold sm:text-4xl">{title}</h2><p className="mt-4 leading-7 text-muted-foreground">{description}</p></div>{link ? <Link to={link.to} className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary">{link.label}<ArrowRight className="size-4" /></Link> : null}</div>;
 }
 

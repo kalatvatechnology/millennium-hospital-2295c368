@@ -1,5 +1,63 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, Building2, LayoutDashboard, Stethoscope } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { AdminShell } from "@/components/admin/admin-shell";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/shared/page";
 import { createPageMeta } from "@/lib/seo";
-export const Route = createFileRoute("/_admin/dashboard")({ head: () => ({ meta: [...createPageMeta("Admin dashboard", "Content dashboard for The Millennium Hospital."), { name: "robots", content: "noindex, nofollow" }] }), component: Dashboard });
-function Dashboard(){const items=[{icon:Stethoscope,label:"Doctors",value:"0 published"},{icon:Building2,label:"Services",value:"0 published"},{icon:BookOpen,label:"Articles",value:"0 published"}];return <div className="min-h-screen bg-admin"><header className="border-b border-border bg-background"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"><div className="flex items-center gap-3"><LayoutDashboard className="text-primary"/><span className="font-semibold">Hospital administration</span></div><Link to="/" className="text-sm font-medium text-primary">View website</Link></div></header><main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"><p className="text-sm font-semibold text-primary">Overview</p><h1 className="mt-2 text-3xl font-semibold">Content dashboard</h1><p className="mt-3 text-muted-foreground">The workspace is ready for secure content management when the backend is connected.</p><div className="mt-8 grid gap-4 md:grid-cols-3">{items.map((item)=><div key={item.label} className="border border-border bg-background p-6"><item.icon className="text-primary"/><p className="mt-8 text-sm text-muted-foreground">{item.label}</p><p className="mt-1 text-2xl font-semibold">{item.value}</p></div>)}</div><div className="mt-8 border border-border bg-background p-6"><h2 className="text-xl font-semibold">Connection required</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Sign-in, publishing, media storage, and saved content are intentionally inactive until a secure backend is configured.</p></div></main></div>}
+
+export const Route = createFileRoute("/_admin/dashboard")({
+  head: () => ({
+    meta: [...createPageMeta("Admin dashboard", "Hospital content and enquiry overview."), { name: "robots", content: "noindex, nofollow" }],
+  }),
+  component: AdminDashboard,
+});
+
+const tables = [
+  { table: "departments", label: "Departments" },
+  { table: "doctors", label: "Doctors" },
+  { table: "professional_services", label: "Professional services" },
+  { table: "hospital_services", label: "Hospital services" },
+  { table: "facilities", label: "Facilities" },
+  { table: "media_items", label: "Media items" },
+  { table: "faqs", label: "FAQs" },
+  { table: "reviews", label: "Reviews" },
+  { table: "blog_posts", label: "Blog posts" },
+  { table: "enquiries", label: "Enquiries" },
+] as const;
+
+function AdminDashboard() {
+  const counts = useQuery({
+    queryKey: ["admin-counts"],
+    queryFn: async () => {
+      const entries = await Promise.all(
+        tables.map(async ({ table, label }) => {
+          const { count } = await supabase.from(table).select("id", { count: "exact", head: true });
+          return { label, count: count ?? 0 };
+        }),
+      );
+      return entries;
+    },
+  });
+
+  return (
+    <AdminShell title="Dashboard" description="An overview of published content and incoming enquiries.">
+      {counts.isPending ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {(counts.data ?? []).map((item) => (
+            <div key={item.label} className="bg-background p-5">
+              <p className="text-sm text-muted-foreground">{item.label}</p>
+              <p className="mt-2 text-3xl font-semibold">{item.count}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Button asChild><Link to="/_admin/enquiries">Manage enquiries</Link></Button>
+        <Button asChild variant="outline"><Link to="/_admin/content">Manage content</Link></Button>
+      </div>
+    </AdminShell>
+  );
+}
