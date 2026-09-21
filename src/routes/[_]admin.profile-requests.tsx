@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { logAction } from "@/lib/audit";
 import { createPageMeta } from "@/lib/seo";
+import { backendFeatures } from "@/lib/data/backend";
+import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
 
 export const Route = createFileRoute("/_admin/profile-requests")({
   head: () => ({ meta: [...createPageMeta("Profile change requests", "Doctor requests to update their published profile."), { name: "robots", content: "noindex, nofollow" }] }),
@@ -27,6 +29,11 @@ const requestFields = [
 ] as { name: string; label: string; long?: boolean }[];
 
 function AdminProfileRequests() {
+  if (!backendFeatures.profileRequests) return <AdminFeatureUnavailable title="Profile change requests" />;
+  return <AvailableProfileRequests />;
+}
+
+function AvailableProfileRequests() {
   const queryClient = useQueryClient();
   const { profile, can, session } = useAdminSession();
   const canReview = can("content.write");

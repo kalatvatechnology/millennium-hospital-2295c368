@@ -12,6 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { deleteRecord, listRecords, saveRecord, type ContentType, type Field } from "@/lib/admin-content";
+import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
+import { userFacingDataError } from "@/lib/data/errors";
 
 const PAGE_SIZE = 20;
 
@@ -105,6 +107,11 @@ function statusOf(row: Record<string, any>) {
 }
 
 export function ContentManager({ type }: { type: ContentType }) {
+  if (type.available === false) return <AdminFeatureUnavailable title={type.label} />;
+  return <AvailableContentManager type={type} />;
+}
+
+function AvailableContentManager({ type }: { type: ContentType }) {
   const queryClient = useQueryClient();
   const { can } = useAdminSession();
   const canWrite = can("content.write");
@@ -146,7 +153,7 @@ export function ContentManager({ type }: { type: ContentType }) {
       setError(null);
       void invalidate();
     },
-    onError: (mutationError: Error) => setError(mutationError.message),
+    onError: (mutationError: Error) => setError(userFacingDataError(mutationError)),
   });
 
   const remove = useMutation({
@@ -156,7 +163,7 @@ export function ContentManager({ type }: { type: ContentType }) {
       setError(null);
       void invalidate();
     },
-    onError: (mutationError: Error) => setError(mutationError.message),
+    onError: (mutationError: Error) => setError(userFacingDataError(mutationError)),
   });
 
   const columns: Column<Record<string, any>>[] = [

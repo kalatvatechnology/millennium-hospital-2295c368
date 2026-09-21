@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { logAction } from "@/lib/audit";
 import { createPageMeta } from "@/lib/seo";
+import { backendFeatures } from "@/lib/data/backend";
+import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
 
 export const Route = createFileRoute("/_admin/blog")({
   head: () => ({ meta: [...createPageMeta("Blog", "Manage hospital articles and clinical review."), { name: "robots", content: "noindex, nofollow" }] }),
@@ -35,6 +37,11 @@ const emptyPost: PostForm = { id: null, slug: "", title: "", excerpt: "", body: 
 const PAGE_SIZE = 20;
 
 function AdminBlog() {
+  if (!backendFeatures.blog) return <AdminFeatureUnavailable title="Blog" />;
+  return <AvailableAdminBlog />;
+}
+
+function AvailableAdminBlog() {
   const queryClient = useQueryClient();
   const { can, profile } = useAdminSession();
   const canWrite = can("content.write");

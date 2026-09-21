@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/lib/audit";
 import { ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
+import { backendFeatures } from "@/lib/data/backend";
+import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
 
 export const Route = createFileRoute("/_admin/users")({
   head: () => ({ meta: [...createPageMeta("Users and roles", "Manage staff accounts and their roles."), { name: "robots", content: "noindex, nofollow" }] }),
@@ -22,6 +24,11 @@ const PAGE_SIZE = 20;
 type ProfileRow = { id: string; full_name: string | null; email: string | null; doctor_id: string | null; active: boolean };
 
 function AdminUsers() {
+  if (!backendFeatures.profiles) return <AdminFeatureUnavailable title="Users and roles" />;
+  return <AvailableUsers />;
+}
+
+function AvailableUsers() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
