@@ -1976,6 +1976,277 @@ export type Database = {
           },
         ]
       }
+      seo_data_sources: {
+        Row: {
+          key: string
+          label: string
+          last_synced_at: string | null
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          label: string
+          last_synced_at?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          label?: string
+          last_synced_at?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      seo_keyword_usage: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_label: string
+          entity_path: string | null
+          entity_type: string
+          field: string
+          id: string
+          keyword_id: string
+          occurrences: number
+          scan_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_label: string
+          entity_path?: string | null
+          entity_type: string
+          field: string
+          id?: string
+          keyword_id: string
+          occurrences?: number
+          scan_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_label?: string
+          entity_path?: string | null
+          entity_type?: string
+          field?: string
+          id?: string
+          keyword_id?: string
+          occurrences?: number
+          scan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_keyword_usage_keyword_id_fkey"
+            columns: ["keyword_id"]
+            isOneToOne: false
+            referencedRelation: "seo_keywords"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_keyword_usage_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "seo_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_keywords: {
+        Row: {
+          category: string
+          created_at: string
+          first_seen_at: string
+          id: string
+          keyword: string
+          last_scanned_at: string
+          normalized: string
+          page_count: number
+          scan_id: string | null
+          updated_at: string
+          usage_count: number
+          word_count: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          keyword: string
+          last_scanned_at?: string
+          normalized: string
+          page_count?: number
+          scan_id?: string | null
+          updated_at?: string
+          usage_count?: number
+          word_count?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          keyword?: string
+          last_scanned_at?: string
+          normalized?: string
+          page_count?: number
+          scan_id?: string | null
+          updated_at?: string
+          usage_count?: number
+          word_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_keywords_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "seo_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_scans: {
+        Row: {
+          actor_id: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          keywords_detected: number
+          pages_scanned: number
+          sources: Json
+          started_at: string
+        }
+        Insert: {
+          actor_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          keywords_detected?: number
+          pages_scanned?: number
+          sources?: Json
+          started_at?: string
+        }
+        Update: {
+          actor_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          keywords_detected?: number
+          pages_scanned?: number
+          sources?: Json
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_scans_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_target_keywords: {
+        Row: {
+          blog_post_id: string | null
+          created_at: string
+          department_id: string | null
+          doctor_id: string | null
+          id: string
+          keyword: string
+          keyword_type: string
+          location_id: string | null
+          normalized: string
+          notes: string | null
+          priority: string
+          professional_service_id: string | null
+          search_intent: string
+          status: string
+          target_entity_type: string | null
+          target_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          blog_post_id?: string | null
+          created_at?: string
+          department_id?: string | null
+          doctor_id?: string | null
+          id?: string
+          keyword: string
+          keyword_type?: string
+          location_id?: string | null
+          normalized: string
+          notes?: string | null
+          priority?: string
+          professional_service_id?: string | null
+          search_intent?: string
+          status?: string
+          target_entity_type?: string | null
+          target_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blog_post_id?: string | null
+          created_at?: string
+          department_id?: string | null
+          doctor_id?: string | null
+          id?: string
+          keyword?: string
+          keyword_type?: string
+          location_id?: string | null
+          normalized?: string
+          notes?: string | null
+          priority?: string
+          professional_service_id?: string | null
+          search_intent?: string
+          status?: string
+          target_entity_type?: string | null
+          target_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_target_keywords_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_target_keywords_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_target_keywords_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_target_keywords_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_target_keywords_professional_service_id_fkey"
+            columns: ["professional_service_id"]
+            isOneToOne: false
+            referencedRelation: "professional_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -43,6 +43,13 @@
       "when": 1790025702795,
       "tag": "0005_advanced_cms_content_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790029569621,
+      "tag": "0006_seo_intelligence_foundation",
+      "breakpoints": true
     }
   ]
 }
