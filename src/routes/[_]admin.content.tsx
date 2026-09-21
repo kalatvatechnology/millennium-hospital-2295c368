@@ -80,7 +80,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: any; onCh
 
 function AdminContent() {
   const queryClient = useQueryClient();
-  const [type, setType] = useState<ContentType>(contentTypes[0]);
+  const [type, setType] = useState<ContentType>(contentTypes[0] as ContentType);
   const [editing, setEditing] = useState<{ id: string | null; values: Record<string, any> } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -163,18 +163,18 @@ function AdminContent() {
       ) : (
         <div className="mt-6 grid gap-px border border-border bg-border">
           {(records.data ?? []).map((row) => (
-            <div key={row.id} className="flex flex-wrap items-center justify-between gap-4 bg-background p-4">
+            <div key={row["id"]} className="flex flex-wrap items-center justify-between gap-4 bg-background p-4">
               <div>
                 <p className="font-medium">{row[type.titleField] ?? "Untitled"}</p>
                 <p className="text-sm text-muted-foreground">
-                  {"published" in row ? (row.published ? "Published" : "Not published") : row.show_publicly ? "Shown publicly" : "Hidden"}
+                  {"published" in row ? (row["published"] ? "Published" : "Not published") : row["show_publicly"] ? "Shown publicly" : "Hidden"}
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing({ id: row.id, values: toFormValues(type, row) })}>
+                <Button size="sm" variant="outline" onClick={() => setEditing({ id: row["id"], values: toFormValues(type, row) })}>
                   <Pencil className="size-4" /> Edit
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => remove.mutate(row.id)}>
+                <Button size="sm" variant="outline" onClick={() => remove.mutate(row["id"])}>
                   <Trash2 className="size-4" /> Delete
                 </Button>
               </div>
