@@ -125,7 +125,18 @@ export async function getDoctor(slug: string) {
   const links = Array.isArray(row["doctor_departments"]) ? row["doctor_departments"] : [];
   const doctor = mapDoctor(row, links[0]?.departments);
   if (!usesProductionContract) {
-    const [serviceResult, reviewResult, mediaResult, statisticResult, specializationResult, experienceResult, educationResult, achievementResult, locationResult, faqResult] = await Promise.all([
+    const [
+      serviceResult,
+      reviewResult,
+      mediaResult,
+      statisticResult,
+      specializationResult,
+      experienceResult,
+      educationResult,
+      achievementResult,
+      locationResult,
+      faqResult,
+    ] = await Promise.all([
       db
         .from("professional_service_doctors")
         .select("professional_services(*)")
@@ -136,14 +147,55 @@ export async function getDoctor(slug: string) {
         .eq("doctor_id", doctor.id)
         .eq("show_publicly", true)
         .order("display_order"),
-      db.from("media_doctors").select("display_order,media_items(*)").eq("doctor_id", doctor.id).eq("enabled", true).eq("show_on_profile", true).order("display_order"),
-      db.from("doctor_statistics").select("id,value,label,icon,display_order").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
-      db.from("doctor_specializations").select("id,title,description,icon,professional_service_id,display_order").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
-      db.from("doctor_experience").select("id,organization,position,start_year,end_year,is_present,description,display_order").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
-      db.from("doctor_education").select("id,qualification,institution,year,description,display_order").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
-      db.from("doctor_achievements").select("id,achievement_type,title,organization,year,description,display_order").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
-      db.from("doctor_locations").select("consultation_availability,display_order,locations(*)").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
-      db.from("doctor_faqs").select("display_order,faqs(*)").eq("doctor_id", doctor.id).eq("enabled", true).order("display_order"),
+      db
+        .from("media_doctors")
+        .select("display_order,media_items(*)")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .eq("show_on_profile", true)
+        .order("display_order"),
+      db
+        .from("doctor_statistics")
+        .select("id,value,label,icon,display_order")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_specializations")
+        .select("id,title,description,icon,professional_service_id,display_order")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_experience")
+        .select("id,organization,position,start_year,end_year,is_present,description,display_order")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_education")
+        .select("id,qualification,institution,year,description,display_order")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_achievements")
+        .select("id,achievement_type,title,organization,year,description,display_order")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_locations")
+        .select("consultation_availability,display_order,locations(*)")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_faqs")
+        .select("display_order,faqs(*)")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
     ]);
     return {
       doctor,
@@ -163,8 +215,17 @@ export async function getDoctor(slug: string) {
       experience: rows(experienceResult) as DoctorExperience[],
       education: rows(educationResult) as DoctorEducation[],
       achievements: rows(achievementResult) as DoctorAchievement[],
-      locations: rows(locationResult).map((item) => ({ ...(item["locations"] ?? {}), consultation_availability: item["consultation_availability"] ?? null, display_order: item["display_order"] ?? 0 })).filter((item) => item.published === true) as DoctorLocation[],
-      faqs: rows(faqResult).map((item) => item["faqs"]).filter((item) => item?.published === true).map(mapFaq),
+      locations: rows(locationResult)
+        .map((item) => ({
+          ...(item["locations"] ?? {}),
+          consultation_availability: item["consultation_availability"] ?? null,
+          display_order: item["display_order"] ?? 0,
+        }))
+        .filter((item) => item.published === true) as DoctorLocation[],
+      faqs: rows(faqResult)
+        .map((item) => item["faqs"])
+        .filter((item) => item?.published === true)
+        .map(mapFaq),
     };
   }
   const [serviceResult, reviewResult] = await Promise.all([

@@ -44,12 +44,62 @@ export type Doctor = {
   department: Pick<Department, "id" | "name" | "slug"> | null;
 };
 
-export type DoctorStatistic = { id: string; value: string; label: string; icon: string | null; display_order: number };
-export type DoctorSpecialization = { id: string; title: string; description: string | null; icon: string | null; professional_service_id: string | null; display_order: number };
-export type DoctorExperience = { id: string; organization: string; position: string | null; start_year: number | null; end_year: number | null; is_present: boolean; description: string | null; display_order: number };
-export type DoctorEducation = { id: string; qualification: string; institution: string | null; year: number | null; description: string | null; display_order: number };
-export type DoctorAchievement = { id: string; achievement_type: string; title: string; organization: string | null; year: number | null; description: string | null; display_order: number };
-export type DoctorLocation = { id: string; name: string; slug: string; address_line: string | null; city: string | null; state: string | null; postal_code: string | null; phone: string | null; map_url: string | null; opening_hours: string | null; consultation_availability: string | null; display_order: number };
+export type DoctorStatistic = {
+  id: string;
+  value: string;
+  label: string;
+  icon: string | null;
+  display_order: number;
+};
+export type DoctorSpecialization = {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  professional_service_id: string | null;
+  display_order: number;
+};
+export type DoctorExperience = {
+  id: string;
+  organization: string;
+  position: string | null;
+  start_year: number | null;
+  end_year: number | null;
+  is_present: boolean;
+  description: string | null;
+  display_order: number;
+};
+export type DoctorEducation = {
+  id: string;
+  qualification: string;
+  institution: string | null;
+  year: number | null;
+  description: string | null;
+  display_order: number;
+};
+export type DoctorAchievement = {
+  id: string;
+  achievement_type: string;
+  title: string;
+  organization: string | null;
+  year: number | null;
+  description: string | null;
+  display_order: number;
+};
+export type DoctorLocation = {
+  id: string;
+  name: string;
+  slug: string;
+  address_line: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  phone: string | null;
+  map_url: string | null;
+  opening_hours: string | null;
+  consultation_availability: string | null;
+  display_order: number;
+};
 
 export type Service = {
   id: string;
