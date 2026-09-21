@@ -76,6 +76,7 @@ function DoctorDetail() {
             {doctor.department ? <div><dt className="font-semibold">Department</dt><dd className="mt-1 text-muted-foreground">{doctor.department.name}</dd></div> : null}
             {doctor.experience_years ? <div><dt className="font-semibold">Experience</dt><dd className="mt-1 text-muted-foreground">{doctor.experience_years} years</dd></div> : null}
             {doctor.languages.length ? <div><dt className="font-semibold">Languages</dt><dd className="mt-1 text-muted-foreground">{doctor.languages.join(", ")}</dd></div> : null}
+            {doctor.location ? <div><dt className="font-semibold">Location</dt><dd className="mt-1 flex gap-2 text-muted-foreground"><MapPin className="mt-0.5 size-4 shrink-0" />{doctor.location}</dd></div> : null}
           </dl>
           {Object.keys(doctor.social_links).length ? <div className="mt-6 border-t border-border pt-5"><p className="text-sm font-semibold">Professional links</p><div className="mt-3 flex flex-wrap gap-3">{Object.entries(doctor.social_links).map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm font-semibold capitalize text-primary hover:underline">{label.replace(/_/g, " ")}<ExternalLink className="size-3.5" /></a>)}</div></div> : null}
         </aside>
