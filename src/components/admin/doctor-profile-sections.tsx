@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { ConfirmDialog, AdminError } from "@/components/admin/ui";
+import { AdminError } from "@/components/admin/ui";
 import { userFacingDataError } from "@/lib/data/errors";
 
 const db = supabase as any;
@@ -484,15 +484,41 @@ function SectionEditor({
               >
                 <Pencil className="size-4" />
               </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                aria-label="Delete"
-                onClick={() => setPendingDelete(row)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {pendingDelete?.id === row.id ? (
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      setRows((current) =>
+                        current.filter((r) => r.id !== row.id).map(normalizeRow),
+                      );
+                      setPendingDelete(null);
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPendingDelete(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Delete"
+                  onClick={() => setPendingDelete(row)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
             </div>
           </div>
         ))}
@@ -510,21 +536,6 @@ function SectionEditor({
           </div>
         </div>
       ) : null}
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title={`Delete this ${section.title.toLowerCase()} item?`}
-        description="This change is staged until you save the doctor."
-        onConfirm={() => {
-          if (pendingDelete)
-            setRows((current) =>
-              current.filter((row) => row.id !== pendingDelete.id).map(normalizeRow),
-            );
-          setPendingDelete(null);
-        }}
-      />
     </section>
   );
 }

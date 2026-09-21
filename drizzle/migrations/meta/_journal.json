@@ -36,6 +36,13 @@
       "when": 1790016628046,
       "tag": "0004_enforce_doctor_publish_authority",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790025702795,
+      "tag": "0005_advanced_cms_content_foundation",
+      "breakpoints": true
     }
   ]
 }
