@@ -15,8 +15,14 @@
 - [x] Connect the website to the hospital database (departments, doctors, services, facilities, media, FAQs, reviews, articles)
 - [x] Add working enquiry form with WhatsApp hand-off and enquiry records
 - [x] Add staff area: sign in, dashboard, enquiry management with search, filters, status and CSV export, content management
-- [ ] Create the first staff account and grant it admin access (needs the hospital's chosen email address)
+- [x] Create the first staff account and grant it super admin access
 - [x] Staff CMS: role-based navigation, reusable tables/search/filters/forms/modals/confirmations/badges/pagination
 - [x] Six roles (super admin, admin, editor, writer, front desk, doctor) enforced in the database, not just on screen
 - [x] Doctor profile change requests and clinical blog review without publishing authority
 - [x] Activity (audit) log, notifications, locations, website pages and navigation management
+- [x] Apply the Millennium navy/red design system across public and staff interfaces
+- [x] Add the patient-pathway homepage and responsive appointment actions
+- [x] Verify TypeScript, preview build, and desktop/mobile rendering without overflow
+- [ ] Verify managed image upload, replacement, deletion, and orphan cleanup policies
+- [ ] Complete production-domain SEO checks: canonicals, sitemap, structured data, redirects, and links
+- [ ] Complete final authenticated browser checks for every staff role before launch
