@@ -44,3 +44,5 @@
 - [x] Add the approved Doctor Profile CMS fields, repeatable content, location/FAQ relationships, and media controls
 - [x] Build the responsive CMS-driven Doctor Profile with dynamic SEO, empty-section safety, and a tabbed staff editor
 - [ ] Complete authenticated browser checks for doctor profile relationship editing with each permitted staff role
+- [x] Replace doctor modal editing with a full-page, section-based CMS workspace
+- [x] Add staged doctor editing, statistics preview, social links, existing-media selection, and responsive section navigation
