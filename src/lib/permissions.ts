@@ -44,7 +44,9 @@ export type Permission =
   | "users.manage"
   | "audit.read"
   | "blog.review"
-  | "profile.request";
+  | "profile.request"
+  | "seo.read"
+  | "seo.manage";
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   founder: [
@@ -54,6 +56,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "enquiries.manage",
     "users.manage",
     "audit.read",
+    "seo.read",
+    "seo.manage",
   ],
   co_founder: [
     "content.read",
@@ -62,6 +66,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "enquiries.manage",
     "users.manage",
     "audit.read",
+    "seo.read",
+    "seo.manage",
   ],
   brand_super_admin: [
     "content.read",
@@ -70,6 +76,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "enquiries.manage",
     "users.manage",
     "audit.read",
+    "seo.read",
+    "seo.manage",
   ],
   super_admin: [
     "content.read",
@@ -80,6 +88,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "audit.read",
     "blog.review",
     "profile.request",
+    "seo.read",
+    "seo.manage",
   ],
   admin: [
     "content.read",
@@ -88,12 +98,15 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "enquiries.manage",
     "audit.read",
     "blog.review",
+    "seo.read",
+    "seo.manage",
   ],
-  editor: ["content.read", "content.write", "content.publish"],
-  writer: ["content.read", "content.write"],
+  editor: ["content.read", "content.write", "content.publish", "seo.read", "seo.manage"],
+  writer: ["content.read", "content.write", "seo.read"],
   front_desk: ["content.read", "enquiries.manage"],
-  doctor: ["blog.review", "profile.request"],
+  doctor: ["blog.review", "profile.request", "seo.read"],
 };
+
 
 export function permissionsForRoles(roles: Role[]): Set<Permission> {
   const result = new Set<Permission>();
