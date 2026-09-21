@@ -38,16 +38,17 @@ const relationships: Relationship[] = [
 export type DoctorProfileSectionsHandle = { save: () => Promise<void> };
 export type DoctorProfileTab = "hero" | "specializations" | "experience" | "achievements" | "locations" | "media" | "reviews";
 
-export const DoctorProfileSections = forwardRef<DoctorProfileSectionsHandle, { doctorId: string; tab: DoctorProfileTab }>(function DoctorProfileSections({ doctorId, tab }, ref) {
-  const sectionTables = tab === "hero" ? ["doctor_statistics"] : tab === "specializations" ? ["doctor_specializations"] : tab === "experience" ? ["doctor_experience", "doctor_education"] : tab === "achievements" ? ["doctor_achievements"] : [];
-  const relationKeys = tab === "specializations" ? ["services"] : tab === "locations" ? ["locations"] : tab === "media" ? ["media"] : tab === "reviews" ? ["faqs"] : [];
+export const DoctorProfileSections = forwardRef<DoctorProfileSectionsHandle, { doctorId: string; activeTab: DoctorProfileTab }>(function DoctorProfileSections({ doctorId, activeTab }, ref) {
   const editors = useMemo(() => new Map<string, () => Promise<void>>(), []);
   useImperativeHandle(ref, () => ({ save: async () => { for (const save of editors.values()) await save(); } }), [editors]);
   return <div className="grid gap-6">
-    {tab === "hero" ? <VisibilityEditor doctorId={doctorId} register={(save) => editors.set("visibility", save)} /> : null}
-    {sections.filter((section) => sectionTables.includes(section.table)).map((section) => <SectionEditor key={section.table} doctorId={doctorId} section={section} register={(save) => editors.set(section.table, save)} />)}
-    {relationships.filter((relation) => relationKeys.includes(relation.key)).map((relation) => <RelationshipGroup key={relation.key} doctorId={doctorId} relation={relation} register={(save) => editors.set(relation.key, save)} />)}
-    {tab === "reviews" ? <ReviewSelector doctorId={doctorId} register={(save) => editors.set("reviews", save)} /> : null}
+    <div hidden={activeTab !== "hero"}><VisibilityEditor doctorId={doctorId} register={(save) => editors.set("visibility", save)} /><div className="mt-6"><SectionEditor doctorId={doctorId} section={sections[0]} register={(save) => editors.set("doctor_statistics", save)} /></div></div>
+    <div hidden={activeTab !== "specializations"}><SectionEditor doctorId={doctorId} section={sections[1]} register={(save) => editors.set("doctor_specializations", save)} /><div className="mt-6"><RelationshipGroup doctorId={doctorId} relation={relationships[0]} register={(save) => editors.set("services", save)} /></div></div>
+    <div hidden={activeTab !== "experience"} className="grid gap-6"><SectionEditor doctorId={doctorId} section={sections[2]} register={(save) => editors.set("doctor_experience", save)} /><SectionEditor doctorId={doctorId} section={sections[3]} register={(save) => editors.set("doctor_education", save)} /></div>
+    <div hidden={activeTab !== "achievements"}><SectionEditor doctorId={doctorId} section={sections[4]} register={(save) => editors.set("doctor_achievements", save)} /></div>
+    <div hidden={activeTab !== "locations"}><RelationshipGroup doctorId={doctorId} relation={relationships[1]} register={(save) => editors.set("locations", save)} /></div>
+    <div hidden={activeTab !== "media"}><RelationshipGroup doctorId={doctorId} relation={relationships[2]} register={(save) => editors.set("media", save)} /></div>
+    <div hidden={activeTab !== "reviews"} className="grid gap-6"><ReviewSelector doctorId={doctorId} register={(save) => editors.set("reviews", save)} /><RelationshipGroup doctorId={doctorId} relation={relationships[3]} register={(save) => editors.set("faqs", save)} /></div>
   </div>;
 });
 
