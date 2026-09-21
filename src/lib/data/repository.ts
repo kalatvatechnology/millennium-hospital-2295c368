@@ -183,7 +183,9 @@ export async function getDoctor(slug: string, preview = false) {
         .order("display_order"),
       db
         .from("doctor_achievements")
-        .select("id,achievement_type,title,organization,year,description,image_url,image_alt,display_order")
+        .select(
+          "id,achievement_type,title,organization,year,description,image_url,image_alt,display_order",
+        )
         .eq("doctor_id", doctor.id)
         .eq("enabled", true)
         .order("display_order"),

@@ -113,7 +113,8 @@ function DoctorDetail() {
     doctor.languages.length > 0 ||
     Boolean(doctor.department) ||
     Boolean(doctor.experience_years) ||
-    (data.socialLinks?.length ?? 0) > 0 || Object.keys(doctor.social_links).length > 0;
+    (data.socialLinks?.length ?? 0) > 0 ||
+    Object.keys(doctor.social_links).length > 0;
   const showSpecializations =
     visible(doctor.section_visibility, "specializations") &&
     (data.specializations.length > 0 || doctor.expertise.length > 0);
@@ -502,7 +503,11 @@ function DoctorDetail() {
                   {item.achievement_type}
                 </p>
                 {item.image_url ? (
-                  <img src={item.image_url} alt={item.image_alt ?? ""} className="mb-4 aspect-video w-full rounded-md object-cover" />
+                  <img
+                    src={item.image_url}
+                    alt={item.image_alt ?? ""}
+                    className="mb-4 aspect-video w-full rounded-md object-cover"
+                  />
                 ) : null}
                 <h3 className="mt-2 text-lg font-semibold">{item.title}</h3>
                 {item.organization || item.year ? (

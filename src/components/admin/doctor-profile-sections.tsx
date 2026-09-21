@@ -678,8 +678,8 @@ function RelationshipGroup({
               show_on_profile: true,
               display_order: current.length,
               consultation_availability: "",
-               public_name: "",
-               map_url: "",
+              public_name: "",
+              map_url: "",
             },
           ]
         : current.filter((row) => row[relation.sourceId] !== id),
@@ -743,14 +743,43 @@ function RelationshipGroup({
                     ) : null}
                     {relation.controls.includes("public_name") ? (
                       <div>
-                        <Label htmlFor={`${relation.key}-${option.id}-public-name`}>Public display name</Label>
-                        <Input id={`${relation.key}-${option.id}-public-name`} className="mt-1" value={row.public_name ?? ""} onChange={(event) => setLinks((current) => current.map((item) => item[relation.sourceId] === option.id ? { ...item, public_name: event.target.value } : item))} />
+                        <Label htmlFor={`${relation.key}-${option.id}-public-name`}>
+                          Public display name
+                        </Label>
+                        <Input
+                          id={`${relation.key}-${option.id}-public-name`}
+                          className="mt-1"
+                          value={row.public_name ?? ""}
+                          onChange={(event) =>
+                            setLinks((current) =>
+                              current.map((item) =>
+                                item[relation.sourceId] === option.id
+                                  ? { ...item, public_name: event.target.value }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
                       </div>
                     ) : null}
                     {relation.controls.includes("map_url") ? (
                       <div>
                         <Label htmlFor={`${relation.key}-${option.id}-map-url`}>Map URL</Label>
-                        <Input id={`${relation.key}-${option.id}-map-url`} className="mt-1" type="url" value={row.map_url ?? ""} onChange={(event) => setLinks((current) => current.map((item) => item[relation.sourceId] === option.id ? { ...item, map_url: event.target.value } : item))} />
+                        <Input
+                          id={`${relation.key}-${option.id}-map-url`}
+                          className="mt-1"
+                          type="url"
+                          value={row.map_url ?? ""}
+                          onChange={(event) =>
+                            setLinks((current) =>
+                              current.map((item) =>
+                                item[relation.sourceId] === option.id
+                                  ? { ...item, map_url: event.target.value }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
                       </div>
                     ) : null}
                     {relation.controls.includes("enabled") ? (
@@ -836,12 +865,17 @@ function ReviewSelector({
     queryFn: async () => {
       const [reviews, selections] = await Promise.all([
         db
-        .from("reviews")
-        .select("id,author_name,content,source_type,source_url")
-        .eq("review_type", "doctor")
-        .eq("show_publicly", true)
-        .order("display_order"),
-        db.from("doctor_review_selections").select("review_id,display_order").eq("doctor_id", doctorId).eq("enabled", true).order("display_order"),
+          .from("reviews")
+          .select("id,author_name,content,source_type,source_url")
+          .eq("review_type", "doctor")
+          .eq("show_publicly", true)
+          .order("display_order"),
+        db
+          .from("doctor_review_selections")
+          .select("review_id,display_order")
+          .eq("doctor_id", doctorId)
+          .eq("enabled", true)
+          .order("display_order"),
       ]);
       if (reviews.error) throw reviews.error;
       if (selections.error) throw selections.error;
@@ -850,18 +884,21 @@ function ReviewSelector({
   });
   const [selected, setSelected] = useState<Set<string>>(new Set());
   useEffect(
-    () =>
-      setSelected(
-        new Set(
-          (query.data?.selections ?? []).map((row: Row) => row.review_id),
-        ),
-      ),
+    () => setSelected(new Set((query.data?.selections ?? []).map((row: Row) => row.review_id))),
     [doctorId, query.data],
   );
   const save = async () => {
-    const { error: deleteError } = await db.from("doctor_review_selections").delete().eq("doctor_id", doctorId);
+    const { error: deleteError } = await db
+      .from("doctor_review_selections")
+      .delete()
+      .eq("doctor_id", doctorId);
     if (deleteError) throw deleteError;
-    const rows = [...selected].map((review_id, display_order) => ({ doctor_id: doctorId, review_id, enabled: true, display_order }));
+    const rows = [...selected].map((review_id, display_order) => ({
+      doctor_id: doctorId,
+      review_id,
+      enabled: true,
+      display_order,
+    }));
     if (rows.length) {
       const { error } = await db.from("doctor_review_selections").insert(rows);
       if (error) throw error;
@@ -894,7 +931,9 @@ function ReviewSelector({
                 />
                 <span>
                   <span className="font-medium">{row.author_name}</span>
-                  <span className="ml-2 text-xs uppercase text-muted-foreground">{String(row.source_type ?? "review source")}</span>
+                  <span className="ml-2 text-xs uppercase text-muted-foreground">
+                    {String(row.source_type ?? "review source")}
+                  </span>
                   <span className="mt-1 line-clamp-2 block text-muted-foreground">
                     {row.content}
                   </span>

@@ -135,7 +135,11 @@ export function DoctorWorkspace() {
     queryKey: ["doctor-social-links", doctorId],
     enabled: !isNew,
     queryFn: async () => {
-      const { data, error } = await db.from("doctor_social_links").select("id,platform,url,enabled").eq("doctor_id", doctorId).order("display_order");
+      const { data, error } = await db
+        .from("doctor_social_links")
+        .select("id,platform,url,enabled")
+        .eq("doctor_id", doctorId)
+        .order("display_order");
       if (error) throw error;
       return data ?? [];
     },
@@ -152,7 +156,16 @@ export function DoctorWorkspace() {
     const prepared = clone(next);
     setValues(prepared);
     setBaseline(clone(prepared));
-    const links = socialQuery.data?.length ? socialQuery.data : Object.entries((prepared.social_links ?? {}) as Record<string, string>).map(([platform, url], index) => ({ id: `new-${index}-${platform}`, platform, url, enabled: true }));
+    const links = socialQuery.data?.length
+      ? socialQuery.data
+      : Object.entries((prepared.social_links ?? {}) as Record<string, string>).map(
+          ([platform, url], index) => ({
+            id: `new-${index}-${platform}`,
+            platform,
+            url,
+            enabled: true,
+          }),
+        );
     setSocial(links);
     setSocialBaseline(clone(links));
   }, [isNew, query.data, socialQuery.data]);
@@ -191,9 +204,23 @@ export function DoctorWorkspace() {
         if (section !== "hero") return doctorId;
       }
       if (section === "social-media" && !isNew) {
-        const { error: removeError } = await db.from("doctor_social_links").delete().eq("doctor_id", doctorId);
+        const { error: removeError } = await db
+          .from("doctor_social_links")
+          .delete()
+          .eq("doctor_id", doctorId);
         if (removeError) throw removeError;
-        const links = social.filter((item) => item.url.trim()).map((item, display_order) => ({ doctor_id: doctorId, platform: item.platform.toLowerCase().replace(/[^a-z]+/g, "_").replace(/^x_twitter$/, "x"), url: item.url.trim(), enabled: item.enabled, display_order }));
+        const links = social
+          .filter((item) => item.url.trim())
+          .map((item, display_order) => ({
+            doctor_id: doctorId,
+            platform: item.platform
+              .toLowerCase()
+              .replace(/[^a-z]+/g, "_")
+              .replace(/^x_twitter$/, "x"),
+            url: item.url.trim(),
+            enabled: item.enabled,
+            display_order,
+          }));
         if (links.length) {
           const { error: linkError } = await db.from("doctor_social_links").insert(links);
           if (linkError) throw linkError;
