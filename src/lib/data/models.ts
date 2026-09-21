@@ -65,7 +65,14 @@ export type MediaItem = {
   status: ContentStatus;
 };
 
-export type Faq = { id: string; question: string; answer: string; category: string | null; display_order: number | null; status: ContentStatus };
+export type Faq = {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  display_order: number | null;
+  status: ContentStatus;
+};
 export type FaqCategory = { id: string; name: string; slug: string };
 
 export type Review = {
@@ -94,7 +101,12 @@ export type BlogPost = {
   reviewer?: { name: string; slug: string } | null;
 };
 
-export type EnquiryOption = { id: string; name: string; slug?: string; whatsapp_number?: string | null };
+export type EnquiryOption = {
+  id: string;
+  name: string;
+  slug?: string;
+  whatsapp_number?: string | null;
+};
 
 export type StaffProfile = {
   id: string;

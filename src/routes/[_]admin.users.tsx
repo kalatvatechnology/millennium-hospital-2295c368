@@ -2,21 +2,44 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { AdminError, DataTable, FormModal, Pagination, SearchField, StatusBadge, type Column } from "@/components/admin/ui";
+import {
+  AdminError,
+  DataTable,
+  FormModal,
+  Pagination,
+  SearchField,
+  StatusBadge,
+  type Column,
+} from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
 import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
-import { listStaffDoctorOptions, listStaffUsers, updateStaffUser } from "@/lib/data/staff-repository";
+import {
+  listStaffDoctorOptions,
+  listStaffUsers,
+  updateStaffUser,
+} from "@/lib/data/staff-repository";
 import type { StaffProfile } from "@/lib/data/models";
 import { userFacingDataError } from "@/lib/data/errors";
 
 export const Route = createFileRoute("/_admin/users")({
-  head: () => ({ meta: [...createPageMeta("Users and roles", "Manage staff accounts and their roles."), { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({
+    meta: [
+      ...createPageMeta("Users and roles", "Manage staff accounts and their roles."),
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: AdminUsers,
 });
 
@@ -31,7 +54,11 @@ function AvailableUsers() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState<{ profile: StaffProfile; roles: Role[]; doctorId: string } | null>(null);
+  const [editing, setEditing] = useState<{
+    profile: StaffProfile;
+    roles: Role[];
+    doctorId: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const profiles = useQuery({
@@ -52,7 +79,10 @@ function AvailableUsers() {
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return (profiles.data ?? []).filter((row) => !term || `${row.fullName ?? ""} ${row.email ?? ""} ${row.id}`.toLowerCase().includes(term));
+    return (profiles.data ?? []).filter(
+      (row) =>
+        !term || `${row.fullName ?? ""} ${row.email ?? ""} ${row.id}`.toLowerCase().includes(term),
+    );
   }, [profiles.data, search]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -62,7 +92,11 @@ function AvailableUsers() {
   const save = useMutation({
     mutationFn: async () => {
       if (!editing) return;
-      await updateStaffUser({ ...editing.profile, roles: editing.roles, doctorId: editing.doctorId || null });
+      await updateStaffUser({
+        ...editing.profile,
+        roles: editing.roles,
+        doctorId: editing.doctorId || null,
+      });
     },
     onSuccess: () => {
       setEditing(null);
@@ -78,7 +112,9 @@ function AvailableUsers() {
       header: "Staff member",
       cell: (row) => (
         <div>
-          <p className="font-medium">{row.fullName ?? (usesProductionContract ? "Staff account" : "No name recorded")}</p>
+          <p className="font-medium">
+            {row.fullName ?? (usesProductionContract ? "Staff account" : "No name recorded")}
+          </p>
           <p className="text-sm text-muted-foreground">{row.email ?? row.id}</p>
         </div>
       ),
@@ -104,7 +140,17 @@ function AvailableUsers() {
       header: "Actions",
       className: "text-right",
       cell: (row) => (
-        <Button size="sm" variant="outline" onClick={() => setEditing({ profile: row, roles: rolesByUser.get(row.id) ?? [], doctorId: row.doctorId ?? "" })}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            setEditing({
+              profile: row,
+              roles: rolesByUser.get(row.id) ?? [],
+              doctorId: row.doctorId ?? "",
+            })
+          }
+        >
           Manage access
         </Button>
       ),
@@ -112,12 +158,36 @@ function AvailableUsers() {
   ];
 
   return (
-    <AdminShell title="Users and roles" description="Grant and remove staff access. Only super admins can change roles." requires="users.manage">
-      <SearchField value={search} onChange={(next) => { setSearch(next); setPage(1); }} placeholder="Search staff" />
+    <AdminShell
+      title="Users and roles"
+      description="Grant and remove staff access. Only super admins can change roles."
+      requires="users.manage"
+    >
+      <SearchField
+        value={search}
+        onChange={(next) => {
+          setSearch(next);
+          setPage(1);
+        }}
+        placeholder="Search staff"
+      />
       <AdminError message={error} />
       <div className="mt-6">
-        <DataTable rows={rows} columns={columns} getRowId={(row) => row.id} isPending={profiles.isPending} isError={profiles.isError} emptyTitle="No staff accounts yet" emptyDescription="Accounts appear here once someone signs in for the first time." />
-        <Pagination page={currentPage} pageCount={pageCount} total={filtered.length} onPageChange={setPage} />
+        <DataTable
+          rows={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          isPending={profiles.isPending}
+          isError={profiles.isError}
+          emptyTitle="No staff accounts yet"
+          emptyDescription="Accounts appear here once someone signs in for the first time."
+        />
+        <Pagination
+          page={currentPage}
+          pageCount={pageCount}
+          total={filtered.length}
+          onPageChange={setPage}
+        />
       </div>
 
       <FormModal
@@ -136,33 +206,52 @@ function AvailableUsers() {
                 checked={editing?.roles.includes(role) ?? false}
                 onCheckedChange={(checked) =>
                   setEditing((current) =>
-                    current ? { ...current, roles: checked === true ? [...current.roles, role] : current.roles.filter((item) => item !== role) } : current,
+                    current
+                      ? {
+                          ...current,
+                          roles:
+                            checked === true
+                              ? [...current.roles, role]
+                              : current.roles.filter((item) => item !== role),
+                        }
+                      : current,
                   )
                 }
               />
               <span>
                 <span className="font-medium">{ROLE_LABELS[role]}</span>
-                <span className="block text-sm text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</span>
+                <span className="block text-sm text-muted-foreground">
+                  {ROLE_DESCRIPTIONS[role]}
+                </span>
               </span>
             </label>
           ))}
         </fieldset>
-        {!usesProductionContract ? <div>
-          <Label>Linked doctor profile</Label>
-          <Select value={editing?.doctorId || "none"} onValueChange={(next) => setEditing((current) => (current ? { ...current, doctorId: next === "none" ? "" : next } : current))}>
-            <SelectTrigger className="mt-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Not linked</SelectItem>
-              {(doctors.data ?? []).map((doctor) => (
-                <SelectItem key={doctor.id} value={doctor.id}>
-                  {doctor.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div> : null}
+        {!usesProductionContract ? (
+          <div>
+            <Label>Linked doctor profile</Label>
+            <Select
+              value={editing?.doctorId || "none"}
+              onValueChange={(next) =>
+                setEditing((current) =>
+                  current ? { ...current, doctorId: next === "none" ? "" : next } : current,
+                )
+              }
+            >
+              <SelectTrigger className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not linked</SelectItem>
+                {(doctors.data ?? []).map((doctor) => (
+                  <SelectItem key={doctor.id} value={doctor.id}>
+                    {doctor.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
       </FormModal>
     </AdminShell>
   );

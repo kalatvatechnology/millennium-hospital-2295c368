@@ -1,7 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { backendFeatures, productionPermissionFunctions, usesProductionContract } from "./backend";
 import { classifyDataError, DataAccessError } from "./errors";
-import type { AuditLog, DashboardCount, StaffDoctorOption, StaffEnquiry, StaffProfile } from "./models";
+import type {
+  AuditLog,
+  DashboardCount,
+  StaffDoctorOption,
+  StaffEnquiry,
+  StaffProfile,
+} from "./models";
 import { isRole, permissionsForRoles, ROLES, type Permission, type Role } from "../permissions";
 
 type Row = Record<string, unknown>;
@@ -52,10 +58,17 @@ export type StaffAccess = {
 
 export async function getStaffAccess(userId: string): Promise<StaffAccess> {
   const roleResult = await db.from("user_roles").select("role").eq("user_id", userId);
-  const roles = getRows(roleResult).map((row) => row["role"]).filter((value): value is Role => typeof value === "string" && isRole(value));
+  const roles = getRows(roleResult)
+    .map((row) => row["role"])
+    .filter((value): value is Role => typeof value === "string" && isRole(value));
 
   if (!usesProductionContract) {
-    return { roles, permissions: permissionsForRoles(roles), isStaff: roles.length > 0, doctorRole: roles.includes("doctor") };
+    return {
+      roles,
+      permissions: permissionsForRoles(roles),
+      isStaff: roles.length > 0,
+      doctorRole: roles.includes("doctor"),
+    };
   }
 
   const [isStaff, canAdmin, canEditContent, doctorRole, recognizedStaffRole] = await Promise.all([
@@ -63,7 +76,10 @@ export async function getStaffAccess(userId: string): Promise<StaffAccess> {
     permissionRpc(productionPermissionFunctions.canAdmin),
     permissionRpc(productionPermissionFunctions.canEditContent),
     permissionRpc(productionPermissionFunctions.hasRole, { _user_id: userId, _role: "doctor" }),
-    permissionRpc(productionPermissionFunctions.hasAnyRole, { _user_id: userId, _roles: [...ROLES] }),
+    permissionRpc(productionPermissionFunctions.hasAnyRole, {
+      _user_id: userId,
+      _roles: [...ROLES],
+    }),
   ]);
 
   const permissions = new Set<Permission>();
@@ -84,7 +100,11 @@ export async function getStaffAccess(userId: string): Promise<StaffAccess> {
 
 export async function getStaffProfile(userId: string): Promise<Omit<StaffProfile, "roles"> | null> {
   if (!backendFeatures.profiles) return null;
-  const result = await db.from("profiles").select("id, full_name, email, doctor_id, active").eq("id", userId).maybeSingle();
+  const result = await db
+    .from("profiles")
+    .select("id, full_name, email, doctor_id, active")
+    .eq("id", userId)
+    .maybeSingle();
   if (result.error) throw classifyDataError(result.error);
   const row = result.data;
   if (!row) return null;
@@ -108,10 +128,19 @@ export async function listStaffUsers(): Promise<StaffProfile[]> {
   }
 
   if (usesProductionContract) {
-    return [...rolesByUser].map(([id, roles]) => ({ id, fullName: null, email: null, doctorId: null, active: true, roles }));
+    return [...rolesByUser].map(([id, roles]) => ({
+      id,
+      fullName: null,
+      email: null,
+      doctorId: null,
+      active: true,
+      roles,
+    }));
   }
 
-  const profiles = getRows(await db.from("profiles").select("id, full_name, email, doctor_id, active").order("created_at"));
+  const profiles = getRows(
+    await db.from("profiles").select("id, full_name, email, doctor_id, active").order("created_at"),
+  );
   return profiles.map((row) => {
     const id = String(row["id"]);
     return {
@@ -127,10 +156,12 @@ export async function listStaffUsers(): Promise<StaffProfile[]> {
 
 export async function listStaffDoctorOptions(): Promise<StaffDoctorOption[]> {
   const nameField = usesProductionContract ? "full_name" : "name";
-  return getRows(await db.from("doctors").select(`id,${nameField}`).order(nameField)).map((row) => ({
-    id: String(row["id"]),
-    name: String(row[nameField] ?? "Unnamed doctor"),
-  }));
+  return getRows(await db.from("doctors").select(`id,${nameField}`).order(nameField)).map(
+    (row) => ({
+      id: String(row["id"]),
+      name: String(row[nameField] ?? "Unnamed doctor"),
+    }),
+  );
 }
 
 export async function updateStaffUser(user: StaffProfile): Promise<void> {
@@ -144,11 +175,16 @@ export async function updateStaffUser(user: StaffProfile): Promise<void> {
     if (result.error) throw classifyDataError(result.error);
   }
   if (toAdd.length) {
-    const result = await db.from("user_roles").insert(toAdd.map((role) => ({ user_id: user.id, role })));
+    const result = await db
+      .from("user_roles")
+      .insert(toAdd.map((role) => ({ user_id: user.id, role })));
     if (result.error) throw classifyDataError(result.error);
   }
   if (!usesProductionContract) {
-    const result = await db.from("profiles").update({ doctor_id: user.doctorId || null }).eq("id", user.id);
+    const result = await db
+      .from("profiles")
+      .update({ doctor_id: user.doctorId || null })
+      .eq("id", user.id);
     if (result.error) throw classifyDataError(result.error);
   }
 }
@@ -158,10 +194,15 @@ export async function listStaffEnquiries(): Promise<StaffEnquiry[]> {
   const selection = usesProductionContract
     ? "*, doctor:doctors!appointment_enquiries_preferred_doctor_id_fkey(full_name,whatsapp), department:departments!appointment_enquiries_preferred_department_id_fkey(name), service:services!appointment_enquiries_preferred_service_id_fkey(title)"
     : "*, doctor:doctors(name,whatsapp_number), department:departments(name), professional_service:professional_services(title), hospital_service:hospital_services(title)";
-  return getRows(await db.from(table).select(selection).order("created_at", { ascending: false })).map((row) => {
+  return getRows(
+    await db.from(table).select(selection).order("created_at", { ascending: false }),
+  ).map((row) => {
     const doctor = nested(row["doctor"]);
     const department = nested(row["department"]);
-    const service = nested(row["service"]) ?? nested(row["professional_service"]) ?? nested(row["hospital_service"]);
+    const service =
+      nested(row["service"]) ??
+      nested(row["professional_service"]) ??
+      nested(row["hospital_service"]);
     return {
       id: String(row["id"]),
       createdAt: String(row["created_at"]),
@@ -172,7 +213,12 @@ export async function listStaffEnquiries(): Promise<StaffEnquiry[]> {
       preferredAt: text(row["preferred_at"]),
       status: String(row["status"]),
       message: text(row["message"]),
-      doctor: doctor ? { name: String(doctor["full_name"] ?? doctor["name"]), whatsappNumber: text(doctor["whatsapp"] ?? doctor["whatsapp_number"]) } : null,
+      doctor: doctor
+        ? {
+            name: String(doctor["full_name"] ?? doctor["name"]),
+            whatsappNumber: text(doctor["whatsapp"] ?? doctor["whatsapp_number"]),
+          }
+        : null,
       department: department ? { name: String(department["name"]) } : null,
       service: service ? { title: String(service["title"]) } : null,
     };
@@ -186,7 +232,9 @@ export async function updateEnquiryStatus(id: string, status: string): Promise<v
 }
 
 export async function listAuditLogs(): Promise<AuditLog[]> {
-  return getRows(await db.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(500)).map((row) => ({
+  return getRows(
+    await db.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(500),
+  ).map((row) => ({
     id: String(row["id"]),
     actorEmail: text(row["actor_email"]),
     action: String(row["action"]),
@@ -197,32 +245,53 @@ export async function listAuditLogs(): Promise<AuditLog[]> {
 }
 
 const localContentTables = [
-  ["departments", "Departments"], ["doctors", "Doctors"], ["professional_services", "Professional services"],
-  ["hospital_services", "Hospital services"], ["facilities", "Facilities"], ["media_items", "Media items"],
-  ["faqs", "FAQs"], ["reviews", "Reviews"], ["blog_posts", "Blog posts"],
+  ["departments", "Departments"],
+  ["doctors", "Doctors"],
+  ["professional_services", "Professional services"],
+  ["hospital_services", "Hospital services"],
+  ["facilities", "Facilities"],
+  ["media_items", "Media items"],
+  ["faqs", "FAQs"],
+  ["reviews", "Reviews"],
+  ["blog_posts", "Blog posts"],
 ] as const;
 const productionContentTables = [
-  ["departments", "Departments"], ["doctors", "Doctors"], ["services", "Services"], ["facilities", "Facilities"],
-  ["media_content", "Media items"], ["faqs", "FAQs"], ["reviews", "Reviews"],
+  ["departments", "Departments"],
+  ["doctors", "Doctors"],
+  ["services", "Services"],
+  ["facilities", "Facilities"],
+  ["media_content", "Media items"],
+  ["faqs", "FAQs"],
+  ["reviews", "Reviews"],
 ] as const;
 
 export async function getDashboardCounts(): Promise<DashboardCount[]> {
   const tables = usesProductionContract ? productionContentTables : localContentTables;
-  return Promise.all(tables.map(async ([table, label]) => {
-    const result = await db.from(table).select("id", { count: "exact", head: true });
-    if (result.error) throw classifyDataError(result.error);
-    return { label, count: result.count ?? 0 };
-  }));
+  return Promise.all(
+    tables.map(async ([table, label]) => {
+      const result = await db.from(table).select("id", { count: "exact", head: true });
+      if (result.error) throw classifyDataError(result.error);
+      return { label, count: result.count ?? 0 };
+    }),
+  );
 }
 
 export async function getActiveEnquiryCount(): Promise<number> {
   const table = usesProductionContract ? "appointment_enquiries" : "enquiries";
-  const statuses = usesProductionContract ? ["new", "in_progress"] : ["submitted", "pending_forwarding"];
-  const result = await db.from(table).select("id", { count: "exact", head: true }).in("status", statuses);
+  const statuses = usesProductionContract
+    ? ["new", "in_progress"]
+    : ["submitted", "pending_forwarding"];
+  const result = await db
+    .from(table)
+    .select("id", { count: "exact", head: true })
+    .in("status", statuses);
   if (result.error) throw classifyDataError(result.error);
   return result.count ?? 0;
 }
 
-export function requireSupportedStaffFeature(feature: "blog" | "notifications" | "profileRequests"): void {
-  if (!backendFeatures[feature]) throw new DataAccessError("unavailable", `${feature} is pending backend support.`);
+export function requireSupportedStaffFeature(
+  feature: "blog" | "notifications" | "profileRequests",
+): void {
+  if (!backendFeatures[feature])
+    throw new DataAccessError("unavailable", `${feature} is pending backend support.`);
 }

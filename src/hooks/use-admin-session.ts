@@ -4,7 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Permission, Role } from "@/lib/permissions";
 import { getStaffAccess, getStaffProfile } from "@/lib/data/staff-repository";
 
-type Profile = { id: string; full_name: string | null; email: string | null; doctor_id: string | null };
+type Profile = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  doctor_id: string | null;
+};
 
 export function useAdminSession() {
   const [session, setSession] = useState<Session | null>(null);
@@ -39,12 +44,24 @@ export function useAdminSession() {
     setLoading(true);
     void (async () => {
       try {
-        const [access, staffProfile] = await Promise.all([getStaffAccess(session.user.id), getStaffProfile(session.user.id)]);
+        const [access, staffProfile] = await Promise.all([
+          getStaffAccess(session.user.id),
+          getStaffProfile(session.user.id),
+        ]);
         if (!active) return;
         setRoles(access.roles);
         setPermissions(access.permissions);
         setIsStaff(access.isStaff);
-        setProfile(staffProfile ? { id: staffProfile.id, full_name: staffProfile.fullName, email: staffProfile.email, doctor_id: staffProfile.doctorId } : null);
+        setProfile(
+          staffProfile
+            ? {
+                id: staffProfile.id,
+                full_name: staffProfile.fullName,
+                email: staffProfile.email,
+                doctor_id: staffProfile.doctorId,
+              }
+            : null,
+        );
         setError(null);
       } catch (nextError) {
         if (!active) return;

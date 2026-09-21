@@ -1,15 +1,32 @@
 import type { ContentStatus } from "./backend";
-import type { Department, Doctor, Facility, Faq, MediaItem, MediaPlatform, Review, Service } from "./models";
+import type {
+  Department,
+  Doctor,
+  Facility,
+  Faq,
+  MediaItem,
+  MediaPlatform,
+  Review,
+  Service,
+} from "./models";
 
 type Row = Record<string, unknown>;
 
-const text = (value: unknown): string | null => (typeof value === "string" && value.trim() ? value : null);
-const number = (value: unknown): number | null => (typeof value === "number" && Number.isFinite(value) ? value : null);
+const text = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() ? value : null;
+const number = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) ? value : null;
 const list = (value: unknown): string[] =>
-  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
+  Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
 const object = (value: unknown): Record<string, string> => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
 };
 const status = (row: Row): ContentStatus => {
   if (row["status"] === "published" || row["status"] === "archived") return row["status"];
@@ -88,7 +105,10 @@ export function mapFacility(row: Row): Facility {
 
 export function mapMedia(row: Row): MediaItem {
   const rawPlatform = row["platform"] ?? row["media_type"];
-  const mediaType: MediaPlatform = rawPlatform === "reel" || rawPlatform === "podcast" || rawPlatform === "article" ? rawPlatform : "youtube";
+  const mediaType: MediaPlatform =
+    rawPlatform === "reel" || rawPlatform === "podcast" || rawPlatform === "article"
+      ? rawPlatform
+      : "youtube";
   return {
     id: required(row["id"], ""),
     title: required(row["title"], "Untitled media"),
@@ -115,7 +135,8 @@ export function mapFaq(row: Row): Faq {
 
 export function mapReview(row: Row): Review {
   const doctor = row["doctor"];
-  const doctorRow = doctor && typeof doctor === "object" && !Array.isArray(doctor) ? (doctor as Row) : null;
+  const doctorRow =
+    doctor && typeof doctor === "object" && !Array.isArray(doctor) ? (doctor as Row) : null;
   const doctorName = doctorRow ? text(doctorRow["full_name"] ?? doctorRow["name"]) : null;
   const doctorSlug = doctorRow ? text(doctorRow["slug"]) : null;
   return {

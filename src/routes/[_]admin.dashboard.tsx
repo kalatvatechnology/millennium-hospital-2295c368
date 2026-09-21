@@ -10,7 +10,12 @@ import { backendFeatures } from "@/lib/data/backend";
 import { getActiveEnquiryCount, getDashboardCounts } from "@/lib/data/staff-repository";
 
 export const Route = createFileRoute("/_admin/dashboard")({
-  head: () => ({ meta: [...createPageMeta("Staff dashboard", "Hospital content and enquiry overview."), { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({
+    meta: [
+      ...createPageMeta("Staff dashboard", "Hospital content and enquiry overview."),
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: AdminDashboard,
 });
 
@@ -37,13 +42,18 @@ function AdminDashboard() {
   });
 
   return (
-    <AdminShell title="Dashboard" description={`Signed in as ${roles.map((role) => ROLE_LABELS[role]).join(", ") || "staff"}.`}>
+    <AdminShell
+      title="Dashboard"
+      description={`Signed in as ${roles.map((role) => ROLE_LABELS[role]).join(", ") || "staff"}.`}
+    >
       {profile?.doctor_id ? (
         <section className="mb-8">
           <h2 className="text-xl font-semibold">Your clinical work</h2>
           <div className="mt-4 grid gap-px border border-border bg-border sm:grid-cols-2">
             <div className="bg-background p-5">
-              <p className="text-sm text-muted-foreground">Articles awaiting your clinical review</p>
+              <p className="text-sm text-muted-foreground">
+                Articles awaiting your clinical review
+              </p>
               <p className="mt-2 text-3xl font-semibold">{doctorWork.data?.pendingReviews ?? 0}</p>
               <Button asChild size="sm" variant="outline" className="mt-4">
                 <Link to="/_admin/blog">Open blog</Link>
