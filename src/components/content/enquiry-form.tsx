@@ -53,9 +53,11 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
 
     setSubmitting(true);
     const value = (id: string) => (id === NONE ? null : id);
-    const { data, error: insertError } = await supabase
+    const enquiryId = crypto.randomUUID();
+    const { error: insertError } = await supabase
       .from("enquiries")
       .insert({
+        id: enquiryId,
         patient_name: patientName.trim(),
         contact_number: contactNumber.trim(),
         family_member_name: familyMember.trim() || null,
@@ -67,10 +69,8 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
         message: message.trim() || null,
         source,
         status: "pending_forwarding",
-      })
-      .select("id")
-      .single();
-    if (insertError || !data) {
+      });
+    if (insertError) {
       setSubmitting(false);
       return setError("We couldn't send your enquiry. Please try again or call the hospital.");
     }
@@ -88,7 +88,7 @@ export function EnquiryForm({ presetDoctorId, source = "website", title = "Send 
     const whatsappUrl = target ? `https://wa.me/${target.replace(/\D/g, "")}?text=${encodeURIComponent(lines.join("\n"))}` : null;
 
     await supabase.from("enquiry_forwardings").insert({
-      enquiry_id: data.id,
+      enquiry_id: enquiryId,
       channel: "whatsapp",
       target_label: doctor ? doctor.name : "Hospital reception",
       target_number: target,
