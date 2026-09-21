@@ -142,7 +142,16 @@ const faqsRelationship: Relationship = {
 
 export type DoctorProfileSectionsHandle = { save: () => Promise<void> };
 export type DoctorProfileTab =
-  "hero" | "specializations" | "experience" | "achievements" | "locations" | "media" | "reviews";
+  | "hero"
+  | "specializations"
+  | "services"
+  | "experience"
+  | "education"
+  | "achievements"
+  | "locations"
+  | "media"
+  | "reviews"
+  | "faqs";
 
 export const DoctorProfileSections = forwardRef<
   DoctorProfileSectionsHandle,
@@ -185,17 +194,17 @@ export const DoctorProfileSections = forwardRef<
             editors.set("doctor_specializations", save);
           }}
         />
-        <div className="mt-6">
-          <RelationshipGroup
-            doctorId={doctorId}
-            relation={servicesRelationship}
-            register={(save) => {
-              editors.set("services", save);
-            }}
-          />
-        </div>
       </div>
-      <div hidden={activeTab !== "experience"} className="grid gap-6">
+      <div hidden={activeTab !== "services"}>
+        <RelationshipGroup
+          doctorId={doctorId}
+          relation={servicesRelationship}
+          register={(save) => {
+            editors.set("services", save);
+          }}
+        />
+      </div>
+      <div hidden={activeTab !== "experience"}>
         <SectionEditor
           doctorId={doctorId}
           section={experienceSection}
@@ -203,6 +212,8 @@ export const DoctorProfileSections = forwardRef<
             editors.set("doctor_experience", save);
           }}
         />
+      </div>
+      <div hidden={activeTab !== "education"}>
         <SectionEditor
           doctorId={doctorId}
           section={educationSection}
@@ -238,13 +249,15 @@ export const DoctorProfileSections = forwardRef<
           }}
         />
       </div>
-      <div hidden={activeTab !== "reviews"} className="grid gap-6">
+      <div hidden={activeTab !== "reviews"}>
         <ReviewSelector
           doctorId={doctorId}
           register={(save) => {
             editors.set("reviews", save);
           }}
         />
+      </div>
+      <div hidden={activeTab !== "faqs"}>
         <RelationshipGroup
           doctorId={doctorId}
           relation={faqsRelationship}
@@ -343,6 +356,7 @@ function SectionEditor({
       next[target] = sourceRow;
       return next.map(normalizeRow);
     });
+  const previewRow = rows.find((row) => row.id === editingId) ?? rows[0];
   return (
     <section className="rounded-md border border-border p-4">
       <div className="flex items-center justify-between gap-3">
@@ -483,6 +497,19 @@ function SectionEditor({
           </div>
         ))}
       </div>
+      {section.table === "doctor_statistics" && previewRow ? (
+        <div className="mt-6 border-t border-border pt-5">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">Live preview</p>
+          <div className="mt-3 max-w-sm bg-background px-4 py-8 text-center shadow-[var(--shadow-sm)]">
+            <strong className="block text-3xl font-semibold text-primary">
+              {previewRow["value"] || "Value"}
+            </strong>
+            <span className="mt-1 block text-sm text-muted-foreground">
+              {previewRow["label"] || "Statistic label"}
+            </span>
+          </div>
+        </div>
+      ) : null}
       <ConfirmDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => {
