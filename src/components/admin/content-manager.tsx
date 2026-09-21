@@ -144,6 +144,7 @@ function FieldInput({
       {field.type === "textarea" ? (
         <Textarea
           id={id}
+          disabled={disabled}
           value={value ?? ""}
           onChange={(event) => onChange(event.target.value)}
           className="mt-2 min-h-28"
@@ -151,6 +152,7 @@ function FieldInput({
       ) : (
         <Input
           id={id}
+          disabled={disabled}
           type={field.type === "number" ? "number" : "text"}
           required={field.required}
           value={value ?? ""}
