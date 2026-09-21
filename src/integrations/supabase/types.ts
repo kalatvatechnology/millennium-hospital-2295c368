@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_table: string | null
+          id: string
+          metadata: Json
+          summary: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_table?: string | null
+          id?: string
+          metadata?: Json
+          summary?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_table?: string | null
+          id?: string
+          metadata?: Json
+          summary?: string | null
+        }
+        Relationships: []
+      }
       blog_authors: {
         Row: {
           bio: string | null
@@ -343,6 +379,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      doctor_profile_change_requests: {
+        Row: {
+          changes: Json
+          created_at: string
+          doctor_id: string
+          id: string
+          note: string | null
+          requested_by: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["request_status"]
+          updated_at: string
+        }
+        Insert: {
+          changes?: Json
+          created_at?: string
+          doctor_id: string
+          id?: string
+          note?: string | null
+          requested_by?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          note?: string | null
+          requested_by?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_profile_change_requests_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       doctors: {
         Row: {
@@ -808,6 +894,60 @@ export type Database = {
         }
         Relationships: []
       }
+      locations: {
+        Row: {
+          address_line: string | null
+          city: string | null
+          created_at: string
+          display_order: number
+          email: string | null
+          id: string
+          map_url: string | null
+          name: string
+          opening_hours: string | null
+          phone: string | null
+          postal_code: string | null
+          published: boolean
+          slug: string
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line?: string | null
+          city?: string | null
+          created_at?: string
+          display_order?: number
+          email?: string | null
+          id?: string
+          map_url?: string | null
+          name: string
+          opening_hours?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          published?: boolean
+          slug: string
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line?: string | null
+          city?: string | null
+          created_at?: string
+          display_order?: number
+          email?: string | null
+          id?: string
+          map_url?: string | null
+          name?: string
+          opening_hours?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          published?: boolean
+          slug?: string
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       media_departments: {
         Row: {
           department_id: string
@@ -970,6 +1110,80 @@ export type Database = {
           },
         ]
       }
+      navigation_items: {
+        Row: {
+          created_at: string
+          display_order: number
+          href: string
+          id: string
+          label: string
+          menu: string
+          parent_id: string | null
+          published: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          href: string
+          id?: string
+          label: string
+          menu?: string
+          parent_id?: string | null
+          published?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          href?: string
+          id?: string
+          label?: string
+          menu?: string
+          parent_id?: string | null
+          published?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "navigation_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "navigation_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       professional_service_departments: {
         Row: {
           department_id: string
@@ -1066,6 +1280,47 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          active: boolean
+          created_at: string
+          doctor_id: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          doctor_id?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          doctor_id?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           author_name: string
@@ -1140,11 +1395,53 @@ export type Database = {
         }
         Relationships: []
       }
+      website_pages: {
+        Row: {
+          body: string | null
+          created_at: string
+          display_order: number
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          slug: string
+          status: Database["public"]["Enums"]["post_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["post_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["post_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_manage_content: { Args: never; Returns: boolean }
+      can_manage_enquiries: { Args: never; Returns: boolean }
+      can_publish: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1153,9 +1450,17 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "editor" | "doctor"
+      app_role:
+        | "admin"
+        | "editor"
+        | "doctor"
+        | "super_admin"
+        | "front_desk"
+        | "writer"
       clinical_review_status:
         | "not_required"
         | "pending"
@@ -1171,6 +1476,7 @@ export type Database = {
       forward_status: "prepared" | "sent" | "failed"
       media_type: "youtube" | "reel" | "podcast"
       post_status: "draft" | "in_review" | "ready_to_publish" | "published"
+      request_status: "pending" | "approved" | "rejected"
       review_type: "hospital" | "doctor"
       verification_status: "unverified" | "pending" | "verified"
     }
@@ -1300,7 +1606,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "editor", "doctor"],
+      app_role: [
+        "admin",
+        "editor",
+        "doctor",
+        "super_admin",
+        "front_desk",
+        "writer",
+      ],
       clinical_review_status: [
         "not_required",
         "pending",
@@ -1318,6 +1631,7 @@ export const Constants = {
       forward_status: ["prepared", "sent", "failed"],
       media_type: ["youtube", "reel", "podcast"],
       post_status: ["draft", "in_review", "ready_to_publish", "published"],
+      request_status: ["pending", "approved", "rejected"],
       review_type: ["hospital", "doctor"],
       verification_status: ["unverified", "pending", "verified"],
     },

@@ -16,3 +16,7 @@
 - [x] Add working enquiry form with WhatsApp hand-off and enquiry records
 - [x] Add staff area: sign in, dashboard, enquiry management with search, filters, status and CSV export, content management
 - [ ] Create the first staff account and grant it admin access (needs the hospital's chosen email address)
+- [x] Staff CMS: role-based navigation, reusable tables/search/filters/forms/modals/confirmations/badges/pagination
+- [x] Six roles (super admin, admin, editor, writer, front desk, doctor) enforced in the database, not just on screen
+- [x] Doctor profile change requests and clinical blog review without publishing authority
+- [x] Activity (audit) log, notifications, locations, website pages and navigation management

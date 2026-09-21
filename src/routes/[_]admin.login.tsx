@@ -17,15 +17,15 @@ export const Route = createFileRoute("/_admin/login")({
 
 function AdminLogin() {
   const navigate = useNavigate();
-  const { session, isAdmin } = useAdminSession();
+  const { session, isStaff, loading } = useAdminSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (session && isAdmin === true) navigate({ to: "/_admin/dashboard" });
-  }, [session, isAdmin, navigate]);
+    if (session && isStaff) navigate({ to: "/_admin/dashboard" });
+  }, [session, isStaff, navigate]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -52,7 +52,7 @@ function AdminLogin() {
             <Input id="admin-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2" autoComplete="current-password" />
           </div>
           {error ? <p role="alert" className="text-sm font-medium text-destructive">{error}</p> : null}
-          {session && isAdmin === false ? (
+          {session && !loading && !isStaff ? (
             <p role="alert" className="text-sm font-medium text-destructive">This account does not have staff access.</p>
           ) : null}
           <Button type="submit" size="lg" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>

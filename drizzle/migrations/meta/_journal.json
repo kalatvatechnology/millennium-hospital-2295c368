@@ -8,6 +8,20 @@
       "when": 1789991996827,
       "tag": "0000_grant_data_api_access",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789992535065,
+      "tag": "0001_add_staff_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789992604103,
+      "tag": "0002_rbac_and_admin_modules",
+      "breakpoints": true
     }
   ]
 }
