@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Plus, Save, Trash2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { AdminError } from "@/components/admin/ui";
@@ -17,7 +17,6 @@ import { useAdminSession } from "@/hooks/use-admin-session";
 import { contentTypeByKey, saveRecord } from "@/lib/admin-content";
 import { userFacingDataError } from "@/lib/data/errors";
 import { supabase } from "@/integrations/supabase/client";
-import { Route } from "@/routes/[_]admin.doctors.$doctorId.$section";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -44,7 +43,7 @@ const blankDoctor = () => ({ name: "", slug: "", department_id: null, specialty:
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 export function DoctorWorkspace() {
-  const { doctorId, section: rawSection } = Route.useParams();
+  const { doctorId, section: rawSection } = useParams({ from: "/_admin/doctors/$doctorId/$section" });
   const section: SectionKey = sectionKeys.has(rawSection) ? rawSection as SectionKey : "profile";
   const isNew = doctorId === "new";
   const navigate = useNavigate();
@@ -59,13 +58,13 @@ export function DoctorWorkspace() {
     queryFn: async () => {
       const { data, error } = await db.from("doctors").select("*").eq("id", doctorId).single();
       if (error) throw error;
-      return data as Record<string, any>;
+      return data as any;
     },
   });
   const departments = useQuery({ queryKey: ["doctor-workspace-departments"], queryFn: async () => { const { data, error } = await db.from("departments").select("id,name").order("name"); if (error) throw error; return data ?? []; } });
   const media = useQuery({ queryKey: ["doctor-workspace-image-options"], queryFn: async () => { const { data, error } = await db.from("media_items").select("id,title,thumbnail_url,url").order("title"); if (error) throw error; return data ?? []; } });
-  const [values, setValues] = useState<Record<string, any>>(blankDoctor());
-  const [baseline, setBaseline] = useState<Record<string, any>>(blankDoctor());
+  const [values, setValues] = useState<any>(blankDoctor());
+  const [baseline, setBaseline] = useState<any>(blankDoctor());
   const [social, setSocial] = useState<SocialRow[]>([]);
   const [socialBaseline, setSocialBaseline] = useState<SocialRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +82,10 @@ export function DoctorWorkspace() {
   const save = useMutation({
     mutationFn: async () => {
       if (!doctorType) throw new Error("Doctor content configuration is unavailable");
-      if (detailTab && !isNew) { await detailRef.current?.save(); return doctorId; }
+      if (detailTab && !isNew) {
+        await detailRef.current?.save();
+        if (section !== "hero") return doctorId;
+      }
       const data = payload();
       if (isNew) {
         const { data: created, error: createError } = await db.from("doctors").insert(data).select("id").single();
