@@ -43,7 +43,7 @@ export function DataTable<T>({
   if (isError) return <ErrorState />;
   if (rows.length === 0) return <EmptyState title={emptyTitle} description={emptyDescription ?? ""} />;
   return (
-    <div className="overflow-x-auto border border-border bg-background">
+    <div className="overflow-x-auto rounded-lg border border-border bg-background shadow-[var(--shadow-sm)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -116,7 +116,7 @@ export function StatusBadge({ status, tone = "neutral" }: { status: string; tone
   const classes = {
     neutral: "bg-muted text-muted-foreground",
     positive: "bg-primary/10 text-primary",
-    warning: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
+    warning: "bg-warning text-warning-foreground",
     critical: "bg-destructive/10 text-destructive",
   } as const;
   return <Badge variant="outline" className={cn("border-transparent font-medium capitalize", classes[tone])}>{status.replace(/_/g, " ")}</Badge>;
@@ -223,7 +223,7 @@ export function ConfirmDialog({
 export function AdminError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="mt-4 border border-destructive/40 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+    <p role="alert" className="mt-4 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm font-medium text-destructive">
       {message}
     </p>
   );

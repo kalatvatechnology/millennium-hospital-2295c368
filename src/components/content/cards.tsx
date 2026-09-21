@@ -12,7 +12,7 @@ import type {
 
 export function DoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
   return (
-    <article className="flex flex-col border border-border bg-background">
+    <article className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
       <div className="grid aspect-[4/3] place-items-center overflow-hidden bg-surface">
         {doctor.photo_url ? (
           <img src={doctor.photo_url} alt={`Portrait of ${doctor.name}`} className="size-full object-cover" loading="lazy" />
@@ -44,8 +44,8 @@ export function DoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 
 export function DepartmentCard({ department }: { department: Department }) {
   return (
-    <article className="border border-border bg-background p-6">
-      <Layers className="text-primary" />
+    <article className="group rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary"><Layers /></span>
       <h3 className="mt-6 text-xl font-semibold">{department.name}</h3>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {department.description ?? "Further department information has not yet been published."}
@@ -63,8 +63,8 @@ export function DepartmentCard({ department }: { department: Department }) {
 
 export function ProfessionalServiceCard({ service }: { service: ProfessionalService }) {
   return (
-    <article className="border border-border bg-background p-6">
-      <Stethoscope className="text-primary" />
+    <article className="group rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary"><Stethoscope /></span>
       <p className="mt-6 text-xs font-semibold uppercase text-muted-foreground">Professional service</p>
       <h3 className="mt-2 text-xl font-semibold">{service.title}</h3>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -83,8 +83,8 @@ export function ProfessionalServiceCard({ service }: { service: ProfessionalServ
 
 export function HospitalServiceCard({ service }: { service: HospitalService }) {
   return (
-    <article className="border border-border bg-background p-6">
-      <Building2 className="text-primary" />
+    <article className="group rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary"><Building2 /></span>
       <p className="mt-6 text-xs font-semibold uppercase text-muted-foreground">Hospital service</p>
       <h3 className="mt-2 text-xl font-semibold">{service.title}</h3>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -104,7 +104,7 @@ export function HospitalServiceCard({ service }: { service: HospitalService }) {
 export function FacilityCard({ facility }: { facility: FacilityRow }) {
   const image = facility.images[0] ?? null;
   return (
-    <article className="border border-border bg-background">
+    <article className="group overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
       <div className="grid aspect-[16/9] place-items-center overflow-hidden bg-surface">
         {image ? (
           <img src={image} alt={facility.name} className="size-full object-cover" loading="lazy" />
@@ -131,7 +131,7 @@ export function FacilityCard({ facility }: { facility: FacilityRow }) {
 
 export function ReviewCard({ review }: { review: ReviewRow & { doctor?: { name: string; slug: string } | null } }) {
   return (
-    <figure className="border border-border bg-background p-6">
+    <figure className="rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
       <Quote className="text-primary" />
       <blockquote className="mt-5 leading-7">“{review.content}”</blockquote>
       <figcaption className="mt-5 text-sm text-muted-foreground">
@@ -149,7 +149,7 @@ export function ArticleCard({
   post: BlogPost & { category?: { name: string; slug: string } | null; author?: { name: string; slug: string } | null };
 }) {
   return (
-    <article className="flex flex-col border border-border bg-background p-6">
+    <article className="flex flex-col rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
       <CalendarDays className="text-primary" />
       {post.category ? <p className="mt-6 text-xs font-semibold uppercase text-muted-foreground">{post.category.name}</p> : null}
       <h3 className="mt-2 text-xl font-semibold">{post.title}</h3>
