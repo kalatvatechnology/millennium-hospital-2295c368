@@ -6,7 +6,8 @@ const requestedTarget = import.meta.env["VITE_MILLENNIUM_BACKEND_TARGET"];
  * Production is deliberately opt-in. This preparation must not connect to the
  * audited production project or replace the current preview environment.
  */
-export const backendTarget: BackendTarget = requestedTarget === "production" ? "production" : "local";
+export const backendTarget: BackendTarget =
+  requestedTarget === "production" ? "production" : "local";
 export const usesProductionContract = backendTarget === "production";
 
 export const productionTables = {
@@ -44,6 +45,7 @@ export const backendFeatures = {
   websitePages: !usesProductionContract,
   navigation: !usesProductionContract,
   profileRequests: !usesProductionContract,
+  userManagement: true,
 } as const;
 
 export const productionPermissionFunctions = {
@@ -59,7 +61,14 @@ export const productionPermissionFunctions = {
 export const CONTENT_STATUSES = ["draft", "published", "archived"] as const;
 export type ContentStatus = (typeof CONTENT_STATUSES)[number];
 
-export const ENQUIRY_STATUSES = ["new", "in_progress", "forwarded_whatsapp", "contacted", "closed", "spam"] as const;
+export const ENQUIRY_STATUSES = [
+  "new",
+  "in_progress",
+  "forwarded_whatsapp",
+  "contacted",
+  "closed",
+  "spam",
+] as const;
 export type ProductionEnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
 
 export function isPublished(row: Record<string, unknown>): boolean {

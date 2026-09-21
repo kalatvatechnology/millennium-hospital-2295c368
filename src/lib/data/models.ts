@@ -1,4 +1,5 @@
 import type { ContentStatus } from "./backend";
+import type { Role } from "../permissions";
 
 export type Department = {
   id: string;
@@ -64,7 +65,14 @@ export type MediaItem = {
   status: ContentStatus;
 };
 
-export type Faq = { id: string; question: string; answer: string; category: string | null; display_order: number | null; status: ContentStatus };
+export type Faq = {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  display_order: number | null;
+  status: ContentStatus;
+};
 export type FaqCategory = { id: string; name: string; slug: string };
 
 export type Review = {
@@ -93,4 +101,46 @@ export type BlogPost = {
   reviewer?: { name: string; slug: string } | null;
 };
 
-export type EnquiryOption = { id: string; name: string; slug?: string; whatsapp_number?: string | null };
+export type EnquiryOption = {
+  id: string;
+  name: string;
+  slug?: string;
+  whatsapp_number?: string | null;
+};
+
+export type StaffProfile = {
+  id: string;
+  fullName: string | null;
+  email: string | null;
+  doctorId: string | null;
+  active: boolean;
+  roles: Role[];
+};
+
+export type StaffDoctorOption = { id: string; name: string };
+
+export type StaffEnquiry = {
+  id: string;
+  createdAt: string;
+  patientName: string;
+  contactNumber: string;
+  registeredContactNumber: string | null;
+  familyMemberName: string | null;
+  preferredAt: string | null;
+  status: string;
+  message: string | null;
+  doctor: { name: string; whatsappNumber: string | null } | null;
+  department: { name: string } | null;
+  service: { title: string } | null;
+};
+
+export type AuditLog = {
+  id: string;
+  actorEmail: string | null;
+  action: string;
+  entityTable: string | null;
+  summary: string | null;
+  createdAt: string;
+};
+
+export type DashboardCount = { label: string; count: number };
