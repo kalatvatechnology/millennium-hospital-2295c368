@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EmptyState, ErrorState, LoadingState } from "@/components/shared/page";
+import { EmptyState, LoadingState } from "@/components/shared/page";
+import { AdminError } from "@/components/admin/ui";
 import { createPageMeta } from "@/lib/seo";
 import {
   ENQUIRY_STATUSES,
@@ -161,7 +162,7 @@ function AdminEnquiries() {
       {enquiries.isPending ? (
         <LoadingState />
       ) : enquiries.isError ? (
-        <ErrorState description={userFacingDataError(enquiries.error)} />
+        <AdminError message={userFacingDataError(enquiries.error)} />
       ) : rows.length === 0 ? (
         <EmptyState
           title="No enquiries found"
