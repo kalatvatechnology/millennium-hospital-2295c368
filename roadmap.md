@@ -39,4 +39,4 @@
 - [ ] Verify individual Admin responsibility delegation against approved backend permissions
 - [x] Redesign only the public Doctors directory with real-data search, filters, sorting, pagination, premium cards, and responsive states
 
-- [ ] Create and verify the CMS-driven hospital demonstration content without schema or production changes
+- [x] Create and verify the CMS-driven hospital demonstration content without schema or production changes
