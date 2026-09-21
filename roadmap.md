@@ -12,3 +12,7 @@
 - [x] Separate professional and hospital service listings
 - [x] Add WhatsApp and map-ready contact presentation
 - [x] Re-run type, build, desktop, and mobile verification
+- [x] Connect the website to the hospital database (departments, doctors, services, facilities, media, FAQs, reviews, articles)
+- [x] Add working enquiry form with WhatsApp hand-off and enquiry records
+- [x] Add staff area: sign in, dashboard, enquiry management with search, filters, status and CSV export, content management
+- [ ] Create the first staff account and grant it admin access (needs the hospital's chosen email address)
