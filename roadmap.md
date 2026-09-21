@@ -41,5 +41,6 @@
 
 - [x] Create and verify the CMS-driven hospital demonstration content without schema or production changes
 - [x] Remove only the explicitly labelled doctor-profile demonstration records and preserve legacy content
-- [ ] Add the minimum approved Doctor Profile CMS fields and relationships (blocked pending schema approval)
-- [ ] Build and verify the final CMS-driven Doctor Profile and editor after schema approval
+- [x] Add the approved Doctor Profile CMS fields, repeatable content, location/FAQ relationships, and media controls
+- [x] Build the responsive CMS-driven Doctor Profile with dynamic SEO, empty-section safety, and a tabbed staff editor
+- [ ] Complete authenticated browser checks for doctor profile relationship editing with each permitted staff role

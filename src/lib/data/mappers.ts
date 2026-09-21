@@ -28,6 +28,14 @@ const object = (value: unknown): Record<string, string> => {
     ),
   );
 };
+const booleanObject = (value: unknown): Record<string, boolean> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+    ),
+  );
+};
 const status = (row: Row): ContentStatus => {
   if (row["status"] === "published" || row["status"] === "archived") return row["status"];
   return row["published"] === true ? "published" : "draft";
@@ -65,6 +73,18 @@ export function mapDoctor(row: Row, department?: unknown): Doctor {
     specialty: text(row["specialization"] ?? row["specialty"]),
     experience_years: number(row["experience_years"]),
     bio: text(row["bio"]),
+    short_introduction: text(row["short_introduction"]),
+    hero_image_url: text(row["hero_image_url"]),
+    hero_image_alt: text(row["hero_image_alt"]),
+    profile_image_alt: text(row["profile_image_alt"]),
+    quote: text(row["quote"]),
+    quote_attribution: text(row["quote_attribution"]),
+    phone_number: text(row["phone_number"]),
+    seo_title: text(row["seo_title"]),
+    seo_description: text(row["seo_description"]),
+    canonical_url: text(row["canonical_url"]),
+    og_image_url: text(row["og_image_url"]),
+    section_visibility: booleanObject(row["section_visibility"]),
     expertise: list(row["expertise"]),
     languages: list(row["languages"]),
     location: text(row["location"] ?? row["location_info"]),

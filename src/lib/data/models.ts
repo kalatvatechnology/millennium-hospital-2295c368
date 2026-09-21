@@ -20,6 +20,18 @@ export type Doctor = {
   specialty: string | null;
   experience_years: number | null;
   bio: string | null;
+  short_introduction: string | null;
+  hero_image_url: string | null;
+  hero_image_alt: string | null;
+  profile_image_alt: string | null;
+  quote: string | null;
+  quote_attribution: string | null;
+  phone_number: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  canonical_url: string | null;
+  og_image_url: string | null;
+  section_visibility: Record<string, boolean>;
   expertise: string[];
   languages: string[];
   location: string | null;
@@ -30,6 +42,63 @@ export type Doctor = {
   display_order: number | null;
   status: ContentStatus;
   department: Pick<Department, "id" | "name" | "slug"> | null;
+};
+
+export type DoctorStatistic = {
+  id: string;
+  value: string;
+  label: string;
+  icon: string | null;
+  display_order: number;
+};
+export type DoctorSpecialization = {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  professional_service_id: string | null;
+  display_order: number;
+};
+export type DoctorExperience = {
+  id: string;
+  organization: string;
+  position: string | null;
+  start_year: number | null;
+  end_year: number | null;
+  is_present: boolean;
+  description: string | null;
+  display_order: number;
+};
+export type DoctorEducation = {
+  id: string;
+  qualification: string;
+  institution: string | null;
+  year: number | null;
+  description: string | null;
+  display_order: number;
+};
+export type DoctorAchievement = {
+  id: string;
+  achievement_type: string;
+  title: string;
+  organization: string | null;
+  year: number | null;
+  description: string | null;
+  display_order: number;
+};
+export type DoctorLocation = {
+  id: string;
+  name: string;
+  slug: string;
+  address_line: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  phone: string | null;
+  map_url: string | null;
+  opening_hours: string | null;
+  consultation_availability: string | null;
+  display_order: number;
 };
 
 export type Service = {
