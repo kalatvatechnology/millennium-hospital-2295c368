@@ -31,4 +31,4 @@
 - [x] Isolate modules without production backend support and document all remaining connection blockers and product decisions
 - [x] Centralize production permission checks and supported staff data access without connecting production
 - [x] Resolve confirmed service-query and compatibility lint blockers
-- [ ] Re-run local type, build, lint, public, and staff validation
+- [x] Re-run local type, build, lint, public, and staff validation
