@@ -801,7 +801,8 @@ function ReviewSelector({
                   onCheckedChange={(checked) =>
                     setSelected((current) => {
                       const next = new Set(current);
-                      checked ? next.add(rowId) : next.delete(rowId);
+                      if (checked) next.add(rowId);
+                      else next.delete(rowId);
                       return next;
                     })
                   }
