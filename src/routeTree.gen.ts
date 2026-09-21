@@ -24,10 +24,26 @@ import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
 import { Route as AdminIndexRouteImport } from './routes/[_]admin.index'
-import { Route as AdminContentRouteImport } from './routes/[_]admin.content'
+import { Route as AdminAuditLogsRouteImport } from './routes/[_]admin.audit-logs'
+import { Route as AdminBlogRouteImport } from './routes/[_]admin.blog'
 import { Route as AdminDashboardRouteImport } from './routes/[_]admin.dashboard'
+import { Route as AdminDepartmentsRouteImport } from './routes/[_]admin.departments'
+import { Route as AdminDoctorsRouteImport } from './routes/[_]admin.doctors'
 import { Route as AdminEnquiriesRouteImport } from './routes/[_]admin.enquiries'
+import { Route as AdminFacilitiesRouteImport } from './routes/[_]admin.facilities'
+import { Route as AdminFaqCategoriesRouteImport } from './routes/[_]admin.faq-categories'
+import { Route as AdminFaqsRouteImport } from './routes/[_]admin.faqs'
+import { Route as AdminHospitalServicesRouteImport } from './routes/[_]admin.hospital-services'
+import { Route as AdminLocationsRouteImport } from './routes/[_]admin.locations'
 import { Route as AdminLoginRouteImport } from './routes/[_]admin.login'
+import { Route as AdminMediaRouteImport } from './routes/[_]admin.media'
+import { Route as AdminNavigationRouteImport } from './routes/[_]admin.navigation'
+import { Route as AdminNotificationsRouteImport } from './routes/[_]admin.notifications'
+import { Route as AdminPagesRouteImport } from './routes/[_]admin.pages'
+import { Route as AdminProfessionalServicesRouteImport } from './routes/[_]admin.professional-services'
+import { Route as AdminProfileRequestsRouteImport } from './routes/[_]admin.profile-requests'
+import { Route as AdminReviewsRouteImport } from './routes/[_]admin.reviews'
+import { Route as AdminUsersRouteImport } from './routes/[_]admin.users'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as DepartmentsIndexRouteImport } from './routes/departments.index'
@@ -115,9 +131,14 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminContentRoute = AdminContentRouteImport.update({
-  id: '/content',
-  path: '/content',
+const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBlogRoute = AdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -125,14 +146,90 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDepartmentsRoute = AdminDepartmentsRouteImport.update({
+  id: '/departments',
+  path: '/departments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDoctorsRoute = AdminDoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
   id: '/enquiries',
   path: '/enquiries',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFacilitiesRoute = AdminFacilitiesRouteImport.update({
+  id: '/facilities',
+  path: '/facilities',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFaqCategoriesRoute = AdminFaqCategoriesRouteImport.update({
+  id: '/faq-categories',
+  path: '/faq-categories',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFaqsRoute = AdminFaqsRouteImport.update({
+  id: '/faqs',
+  path: '/faqs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminHospitalServicesRoute = AdminHospitalServicesRouteImport.update({
+  id: '/hospital-services',
+  path: '/hospital-services',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLocationsRoute = AdminLocationsRouteImport.update({
+  id: '/locations',
+  path: '/locations',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNavigationRoute = AdminNavigationRouteImport.update({
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPagesRoute = AdminPagesRouteImport.update({
+  id: '/pages',
+  path: '/pages',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProfessionalServicesRoute =
+  AdminProfessionalServicesRouteImport.update({
+    id: '/professional-services',
+    path: '/professional-services',
+    getParentRoute: () => AdminRoute,
+  } as any)
+const AdminProfileRequestsRoute = AdminProfileRequestsRouteImport.update({
+  id: '/profile-requests',
+  path: '/profile-requests',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -207,10 +304,26 @@ export interface FileRoutesByFullPath {
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
-  '/_admin/content': typeof AdminContentRoute
+  '/_admin/audit-logs': typeof AdminAuditLogsRoute
+  '/_admin/blog': typeof AdminBlogRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/departments': typeof AdminDepartmentsRoute
+  '/_admin/doctors': typeof AdminDoctorsRoute
   '/_admin/enquiries': typeof AdminEnquiriesRoute
+  '/_admin/facilities': typeof AdminFacilitiesRoute
+  '/_admin/faq-categories': typeof AdminFaqCategoriesRoute
+  '/_admin/faqs': typeof AdminFaqsRoute
+  '/_admin/hospital-services': typeof AdminHospitalServicesRoute
+  '/_admin/locations': typeof AdminLocationsRoute
   '/_admin/login': typeof AdminLoginRoute
+  '/_admin/media': typeof AdminMediaRoute
+  '/_admin/navigation': typeof AdminNavigationRoute
+  '/_admin/notifications': typeof AdminNotificationsRoute
+  '/_admin/pages': typeof AdminPagesRoute
+  '/_admin/professional-services': typeof AdminProfessionalServicesRoute
+  '/_admin/profile-requests': typeof AdminProfileRequestsRoute
+  '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/users': typeof AdminUsersRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
   '/doctors/$slug': typeof DoctorsSlugRoute
@@ -233,10 +346,26 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
-  '/_admin/content': typeof AdminContentRoute
+  '/_admin/audit-logs': typeof AdminAuditLogsRoute
+  '/_admin/blog': typeof AdminBlogRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/departments': typeof AdminDepartmentsRoute
+  '/_admin/doctors': typeof AdminDoctorsRoute
   '/_admin/enquiries': typeof AdminEnquiriesRoute
+  '/_admin/facilities': typeof AdminFacilitiesRoute
+  '/_admin/faq-categories': typeof AdminFaqCategoriesRoute
+  '/_admin/faqs': typeof AdminFaqsRoute
+  '/_admin/hospital-services': typeof AdminHospitalServicesRoute
+  '/_admin/locations': typeof AdminLocationsRoute
   '/_admin/login': typeof AdminLoginRoute
+  '/_admin/media': typeof AdminMediaRoute
+  '/_admin/navigation': typeof AdminNavigationRoute
+  '/_admin/notifications': typeof AdminNotificationsRoute
+  '/_admin/pages': typeof AdminPagesRoute
+  '/_admin/professional-services': typeof AdminProfessionalServicesRoute
+  '/_admin/profile-requests': typeof AdminProfileRequestsRoute
+  '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/users': typeof AdminUsersRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
   '/doctors/$slug': typeof DoctorsSlugRoute
@@ -266,10 +395,26 @@ export interface FileRoutesById {
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
-  '/_admin/content': typeof AdminContentRoute
+  '/_admin/audit-logs': typeof AdminAuditLogsRoute
+  '/_admin/blog': typeof AdminBlogRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/departments': typeof AdminDepartmentsRoute
+  '/_admin/doctors': typeof AdminDoctorsRoute
   '/_admin/enquiries': typeof AdminEnquiriesRoute
+  '/_admin/facilities': typeof AdminFacilitiesRoute
+  '/_admin/faq-categories': typeof AdminFaqCategoriesRoute
+  '/_admin/faqs': typeof AdminFaqsRoute
+  '/_admin/hospital-services': typeof AdminHospitalServicesRoute
+  '/_admin/locations': typeof AdminLocationsRoute
   '/_admin/login': typeof AdminLoginRoute
+  '/_admin/media': typeof AdminMediaRoute
+  '/_admin/navigation': typeof AdminNavigationRoute
+  '/_admin/notifications': typeof AdminNotificationsRoute
+  '/_admin/pages': typeof AdminPagesRoute
+  '/_admin/professional-services': typeof AdminProfessionalServicesRoute
+  '/_admin/profile-requests': typeof AdminProfileRequestsRoute
+  '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/users': typeof AdminUsersRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
   '/doctors/$slug': typeof DoctorsSlugRoute
@@ -300,10 +445,26 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
-    | '/_admin/content'
+    | '/_admin/audit-logs'
+    | '/_admin/blog'
     | '/_admin/dashboard'
+    | '/_admin/departments'
+    | '/_admin/doctors'
     | '/_admin/enquiries'
+    | '/_admin/facilities'
+    | '/_admin/faq-categories'
+    | '/_admin/faqs'
+    | '/_admin/hospital-services'
+    | '/_admin/locations'
     | '/_admin/login'
+    | '/_admin/media'
+    | '/_admin/navigation'
+    | '/_admin/notifications'
+    | '/_admin/pages'
+    | '/_admin/professional-services'
+    | '/_admin/profile-requests'
+    | '/_admin/reviews'
+    | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
     | '/doctors/$slug'
@@ -326,10 +487,26 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/reviews'
     | '/terms-and-conditions'
-    | '/_admin/content'
+    | '/_admin/audit-logs'
+    | '/_admin/blog'
     | '/_admin/dashboard'
+    | '/_admin/departments'
+    | '/_admin/doctors'
     | '/_admin/enquiries'
+    | '/_admin/facilities'
+    | '/_admin/faq-categories'
+    | '/_admin/faqs'
+    | '/_admin/hospital-services'
+    | '/_admin/locations'
     | '/_admin/login'
+    | '/_admin/media'
+    | '/_admin/navigation'
+    | '/_admin/notifications'
+    | '/_admin/pages'
+    | '/_admin/professional-services'
+    | '/_admin/profile-requests'
+    | '/_admin/reviews'
+    | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
     | '/doctors/$slug'
@@ -358,10 +535,26 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
-    | '/_admin/content'
+    | '/_admin/audit-logs'
+    | '/_admin/blog'
     | '/_admin/dashboard'
+    | '/_admin/departments'
+    | '/_admin/doctors'
     | '/_admin/enquiries'
+    | '/_admin/facilities'
+    | '/_admin/faq-categories'
+    | '/_admin/faqs'
+    | '/_admin/hospital-services'
+    | '/_admin/locations'
     | '/_admin/login'
+    | '/_admin/media'
+    | '/_admin/navigation'
+    | '/_admin/notifications'
+    | '/_admin/pages'
+    | '/_admin/professional-services'
+    | '/_admin/profile-requests'
+    | '/_admin/reviews'
+    | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
     | '/doctors/$slug'
@@ -500,11 +693,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/content': {
-      id: '/_admin/content'
-      path: '/content'
-      fullPath: '/_admin/content'
-      preLoaderRoute: typeof AdminContentRouteImport
+    '/_admin/audit-logs': {
+      id: '/_admin/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/_admin/audit-logs'
+      preLoaderRoute: typeof AdminAuditLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/blog': {
+      id: '/_admin/blog'
+      path: '/blog'
+      fullPath: '/_admin/blog'
+      preLoaderRoute: typeof AdminBlogRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/dashboard': {
@@ -514,6 +714,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/departments': {
+      id: '/_admin/departments'
+      path: '/departments'
+      fullPath: '/_admin/departments'
+      preLoaderRoute: typeof AdminDepartmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/doctors': {
+      id: '/_admin/doctors'
+      path: '/doctors'
+      fullPath: '/_admin/doctors'
+      preLoaderRoute: typeof AdminDoctorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/enquiries': {
       id: '/_admin/enquiries'
       path: '/enquiries'
@@ -521,11 +735,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEnquiriesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/facilities': {
+      id: '/_admin/facilities'
+      path: '/facilities'
+      fullPath: '/_admin/facilities'
+      preLoaderRoute: typeof AdminFacilitiesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/faq-categories': {
+      id: '/_admin/faq-categories'
+      path: '/faq-categories'
+      fullPath: '/_admin/faq-categories'
+      preLoaderRoute: typeof AdminFaqCategoriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/faqs': {
+      id: '/_admin/faqs'
+      path: '/faqs'
+      fullPath: '/_admin/faqs'
+      preLoaderRoute: typeof AdminFaqsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/hospital-services': {
+      id: '/_admin/hospital-services'
+      path: '/hospital-services'
+      fullPath: '/_admin/hospital-services'
+      preLoaderRoute: typeof AdminHospitalServicesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/locations': {
+      id: '/_admin/locations'
+      path: '/locations'
+      fullPath: '/_admin/locations'
+      preLoaderRoute: typeof AdminLocationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/login': {
       id: '/_admin/login'
       path: '/login'
       fullPath: '/_admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/media': {
+      id: '/_admin/media'
+      path: '/media'
+      fullPath: '/_admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/navigation': {
+      id: '/_admin/navigation'
+      path: '/navigation'
+      fullPath: '/_admin/navigation'
+      preLoaderRoute: typeof AdminNavigationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/notifications': {
+      id: '/_admin/notifications'
+      path: '/notifications'
+      fullPath: '/_admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/pages': {
+      id: '/_admin/pages'
+      path: '/pages'
+      fullPath: '/_admin/pages'
+      preLoaderRoute: typeof AdminPagesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/professional-services': {
+      id: '/_admin/professional-services'
+      path: '/professional-services'
+      fullPath: '/_admin/professional-services'
+      preLoaderRoute: typeof AdminProfessionalServicesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/profile-requests': {
+      id: '/_admin/profile-requests'
+      path: '/profile-requests'
+      fullPath: '/_admin/profile-requests'
+      preLoaderRoute: typeof AdminProfileRequestsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/reviews': {
+      id: '/_admin/reviews'
+      path: '/reviews'
+      fullPath: '/_admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/users': {
+      id: '/_admin/users'
+      path: '/users'
+      fullPath: '/_admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
     '/blog/': {
@@ -609,18 +914,50 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
-  AdminContentRoute: typeof AdminContentRoute
+  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
+  AdminBlogRoute: typeof AdminBlogRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminDepartmentsRoute: typeof AdminDepartmentsRoute
+  AdminDoctorsRoute: typeof AdminDoctorsRoute
   AdminEnquiriesRoute: typeof AdminEnquiriesRoute
+  AdminFacilitiesRoute: typeof AdminFacilitiesRoute
+  AdminFaqCategoriesRoute: typeof AdminFaqCategoriesRoute
+  AdminFaqsRoute: typeof AdminFaqsRoute
+  AdminHospitalServicesRoute: typeof AdminHospitalServicesRoute
+  AdminLocationsRoute: typeof AdminLocationsRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminMediaRoute: typeof AdminMediaRoute
+  AdminNavigationRoute: typeof AdminNavigationRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
+  AdminPagesRoute: typeof AdminPagesRoute
+  AdminProfessionalServicesRoute: typeof AdminProfessionalServicesRoute
+  AdminProfileRequestsRoute: typeof AdminProfileRequestsRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminContentRoute: AdminContentRoute,
+  AdminAuditLogsRoute: AdminAuditLogsRoute,
+  AdminBlogRoute: AdminBlogRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminDepartmentsRoute: AdminDepartmentsRoute,
+  AdminDoctorsRoute: AdminDoctorsRoute,
   AdminEnquiriesRoute: AdminEnquiriesRoute,
+  AdminFacilitiesRoute: AdminFacilitiesRoute,
+  AdminFaqCategoriesRoute: AdminFaqCategoriesRoute,
+  AdminFaqsRoute: AdminFaqsRoute,
+  AdminHospitalServicesRoute: AdminHospitalServicesRoute,
+  AdminLocationsRoute: AdminLocationsRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminMediaRoute: AdminMediaRoute,
+  AdminNavigationRoute: AdminNavigationRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
+  AdminPagesRoute: AdminPagesRoute,
+  AdminProfessionalServicesRoute: AdminProfessionalServicesRoute,
+  AdminProfileRequestsRoute: AdminProfileRequestsRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

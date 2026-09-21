@@ -1,26 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { isRole, permissionsForRoles, type Permission, type Role } from "@/lib/permissions";
+
+type Profile = { id: string; full_name: string | null; email: string | null; doctor_id: string | null };
 
 export function useAdminSession() {
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => {
       setSession(next);
       if (!next) {
-        setIsAdmin(false);
+        setRoles([]);
+        setProfile(null);
         setLoading(false);
       }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (!data.session) {
-        setIsAdmin(false);
-        setLoading(false);
-      }
+      if (!data.session) setLoading(false);
     });
     return () => subscription.subscription.unsubscribe();
   }, []);
@@ -29,15 +31,30 @@ export function useAdminSession() {
     if (!session) return;
     let active = true;
     setLoading(true);
-    supabase.rpc("is_admin").then(({ data, error }) => {
+    void (async () => {
+      const [roleResult, profileResult] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", session.user.id),
+        supabase.from("profiles").select("id, full_name, email, doctor_id").eq("id", session.user.id).maybeSingle(),
+      ]);
       if (!active) return;
-      setIsAdmin(!error && data === true);
+      setRoles((roleResult.data ?? []).map((row) => row.role).filter(isRole));
+      setProfile(profileResult.data ?? null);
       setLoading(false);
-    });
+    })();
     return () => {
       active = false;
     };
   }, [session]);
 
-  return { session, isAdmin, loading, signOut: () => supabase.auth.signOut() };
+  const permissions = useMemo(() => permissionsForRoles(roles), [roles]);
+
+  return {
+    session,
+    profile,
+    roles,
+    loading,
+    isStaff: roles.length > 0,
+    can: (permission: Permission) => permissions.has(permission),
+    signOut: () => supabase.auth.signOut(),
+  };
 }
