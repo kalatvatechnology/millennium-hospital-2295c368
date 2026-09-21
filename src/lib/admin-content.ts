@@ -104,7 +104,11 @@ export const contentTypes: ContentType[] = [
               type: "textarea" as const,
             },
             { name: "location_info", label: "Location information", type: "textarea" as const },
-            { name: "social_links", label: "Professional social links", type: "json" as const },
+        {
+          name: "social_links",
+          label: "Professional social links (JSON)",
+          type: "textarea" as const,
+        },
           ]
         : [
             {
