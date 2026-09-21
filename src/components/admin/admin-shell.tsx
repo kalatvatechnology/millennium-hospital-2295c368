@@ -37,6 +37,7 @@ const navItems: NavItem[] = [
     to: "/_admin/blog",
     permission: ["content.write", "blog.review"],
   },
+  { label: "Blog comments", to: "/_admin/blog-comments", permission: "content.write" },
   ...(backendFeatures.profileRequests
     ? [
         {

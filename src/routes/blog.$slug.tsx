@@ -96,8 +96,8 @@ function ArticleDetail() {
                 <ArticleCharts charts={data.post.visualizations} />
                 <ArticleEngagement
                   postId={data.post.id}
-                  engagementEnabled={data.post.engagement_enabled}
-                  commentsEnabled={data.post.comments_enabled}
+                  engagementEnabled={data.post.engagement_enabled !== false}
+                  commentsEnabled={data.post.comments_enabled === true}
                 />
               </ContentSection>
             </>
