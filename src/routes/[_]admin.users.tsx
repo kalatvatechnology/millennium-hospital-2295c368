@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { logAction } from "@/lib/audit";
 import { ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
-import { backendFeatures } from "@/lib/data/backend";
+import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
+import { listStaffDoctorOptions, listStaffUsers, updateStaffUser } from "@/lib/data/staff-repository";
+import type { StaffProfile } from "@/lib/data/models";
+import { userFacingDataError } from "@/lib/data/errors";
 
 export const Route = createFileRoute("/_admin/users")({
   head: () => ({ meta: [...createPageMeta("Users and roles", "Manage staff accounts and their roles."), { name: "robots", content: "noindex, nofollow" }] }),
@@ -21,10 +22,8 @@ export const Route = createFileRoute("/_admin/users")({
 
 const PAGE_SIZE = 20;
 
-type ProfileRow = { id: string; full_name: string | null; email: string | null; doctor_id: string | null; active: boolean };
-
 function AdminUsers() {
-  if (!backendFeatures.profiles) return <AdminFeatureUnavailable title="Users and roles" />;
+  if (!backendFeatures.userManagement) return <AdminFeatureUnavailable title="Users and roles" />;
   return <AvailableUsers />;
 }
 
@@ -32,49 +31,28 @@ function AvailableUsers() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState<{ profile: ProfileRow; roles: Role[]; doctorId: string } | null>(null);
+  const [editing, setEditing] = useState<{ profile: StaffProfile; roles: Role[]; doctorId: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const profiles = useQuery({
     queryKey: ["admin-profiles"],
-    queryFn: async () => {
-      const { data, error: queryError } = await supabase.from("profiles").select("id, full_name, email, doctor_id, active").order("created_at");
-      if (queryError) throw new Error(queryError.message);
-      return (data ?? []) as ProfileRow[];
-    },
-  });
-
-  const roleRows = useQuery({
-    queryKey: ["admin-user-roles"],
-    queryFn: async () => {
-      const { data, error: queryError } = await supabase.from("user_roles").select("user_id, role");
-      if (queryError) throw new Error(queryError.message);
-      return data ?? [];
-    },
+    queryFn: listStaffUsers,
   });
 
   const doctors = useQuery({
     queryKey: ["admin-users-doctors"],
-    queryFn: async () => {
-      const { data, error: queryError } = await supabase.from("doctors").select("id, name").order("name");
-      if (queryError) throw new Error(queryError.message);
-      return data ?? [];
-    },
+    queryFn: listStaffDoctorOptions,
   });
 
   const rolesByUser = useMemo(() => {
     const map = new Map<string, Role[]>();
-    for (const row of roleRows.data ?? []) {
-      const list = map.get(row.user_id) ?? [];
-      list.push(row.role as Role);
-      map.set(row.user_id, list);
-    }
+    for (const row of profiles.data ?? []) map.set(row.id, row.roles);
     return map;
-  }, [roleRows.data]);
+  }, [profiles.data]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return (profiles.data ?? []).filter((row) => !term || `${row.full_name ?? ""} ${row.email ?? ""}`.toLowerCase().includes(term));
+    return (profiles.data ?? []).filter((row) => !term || `${row.fullName ?? ""} ${row.email ?? ""} ${row.id}`.toLowerCase().includes(term));
   }, [profiles.data, search]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -84,39 +62,24 @@ function AvailableUsers() {
   const save = useMutation({
     mutationFn: async () => {
       if (!editing) return;
-      const userId = editing.profile.id;
-      const existing = rolesByUser.get(userId) ?? [];
-      const toAdd = editing.roles.filter((role) => !existing.includes(role));
-      const toRemove = existing.filter((role) => !editing.roles.includes(role));
-      if (toRemove.length) {
-        const { error: removeError } = await (supabase as any).from("user_roles").delete().eq("user_id", userId).in("role", toRemove);
-        if (removeError) throw new Error(removeError.message);
-      }
-      if (toAdd.length) {
-        const { error: addError } = await (supabase as any).from("user_roles").insert(toAdd.map((role) => ({ user_id: userId, role })));
-        if (addError) throw new Error(addError.message);
-      }
-      const { error: profileError } = await supabase.from("profiles").update({ doctor_id: editing.doctorId || null }).eq("id", userId);
-      if (profileError) throw new Error(profileError.message);
-      await logAction({ action: "roles_updated", entityTable: "user_roles", entityId: userId, summary: `Updated roles for ${editing.profile.email ?? userId}: ${editing.roles.join(", ") || "none"}` });
+      await updateStaffUser({ ...editing.profile, roles: editing.roles, doctorId: editing.doctorId || null });
     },
     onSuccess: () => {
       setEditing(null);
       setError(null);
-      void queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
     },
-    onError: (mutationError: Error) => setError(mutationError.message),
+    onError: (mutationError: Error) => setError(userFacingDataError(mutationError)),
   });
 
-  const columns: Column<ProfileRow>[] = [
+  const columns: Column<StaffProfile>[] = [
     {
       key: "person",
       header: "Staff member",
       cell: (row) => (
         <div>
-          <p className="font-medium">{row.full_name ?? "No name recorded"}</p>
-          <p className="text-sm text-muted-foreground">{row.email ?? "—"}</p>
+          <p className="font-medium">{row.fullName ?? (usesProductionContract ? "Staff account" : "No name recorded")}</p>
+          <p className="text-sm text-muted-foreground">{row.email ?? row.id}</p>
         </div>
       ),
     },
@@ -141,7 +104,7 @@ function AvailableUsers() {
       header: "Actions",
       className: "text-right",
       cell: (row) => (
-        <Button size="sm" variant="outline" onClick={() => setEditing({ profile: row, roles: rolesByUser.get(row.id) ?? [], doctorId: row.doctor_id ?? "" })}>
+        <Button size="sm" variant="outline" onClick={() => setEditing({ profile: row, roles: rolesByUser.get(row.id) ?? [], doctorId: row.doctorId ?? "" })}>
           Manage access
         </Button>
       ),
@@ -161,7 +124,7 @@ function AvailableUsers() {
         open={editing !== null}
         onOpenChange={(open) => (open ? null : setEditing(null))}
         title="Manage access"
-        description={editing?.profile.email ?? ""}
+        description={editing?.profile.email ?? editing?.profile.id ?? ""}
         busy={save.isPending}
         onSubmit={() => save.mutate()}
       >
@@ -184,7 +147,7 @@ function AvailableUsers() {
             </label>
           ))}
         </fieldset>
-        <div>
+        {!usesProductionContract ? <div>
           <Label>Linked doctor profile</Label>
           <Select value={editing?.doctorId || "none"} onValueChange={(next) => setEditing((current) => (current ? { ...current, doctorId: next === "none" ? "" : next } : current))}>
             <SelectTrigger className="mt-2">
@@ -199,7 +162,7 @@ function AvailableUsers() {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> : null}
       </FormModal>
     </AdminShell>
   );
