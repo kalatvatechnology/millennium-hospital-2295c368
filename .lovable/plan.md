@@ -16,3 +16,16 @@ Create the final public doctor profile in the supplied desktop and mobile visual
 - Never populate the reference image's sample statistics, schedules, credentials, locations, media, reviews, FAQs, or claims.
 - Any new tables must include explicit grants, row-level security, and policies in the same migration.
 - The current production-compatible adapter remains disconnected; changes target only the approved local Lovable Cloud schema.
+
+## Approval required: minimum schema additions
+The current CMS cannot represent the required profile without a database change. Add only:
+
+- Doctor fields for short introduction, hero image, quote and attribution, phone, SEO title/description/canonical/OG image, and optional-section visibility settings.
+- Repeatable doctor statistics, specialization cards, experience, education, and achievements/memberships, each with enabled and display-order controls.
+- Doctor-to-location relationships with consultation availability, enabled, and display order.
+- Doctor-to-FAQ relationships with enabled and display order.
+- Extend the existing doctor-to-media relationship with profile visibility, enabled, and display order.
+
+Existing structures remain authoritative for doctors, departments, professional services, reviews, media, FAQs, locations, publishing, verification, appointments, authentication, roles, and security. No content is seeded by this migration.
+
+The existing review relationship already supports doctor-specific approved public reviews. Professional services and media already have doctor junctions, though media needs profile-specific relationship controls. The current staff editor has no relationship manager, tabs, image picker, section controls, repeatable editors, or live preview; these will be added after schema approval without creating a second CMS.
