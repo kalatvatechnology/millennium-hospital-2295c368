@@ -1,0 +1,6 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { PublicPage } from "@/components/layout/public-page";
+import { ContentSection, PageIntro } from "@/components/shared/page";
+import { createPageMeta } from "@/lib/seo";
+export const Route = createFileRoute("/about")({ head: () => ({ meta: createPageMeta("About", "Learn about The Millennium Hospital and its approach to patient care.") }), component: AboutPage });
+function AboutPage(){return <PublicPage><PageIntro eyebrow="About us" title="A hospital built around thoughtful care" description="This page is prepared for the hospital's verified story, values, leadership, and care commitments."/><ContentSection><div className="grid gap-10 md:grid-cols-2"><div><h2 className="text-3xl font-semibold">Our story</h2><p className="mt-4 leading-7 text-muted-foreground">The hospital's official history and milestones will appear here once approved.</p></div><div className="border-l-2 border-primary pl-6"><h2 className="text-2xl font-semibold">Our commitment</h2><p className="mt-4 leading-7 text-muted-foreground">Verified information about clinical standards, patient experience, and community care will be published here.</p></div></div></ContentSection></PublicPage>}

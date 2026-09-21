@@ -1,0 +1,3 @@
+import { PublicPage } from "@/components/layout/public-page";
+import { ContentSection, PageIntro } from "./page";
+export function LegalPage({ title, description }: { title: string; description: string }) { return <PublicPage><PageIntro eyebrow="Legal" title={title} description={description}/><ContentSection><div className="prose-copy max-w-3xl"><h2>Document status</h2><p>This page is reserved for the hospital's approved legal text. No policy terms have been published yet.</p><p>Before launch, this content should be reviewed by an appropriately qualified legal professional and updated with the hospital's verified business and contact information.</p></div></ContentSection></PublicPage>; }
