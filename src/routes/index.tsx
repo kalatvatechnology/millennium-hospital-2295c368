@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Building2, CircleHelp, HeartHandshake, MapPin, Newspaper, Quote, Stethoscope, UserRound } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowRight, HeartHandshake, MapPin, Stethoscope } from "lucide-react";
 import { PublicPage } from "@/components/layout/public-page";
 import { SectionHeading, UnpublishedPanel } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/")({ head: () => ({ meta: createPageMeta(
 const professionalServices = services.filter((service) => service.type === "professional");
 const hospitalServices = services.filter((service) => service.type === "hospital");
 
-function HomeSection({ children, muted = false, id }: { children: React.ReactNode; muted?: boolean; id: string }) {
+function HomeSection({ children, muted = false, id }: { children: ReactNode; muted?: boolean; id: string }) {
   return <section id={id} className={muted ? "border-y border-border bg-surface" : "bg-background"}><div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">{children}</div></section>;
 }
 
