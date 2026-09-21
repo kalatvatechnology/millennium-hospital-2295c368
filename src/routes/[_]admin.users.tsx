@@ -261,7 +261,9 @@ function AvailableUsers() {
                   <tr>
                     <th className="p-3 font-semibold">Area</th>
                     {RESPONSIBILITY_ACTIONS.map((action) => (
-                      <th key={action} className="p-3 text-center font-semibold">{action}</th>
+                      <th key={action} className="p-3 text-center font-semibold">
+                        {action}
+                      </th>
                     ))}
                   </tr>
                 </thead>

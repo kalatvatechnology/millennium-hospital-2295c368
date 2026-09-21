@@ -8,7 +8,12 @@ import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable"
 const type = contentTypeByKey("hospital-services")!;
 
 export const Route = createFileRoute("/_admin/hospital-services")({
-  head: () => ({ meta: [...createPageMeta(type.label, type.description), { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({
+    meta: [
+      ...createPageMeta(type.label, type.description),
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: () =>
     usesProductionContract ? (
       <AdminFeatureUnavailable title="Hospital services" frontendReady />
