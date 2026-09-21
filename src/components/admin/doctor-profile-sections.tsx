@@ -163,13 +163,17 @@ export const DoctorProfileSections = forwardRef<
       <div hidden={activeTab !== "hero"}>
         <VisibilityEditor
           doctorId={doctorId}
-          register={(save) => editors.set("visibility", save)}
+          register={(save) => {
+            editors.set("visibility", save);
+          }}
         />
         <div className="mt-6">
           <SectionEditor
             doctorId={doctorId}
             section={statisticsSection}
-            register={(save) => editors.set("doctor_statistics", save)}
+            register={(save) => {
+              editors.set("doctor_statistics", save);
+            }}
           />
         </div>
       </div>
@@ -177,13 +181,17 @@ export const DoctorProfileSections = forwardRef<
         <SectionEditor
           doctorId={doctorId}
           section={specializationsSection}
-          register={(save) => editors.set("doctor_specializations", save)}
+          register={(save) => {
+            editors.set("doctor_specializations", save);
+          }}
         />
         <div className="mt-6">
           <RelationshipGroup
             doctorId={doctorId}
             relation={servicesRelationship}
-            register={(save) => editors.set("services", save)}
+            register={(save) => {
+              editors.set("services", save);
+            }}
           />
         </div>
       </div>
@@ -191,41 +199,58 @@ export const DoctorProfileSections = forwardRef<
         <SectionEditor
           doctorId={doctorId}
           section={experienceSection}
-          register={(save) => editors.set("doctor_experience", save)}
+          register={(save) => {
+            editors.set("doctor_experience", save);
+          }}
         />
         <SectionEditor
           doctorId={doctorId}
           section={educationSection}
-          register={(save) => editors.set("doctor_education", save)}
+          register={(save) => {
+            editors.set("doctor_education", save);
+          }}
         />
       </div>
       <div hidden={activeTab !== "achievements"}>
         <SectionEditor
           doctorId={doctorId}
           section={achievementsSection}
-          register={(save) => editors.set("doctor_achievements", save)}
+          register={(save) => {
+            editors.set("doctor_achievements", save);
+          }}
         />
       </div>
       <div hidden={activeTab !== "locations"}>
         <RelationshipGroup
           doctorId={doctorId}
           relation={locationsRelationship}
-          register={(save) => editors.set("locations", save)}
+          register={(save) => {
+            editors.set("locations", save);
+          }}
         />
       </div>
       <div hidden={activeTab !== "media"}>
         <RelationshipGroup
           doctorId={doctorId}
           relation={mediaRelationship}
-          register={(save) => editors.set("media", save)}
+          register={(save) => {
+            editors.set("media", save);
+          }}
         />
       </div>
       <div hidden={activeTab !== "reviews"} className="grid gap-6">
-        <ReviewSelector doctorId={doctorId} register={(save) => editors.set("reviews", save)} />
+        <ReviewSelector
+          doctorId={doctorId}
+          register={(save) => {
+            editors.set("reviews", save);
+          }}
+        />
         <RelationshipGroup
           doctorId={doctorId}
           relation={faqsRelationship}
-          register={(save) => editors.set("faqs", save)}
+          register={(save) => {
+            editors.set("faqs", save);
+          }}
         />
       </div>
     </div>
