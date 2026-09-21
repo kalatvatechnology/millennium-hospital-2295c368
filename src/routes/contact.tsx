@@ -1,0 +1,13 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { PublicPage } from "@/components/layout/public-page";
+import { PageIntro, ContentSection } from "@/components/shared/page";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { createPageMeta } from "@/lib/seo";
+import { siteConfig } from "@/config/site";
+export const Route = createFileRoute("/contact")({ head: () => ({ meta: createPageMeta("Contact", "Find verified contact information for The Millennium Hospital.") }), component: ContactPage });
+const contacts=[{icon:Phone,label:"Phone",value:siteConfig.contact.phone},{icon:Mail,label:"Email",value:siteConfig.contact.email},{icon:MapPin,label:"Address",value:siteConfig.contact.address},{icon:Clock,label:"Opening hours",value:null}];
+function ContactPage(){return <PublicPage><PageIntro eyebrow="Contact" title="We're here to help" description="Verified contact information will be displayed here as soon as it is supplied by the hospital."/><ContentSection><div className="grid gap-12 lg:grid-cols-2"><div><h2 className="text-2xl font-semibold">Hospital information</h2><div className="mt-6 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">{contacts.map((item)=><div key={item.label} className="bg-background p-5"><item.icon className="size-5 text-primary"/><p className="mt-4 text-sm font-semibold">{item.label}</p><p className="mt-1 text-sm text-muted-foreground">{item.value ?? "Not yet published"}</p></div>)}</div><p className="mt-5 text-sm text-muted-foreground">For a medical emergency, contact your local emergency service.</p></div><form className="border border-border bg-surface p-6 sm:p-8" onSubmit={(event)=>event.preventDefault()}><h2 className="text-2xl font-semibold">Send an enquiry</h2><p className="mt-2 text-sm text-muted-foreground">The form is prepared for connection to the hospital's secure inbox.</p><div className="mt-6 grid gap-5"><div><Label htmlFor="name">Full name</Label><Input id="name" className="mt-2" autoComplete="name"/></div><div><Label htmlFor="email">Email address</Label><Input id="email" type="email" className="mt-2" autoComplete="email"/></div><div><Label htmlFor="message">How can we help?</Label><Textarea id="message" className="mt-2 min-h-32"/></div><Button type="submit" disabled>Send enquiry</Button><p className="text-xs text-muted-foreground">Enquiries are not active yet. Do not use this form for urgent medical needs.</p></div></form></div></ContentSection></PublicPage>}
