@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, MessageCircle } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +11,8 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/shared/page";
 import { createPageMeta } from "@/lib/seo";
 import { ENQUIRY_STATUSES, usesProductionContract, type ProductionEnquiryStatus } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
+import { listStaffEnquiries, updateEnquiryStatus } from "@/lib/data/staff-repository";
+import type { StaffEnquiry } from "@/lib/data/models";
 
 export const Route = createFileRoute("/_admin/enquiries")({
   head: () => ({
@@ -37,21 +38,6 @@ const statusLabel: Record<Status, string> = {
   spam: "Spam",
 };
 
-type EnquiryRow = {
-  id: string;
-  created_at: string;
-  patient_name: string;
-  contact_number: string;
-  registered_contact_number?: string | null;
-  family_member_name?: string | null;
-  preferred_at: string | null;
-  status: Status;
-  message: string | null;
-  doctor: { name: string; whatsapp_number: string | null } | null;
-  department: { name: string } | null;
-  service: { title: string } | null;
-};
-
 function AdminEnquiries() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -59,38 +45,12 @@ function AdminEnquiries() {
 
   const enquiries = useQuery({
     queryKey: ["admin-enquiries"],
-    queryFn: async () => {
-      const table = usesProductionContract ? "appointment_enquiries" : "enquiries";
-      const selection = usesProductionContract
-        ? "*, doctor:doctors!appointment_enquiries_preferred_doctor_id_fkey(full_name,whatsapp), department:departments!appointment_enquiries_preferred_department_id_fkey(name), service:services!appointment_enquiries_preferred_service_id_fkey(name,title)"
-        : "*, doctor:doctors(name,whatsapp_number), department:departments(name), professional_service:professional_services(title), hospital_service:hospital_services(title)";
-      const { data, error } = await (supabase as any)
-        .from(table)
-        .select(selection)
-        .order("created_at", { ascending: false });
-      if (error) throw userFacingDataError(error);
-      return ((data ?? []) as Record<string, any>[]).map((row): EnquiryRow => ({
-        id: String(row["id"]),
-        created_at: String(row["created_at"]),
-        patient_name: String(row["patient_name"]),
-        contact_number: String(row["contact_number"]),
-        registered_contact_number: row["registered_contact_number"] ?? null,
-        family_member_name: row["family_member_name"] ?? null,
-        preferred_at: row["preferred_at"] ?? null,
-        status: row["status"] as Status,
-        message: row["message"] ?? null,
-        doctor: row["doctor"] ? { name: String(row["doctor"].full_name ?? row["doctor"].name), whatsapp_number: row["doctor"].whatsapp ?? row["doctor"].whatsapp_number ?? null } : null,
-        department: row["department"] ? { name: String(row["department"].name) } : null,
-        service: row["service"] ?? row["professional_service"] ?? row["hospital_service"] ?? null,
-      }));
-    },
+    queryFn: listStaffEnquiries,
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, next }: { id: string; next: Status }) => {
-      const table = usesProductionContract ? "appointment_enquiries" : "enquiries";
-      const { error } = await (supabase as any).from(table).update({ status: next }).eq("id", id);
-      if (error) throw new Error(userFacingDataError(error));
+      await updateEnquiryStatus(id, next);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-enquiries"] }),
   });
@@ -99,7 +59,7 @@ function AdminEnquiries() {
     const list = enquiries.data ?? [];
     const term = search.trim().toLowerCase();
     return list.filter((row) => {
-      const haystack = `${row.patient_name} ${row.contact_number} ${row.family_member_name ?? ""} ${row.doctor?.name ?? ""}`.toLowerCase();
+      const haystack = `${row.patientName} ${row.contactNumber} ${row.familyMemberName ?? ""} ${row.doctor?.name ?? ""}`.toLowerCase();
       return haystack.includes(term) && (status === "all" || row.status === status);
     });
   }, [enquiries.data, search, status]);
@@ -107,14 +67,14 @@ function AdminEnquiries() {
   const exportCsv = () => {
     const header = ["Created", "Patient", "Contact", "Family member", "Doctor", "Department", "Service", "Preferred", "Status", "Message"];
     const body = rows.map((row) => [
-      new Date(row.created_at).toISOString(),
-      row.patient_name,
-      row.contact_number,
-      row.family_member_name ?? "",
+      new Date(row.createdAt).toISOString(),
+      row.patientName,
+      row.contactNumber,
+      row.familyMemberName ?? "",
       row.doctor?.name ?? "",
       row.department?.name ?? "",
       row.service?.title ?? "",
-      row.preferred_at ?? "",
+      row.preferredAt ?? "",
       row.status,
       (row.message ?? "").replace(/\s+/g, " "),
     ]);
@@ -156,12 +116,12 @@ function AdminEnquiries() {
       ) : (
         <div className="mt-6 grid gap-4">
           {rows.map((row) => {
-            const target = row.doctor?.whatsapp_number ?? null;
+            const target = row.doctor?.whatsappNumber ?? null;
             const text = encodeURIComponent(
               [
                 "Enquiry from the hospital website",
-                `Patient: ${row.patient_name}`,
-                `Contact: ${row.contact_number}`,
+                `Patient: ${row.patientName}`,
+                `Contact: ${row.contactNumber}`,
                 row.doctor ? `Doctor: ${row.doctor.name}` : null,
                 row.message ? `Message: ${row.message}` : null,
               ].filter(Boolean).join("\n"),
@@ -170,8 +130,8 @@ function AdminEnquiries() {
               <article key={row.id} className="border border-border bg-background p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold">{row.patient_name}</h2>
-                    <p className="text-sm text-muted-foreground">{row.contact_number} · {new Date(row.created_at).toLocaleString()}</p>
+                    <h2 className="text-lg font-semibold">{row.patientName}</h2>
+                    <p className="text-sm text-muted-foreground">{row.contactNumber} · {new Date(row.createdAt).toLocaleString()}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <Select value={row.status} onValueChange={(value) => updateStatus.mutate({ id: row.id, next: value as Status })}>
@@ -190,11 +150,11 @@ function AdminEnquiries() {
                   </div>
                 </div>
                 <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-                  {row.family_member_name ? <div><dt className="font-semibold">Family member</dt><dd className="text-muted-foreground">{row.family_member_name}</dd></div> : null}
+                  {row.familyMemberName ? <div><dt className="font-semibold">Family member</dt><dd className="text-muted-foreground">{row.familyMemberName}</dd></div> : null}
                   {row.doctor ? <div><dt className="font-semibold">Doctor</dt><dd className="text-muted-foreground">{row.doctor.name}</dd></div> : null}
                   {row.department ? <div><dt className="font-semibold">Department</dt><dd className="text-muted-foreground">{row.department.name}</dd></div> : null}
                    {row.service ? <div><dt className="font-semibold">Service</dt><dd className="text-muted-foreground">{row.service.title}</dd></div> : null}
-                  {row.preferred_at ? <div><dt className="font-semibold">Preferred time</dt><dd className="text-muted-foreground">{new Date(row.preferred_at).toLocaleString()}</dd></div> : null}
+                  {row.preferredAt ? <div><dt className="font-semibold">Preferred time</dt><dd className="text-muted-foreground">{new Date(row.preferredAt).toLocaleString()}</dd></div> : null}
                 </dl>
                 {row.message ? <p className="mt-4 text-sm leading-6 text-muted-foreground">{row.message}</p> : null}
               </article>

@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { backendFeatures, productionPermissionFunctions, usesProductionContract } from "./backend";
-import { classifyDataError, unavailableFeature } from "./errors";
+import { classifyDataError, DataAccessError } from "./errors";
 import type { AuditLog, DashboardCount, StaffDoctorOption, StaffEnquiry, StaffProfile } from "./models";
 import { isRole, permissionsForRoles, ROLES, type Permission, type Role } from "../permissions";
 
@@ -224,5 +224,5 @@ export async function getActiveEnquiryCount(): Promise<number> {
 }
 
 export function requireSupportedStaffFeature(feature: "blog" | "notifications" | "profileRequests"): void {
-  if (!backendFeatures[feature]) unavailableFeature(feature);
+  if (!backendFeatures[feature]) throw new DataAccessError("unavailable", `${feature} is pending backend support.`);
 }

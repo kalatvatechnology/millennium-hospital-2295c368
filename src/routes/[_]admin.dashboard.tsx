@@ -1,40 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/shared/page";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
-import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
+import { backendFeatures } from "@/lib/data/backend";
+import { getActiveEnquiryCount, getDashboardCounts } from "@/lib/data/staff-repository";
 
 export const Route = createFileRoute("/_admin/dashboard")({
   head: () => ({ meta: [...createPageMeta("Staff dashboard", "Hospital content and enquiry overview."), { name: "robots", content: "noindex, nofollow" }] }),
   component: AdminDashboard,
 });
-
-const localContentTables = [
-  { table: "departments", label: "Departments" },
-  { table: "doctors", label: "Doctors" },
-  { table: "professional_services", label: "Professional services" },
-  { table: "hospital_services", label: "Hospital services" },
-  { table: "facilities", label: "Facilities" },
-  { table: "media_items", label: "Media items" },
-  { table: "faqs", label: "FAQs" },
-  { table: "reviews", label: "Reviews" },
-  { table: "blog_posts", label: "Blog posts" },
-] as const;
-
-const productionContentTables = [
-  { table: "departments", label: "Departments" },
-  { table: "doctors", label: "Doctors" },
-  { table: "services", label: "Services" },
-  { table: "facilities", label: "Facilities" },
-  { table: "media_content", label: "Media items" },
-  { table: "faqs", label: "FAQs" },
-  { table: "reviews", label: "Reviews" },
-] as const;
 
 function AdminDashboard() {
   const { roles, can, profile } = useAdminSession();
@@ -43,38 +21,19 @@ function AdminDashboard() {
   const counts = useQuery({
     queryKey: ["admin-counts", isDoctorOnly],
     enabled: !isDoctorOnly,
-    queryFn: async () => {
-      const entries = await Promise.all(
-        (usesProductionContract ? productionContentTables : localContentTables).map(async ({ table, label }) => {
-          const { count } = await (supabase as any).from(table).select("id", { count: "exact", head: true });
-          return { label, count: count ?? 0 };
-        }),
-      );
-      return entries;
-    },
+    queryFn: getDashboardCounts,
   });
 
   const enquiryCount = useQuery({
     queryKey: ["admin-enquiry-count"],
     enabled: can("enquiries.manage"),
-    queryFn: async () => {
-      const table = usesProductionContract ? "appointment_enquiries" : "enquiries";
-      const activeStatuses = usesProductionContract ? ["new", "in_progress"] : ["submitted", "pending_forwarding"];
-      const { count } = await (supabase as any).from(table).select("id", { count: "exact", head: true }).in("status", activeStatuses);
-      return count ?? 0;
-    },
+    queryFn: getActiveEnquiryCount,
   });
 
   const doctorWork = useQuery({
     queryKey: ["admin-doctor-work", profile?.doctor_id],
     enabled: Boolean(profile?.doctor_id && backendFeatures.blog && backendFeatures.profileRequests),
-    queryFn: async () => {
-      const [reviews, requests] = await Promise.all([
-        supabase.from("blog_posts").select("id", { count: "exact", head: true }).eq("clinical_reviewer_id", profile?.doctor_id ?? "").eq("clinical_review_status", "pending"),
-        supabase.from("doctor_profile_change_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      ]);
-      return { pendingReviews: reviews.count ?? 0, pendingRequests: requests.count ?? 0 };
-    },
+    queryFn: async () => ({ pendingReviews: 0, pendingRequests: 0 }),
   });
 
   return (
