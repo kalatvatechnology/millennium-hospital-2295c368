@@ -14,9 +14,11 @@ import { Route as AdminRouteImport } from './routes/[_]admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DepartmentsRouteImport } from './routes/departments'
 import { Route as DoctorsRouteImport } from './routes/doctors'
 import { Route as FacilitiesRouteImport } from './routes/facilities'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as MediaRouteImport } from './routes/media'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ServicesRouteImport } from './routes/services'
@@ -26,10 +28,15 @@ import { Route as AdminDashboardRouteImport } from './routes/[_]admin.dashboard'
 import { Route as AdminLoginRouteImport } from './routes/[_]admin.login'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as DepartmentsIndexRouteImport } from './routes/departments.index'
+import { Route as DepartmentsSlugRouteImport } from './routes/departments.$slug'
 import { Route as DoctorsIndexRouteImport } from './routes/doctors.index'
 import { Route as DoctorsSlugRouteImport } from './routes/doctors.$slug'
+import { Route as FacilitiesIndexRouteImport } from './routes/facilities.index'
+import { Route as FacilitiesSlugRouteImport } from './routes/facilities.$slug'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
-import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
+import { Route as ServicesHospitalSlugRouteImport } from './routes/services.hospital.$slug'
+import { Route as ServicesProfessionalSlugRouteImport } from './routes/services.professional.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -56,6 +63,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DepartmentsRoute = DepartmentsRouteImport.update({
+  id: '/departments',
+  path: '/departments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DoctorsRoute = DoctorsRouteImport.update({
   id: '/doctors',
   path: '/doctors',
@@ -69,6 +81,11 @@ const FacilitiesRoute = FacilitiesRouteImport.update({
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaRoute = MediaRouteImport.update({
+  id: '/media',
+  path: '/media',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -116,6 +133,16 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogRoute,
 } as any)
+const DepartmentsIndexRoute = DepartmentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DepartmentsRoute,
+} as any)
+const DepartmentsSlugRoute = DepartmentsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => DepartmentsRoute,
+} as any)
 const DoctorsIndexRoute = DoctorsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -126,16 +153,32 @@ const DoctorsSlugRoute = DoctorsSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => DoctorsRoute,
 } as any)
+const FacilitiesIndexRoute = FacilitiesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FacilitiesRoute,
+} as any)
+const FacilitiesSlugRoute = FacilitiesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => FacilitiesRoute,
+} as any)
 const ServicesIndexRoute = ServicesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ServicesRoute,
 } as any)
-const ServicesSlugRoute = ServicesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
+const ServicesHospitalSlugRoute = ServicesHospitalSlugRouteImport.update({
+  id: '/hospital/$slug',
+  path: '/hospital/$slug',
   getParentRoute: () => ServicesRoute,
 } as any)
+const ServicesProfessionalSlugRoute =
+  ServicesProfessionalSlugRouteImport.update({
+    id: '/professional/$slug',
+    path: '/professional/$slug',
+    getParentRoute: () => ServicesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -143,9 +186,11 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/blog': typeof BlogRouteWithChildren
   '/contact': typeof ContactRoute
+  '/departments': typeof DepartmentsRouteWithChildren
   '/doctors': typeof DoctorsRouteWithChildren
-  '/facilities': typeof FacilitiesRoute
+  '/facilities': typeof FacilitiesRouteWithChildren
   '/faq': typeof FaqRoute
+  '/media': typeof MediaRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
@@ -153,31 +198,41 @@ export interface FileRoutesByFullPath {
   '/_admin/dashboard': typeof AdminDashboardRoute
   '/_admin/login': typeof AdminLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/departments/$slug': typeof DepartmentsSlugRoute
   '/doctors/$slug': typeof DoctorsSlugRoute
-  '/services/$slug': typeof ServicesSlugRoute
+  '/facilities/$slug': typeof FacilitiesSlugRoute
   '/_admin/': typeof AdminIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/departments/': typeof DepartmentsIndexRoute
   '/doctors/': typeof DoctorsIndexRoute
+  '/facilities/': typeof FacilitiesIndexRoute
   '/services/': typeof ServicesIndexRoute
+  '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
+  '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
-  '/facilities': typeof FacilitiesRoute
   '/faq': typeof FaqRoute
+  '/media': typeof MediaRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
   '/_admin/login': typeof AdminLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/departments/$slug': typeof DepartmentsSlugRoute
   '/doctors/$slug': typeof DoctorsSlugRoute
-  '/services/$slug': typeof ServicesSlugRoute
+  '/facilities/$slug': typeof FacilitiesSlugRoute
   '/_admin': typeof AdminIndexRoute
   '/blog': typeof BlogIndexRoute
+  '/departments': typeof DepartmentsIndexRoute
   '/doctors': typeof DoctorsIndexRoute
+  '/facilities': typeof FacilitiesIndexRoute
   '/services': typeof ServicesIndexRoute
+  '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
+  '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,9 +241,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/blog': typeof BlogRouteWithChildren
   '/contact': typeof ContactRoute
+  '/departments': typeof DepartmentsRouteWithChildren
   '/doctors': typeof DoctorsRouteWithChildren
-  '/facilities': typeof FacilitiesRoute
+  '/facilities': typeof FacilitiesRouteWithChildren
   '/faq': typeof FaqRoute
+  '/media': typeof MediaRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
@@ -196,12 +253,17 @@ export interface FileRoutesById {
   '/_admin/dashboard': typeof AdminDashboardRoute
   '/_admin/login': typeof AdminLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/departments/$slug': typeof DepartmentsSlugRoute
   '/doctors/$slug': typeof DoctorsSlugRoute
-  '/services/$slug': typeof ServicesSlugRoute
+  '/facilities/$slug': typeof FacilitiesSlugRoute
   '/_admin/': typeof AdminIndexRoute
   '/blog/': typeof BlogIndexRoute
+  '/departments/': typeof DepartmentsIndexRoute
   '/doctors/': typeof DoctorsIndexRoute
+  '/facilities/': typeof FacilitiesIndexRoute
   '/services/': typeof ServicesIndexRoute
+  '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
+  '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,9 +273,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/blog'
     | '/contact'
+    | '/departments'
     | '/doctors'
     | '/facilities'
     | '/faq'
+    | '/media'
     | '/privacy-policy'
     | '/reviews'
     | '/services'
@@ -221,31 +285,41 @@ export interface FileRouteTypes {
     | '/_admin/dashboard'
     | '/_admin/login'
     | '/blog/$slug'
+    | '/departments/$slug'
     | '/doctors/$slug'
-    | '/services/$slug'
+    | '/facilities/$slug'
     | '/_admin/'
     | '/blog/'
+    | '/departments/'
     | '/doctors/'
+    | '/facilities/'
     | '/services/'
+    | '/services/hospital/$slug'
+    | '/services/professional/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/contact'
-    | '/facilities'
     | '/faq'
+    | '/media'
     | '/privacy-policy'
     | '/reviews'
     | '/terms-and-conditions'
     | '/_admin/dashboard'
     | '/_admin/login'
     | '/blog/$slug'
+    | '/departments/$slug'
     | '/doctors/$slug'
-    | '/services/$slug'
+    | '/facilities/$slug'
     | '/_admin'
     | '/blog'
+    | '/departments'
     | '/doctors'
+    | '/facilities'
     | '/services'
+    | '/services/hospital/$slug'
+    | '/services/professional/$slug'
   id:
     | '__root__'
     | '/'
@@ -253,9 +327,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/blog'
     | '/contact'
+    | '/departments'
     | '/doctors'
     | '/facilities'
     | '/faq'
+    | '/media'
     | '/privacy-policy'
     | '/reviews'
     | '/services'
@@ -263,12 +339,17 @@ export interface FileRouteTypes {
     | '/_admin/dashboard'
     | '/_admin/login'
     | '/blog/$slug'
+    | '/departments/$slug'
     | '/doctors/$slug'
-    | '/services/$slug'
+    | '/facilities/$slug'
     | '/_admin/'
     | '/blog/'
+    | '/departments/'
     | '/doctors/'
+    | '/facilities/'
     | '/services/'
+    | '/services/hospital/$slug'
+    | '/services/professional/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -277,9 +358,11 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   BlogRoute: typeof BlogRouteWithChildren
   ContactRoute: typeof ContactRoute
+  DepartmentsRoute: typeof DepartmentsRouteWithChildren
   DoctorsRoute: typeof DoctorsRouteWithChildren
-  FacilitiesRoute: typeof FacilitiesRoute
+  FacilitiesRoute: typeof FacilitiesRouteWithChildren
   FaqRoute: typeof FaqRoute
+  MediaRoute: typeof MediaRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ReviewsRoute: typeof ReviewsRoute
   ServicesRoute: typeof ServicesRouteWithChildren
@@ -323,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/departments': {
+      id: '/departments'
+      path: '/departments'
+      fullPath: '/departments'
+      preLoaderRoute: typeof DepartmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/doctors': {
       id: '/doctors'
       path: '/doctors'
@@ -342,6 +432,13 @@ declare module '@tanstack/react-router' {
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media': {
+      id: '/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-policy': {
@@ -407,6 +504,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/departments/': {
+      id: '/departments/'
+      path: '/'
+      fullPath: '/departments/'
+      preLoaderRoute: typeof DepartmentsIndexRouteImport
+      parentRoute: typeof DepartmentsRoute
+    }
+    '/departments/$slug': {
+      id: '/departments/$slug'
+      path: '/$slug'
+      fullPath: '/departments/$slug'
+      preLoaderRoute: typeof DepartmentsSlugRouteImport
+      parentRoute: typeof DepartmentsRoute
+    }
     '/doctors/': {
       id: '/doctors/'
       path: '/'
@@ -421,6 +532,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorsSlugRouteImport
       parentRoute: typeof DoctorsRoute
     }
+    '/facilities/': {
+      id: '/facilities/'
+      path: '/'
+      fullPath: '/facilities/'
+      preLoaderRoute: typeof FacilitiesIndexRouteImport
+      parentRoute: typeof FacilitiesRoute
+    }
+    '/facilities/$slug': {
+      id: '/facilities/$slug'
+      path: '/$slug'
+      fullPath: '/facilities/$slug'
+      preLoaderRoute: typeof FacilitiesSlugRouteImport
+      parentRoute: typeof FacilitiesRoute
+    }
     '/services/': {
       id: '/services/'
       path: '/'
@@ -428,11 +553,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesIndexRouteImport
       parentRoute: typeof ServicesRoute
     }
-    '/services/$slug': {
-      id: '/services/$slug'
-      path: '/$slug'
-      fullPath: '/services/$slug'
-      preLoaderRoute: typeof ServicesSlugRouteImport
+    '/services/hospital/$slug': {
+      id: '/services/hospital/$slug'
+      path: '/hospital/$slug'
+      fullPath: '/services/hospital/$slug'
+      preLoaderRoute: typeof ServicesHospitalSlugRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/professional/$slug': {
+      id: '/services/professional/$slug'
+      path: '/professional/$slug'
+      fullPath: '/services/professional/$slug'
+      preLoaderRoute: typeof ServicesProfessionalSlugRouteImport
       parentRoute: typeof ServicesRoute
     }
   }
@@ -464,6 +596,20 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
+interface DepartmentsRouteChildren {
+  DepartmentsSlugRoute: typeof DepartmentsSlugRoute
+  DepartmentsIndexRoute: typeof DepartmentsIndexRoute
+}
+
+const DepartmentsRouteChildren: DepartmentsRouteChildren = {
+  DepartmentsSlugRoute: DepartmentsSlugRoute,
+  DepartmentsIndexRoute: DepartmentsIndexRoute,
+}
+
+const DepartmentsRouteWithChildren = DepartmentsRoute._addFileChildren(
+  DepartmentsRouteChildren,
+)
+
 interface DoctorsRouteChildren {
   DoctorsSlugRoute: typeof DoctorsSlugRoute
   DoctorsIndexRoute: typeof DoctorsIndexRoute
@@ -477,14 +623,30 @@ const DoctorsRouteChildren: DoctorsRouteChildren = {
 const DoctorsRouteWithChildren =
   DoctorsRoute._addFileChildren(DoctorsRouteChildren)
 
+interface FacilitiesRouteChildren {
+  FacilitiesSlugRoute: typeof FacilitiesSlugRoute
+  FacilitiesIndexRoute: typeof FacilitiesIndexRoute
+}
+
+const FacilitiesRouteChildren: FacilitiesRouteChildren = {
+  FacilitiesSlugRoute: FacilitiesSlugRoute,
+  FacilitiesIndexRoute: FacilitiesIndexRoute,
+}
+
+const FacilitiesRouteWithChildren = FacilitiesRoute._addFileChildren(
+  FacilitiesRouteChildren,
+)
+
 interface ServicesRouteChildren {
-  ServicesSlugRoute: typeof ServicesSlugRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
+  ServicesHospitalSlugRoute: typeof ServicesHospitalSlugRoute
+  ServicesProfessionalSlugRoute: typeof ServicesProfessionalSlugRoute
 }
 
 const ServicesRouteChildren: ServicesRouteChildren = {
-  ServicesSlugRoute: ServicesSlugRoute,
   ServicesIndexRoute: ServicesIndexRoute,
+  ServicesHospitalSlugRoute: ServicesHospitalSlugRoute,
+  ServicesProfessionalSlugRoute: ServicesProfessionalSlugRoute,
 }
 
 const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
@@ -497,9 +659,11 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   BlogRoute: BlogRouteWithChildren,
   ContactRoute: ContactRoute,
+  DepartmentsRoute: DepartmentsRouteWithChildren,
   DoctorsRoute: DoctorsRouteWithChildren,
-  FacilitiesRoute: FacilitiesRoute,
+  FacilitiesRoute: FacilitiesRouteWithChildren,
   FaqRoute: FaqRoute,
+  MediaRoute: MediaRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ReviewsRoute: ReviewsRoute,
   ServicesRoute: ServicesRouteWithChildren,

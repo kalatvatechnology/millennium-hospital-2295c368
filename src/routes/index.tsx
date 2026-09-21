@@ -1,38 +1,238 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { ArrowRight, HeartHandshake, MapPin, Stethoscope } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, MapPin, Phone } from "lucide-react";
 import { PublicPage } from "@/components/layout/public-page";
-import { SectionHeading, UnpublishedPanel } from "@/components/shared/page";
+import { ContentSection, SectionHeading, UnpublishedPanel } from "@/components/shared/page";
+import { Async } from "@/components/shared/async";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import {
+  ArticleCard,
+  DepartmentCard,
+  DoctorCard,
+  FacilityCard,
+  HospitalServiceCard,
+  ProfessionalServiceCard,
+  ReviewCard,
+} from "@/components/content/cards";
+import { MediaGrid } from "@/components/content/media";
+import { EnquiryForm } from "@/components/content/enquiry-form";
 import { siteConfig } from "@/config/site";
-import { articles, doctors, facilities, faqs, reviews, services } from "@/content/placeholders";
+import {
+  blogPostsQuery,
+  departmentsQuery,
+  doctorsQuery,
+  facilitiesQuery,
+  faqQuery,
+  hospitalServicesQuery,
+  mediaQuery,
+  professionalServicesQuery,
+  reviewsQuery,
+} from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";
 
-export const Route = createFileRoute("/")({ head: () => ({ meta: createPageMeta("Home", "Welcome to The Millennium Hospital. Explore care information, hospital services, facilities, and ways to contact the team.") }), component: HomePage });
-const professionalServices = services.filter((service) => service.type === "professional");
-const hospitalServices = services.filter((service) => service.type === "hospital");
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: createPageMeta(
+      "The Millennium Hospital",
+      "Find doctors, departments, services, facilities and health resources at The Millennium Hospital, and send an enquiry to the care team.",
+    ),
+  }),
+  component: HomePage,
+});
 
-function HomeSection({ children, muted = false, id }: { children: ReactNode; muted?: boolean; id: string }) {
-  return <section id={id} className={muted ? "border-y border-border bg-surface" : "bg-background"}><div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">{children}</div></section>;
-}
-
-function Preview({ count, singular, empty }: { count: number; singular: string; empty: string }) {
-  return count ? <p className="mt-8 text-sm text-muted-foreground">{count} published {count === 1 ? singular : `${singular}s`}</p> : <UnpublishedPanel title={`No ${singular}s published yet`} description={empty} />;
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
 }
 
 function HomePage() {
-  return <PublicPage>
-    <section className="relative overflow-hidden bg-hero text-primary-foreground"><div className="absolute inset-y-0 right-0 hidden w-[38%] border-l border-primary-foreground/10 bg-primary-foreground/5 lg:block"/><div className="relative mx-auto grid min-h-[600px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.25fr_.75fr] lg:px-8"><div><p className="text-sm font-semibold text-highlight">Welcome to {siteConfig.name}</p><h1 className="mt-5 max-w-3xl text-5xl font-semibold leading-[1.08] sm:text-6xl">Care that listens. Expertise you can trust.</h1><p className="mt-6 max-w-xl text-lg leading-8 text-primary-foreground/75">Find clear hospital information and the right next step for your care.</p><div className="mt-9 flex flex-wrap gap-3"><Button asChild size="lg" className="bg-highlight text-highlight-foreground hover:bg-highlight/90"><Link to="/doctors">Find a doctor <ArrowRight/></Link></Button><Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/contact">Make an enquiry</Link></Button></div></div><div className="grid gap-px border border-primary-foreground/15 bg-primary-foreground/15"><div className="bg-hero p-6"><HeartHandshake className="text-highlight"/><h2 className="mt-5 text-xl font-semibold">Patient-first information</h2><p className="mt-2 text-sm leading-6 text-primary-foreground/70">Simple routes to care, facilities, and hospital support.</p></div><div className="bg-hero p-6"><Stethoscope className="text-highlight"/><h2 className="mt-5 text-xl font-semibold">Clinically reviewed content</h2><p className="mt-2 text-sm leading-6 text-primary-foreground/70">Profiles and information appear only after approval.</p></div></div></div></section>
-    <HomeSection id="introduction"><SectionHeading eyebrow="The hospital" title="Thoughtful care, built around people" description="The hospital’s verified story, approach, and patient commitments will be published here." link={{ label: "About the hospital", to: "/about" }}/></HomeSection>
-    <HomeSection id="departments" muted><SectionHeading eyebrow="Departments & specialties" title="Find the right area of care" description="Department and specialty information will be easy to browse once approved." link={{ label: "Browse doctors", to: "/doctors" }}/><UnpublishedPanel title="Departments are being prepared" description="No department or specialty information has been published yet."/></HomeSection>
-    <HomeSection id="professional-services"><SectionHeading eyebrow="Professional services" title="Specialist support for your care" description="Professional services will be listed separately so patients can quickly understand what is available." link={{ label: "Explore services", to: "/services" }}/><Preview count={professionalServices.length} singular="professional service" empty="Verified professional service information will appear here."/></HomeSection>
-    <HomeSection id="hospital-services" muted><SectionHeading eyebrow="Hospital services" title="Care across the hospital" description="Hospital-wide clinical and support services will appear here after review." link={{ label: "View hospital services", to: "/services" }}/><Preview count={hospitalServices.length} singular="hospital service" empty="Verified hospital service information will appear here."/></HomeSection>
-    <HomeSection id="doctors"><SectionHeading eyebrow="Medical team" title="Meet our doctors" description="Search verified clinician profiles by name, specialty, or department." link={{ label: "Find a doctor", to: "/doctors" }}/><Preview count={doctors.length} singular="doctor profile" empty="Clinician profiles are awaiting review and publication."/></HomeSection>
-    <HomeSection id="facilities" muted><SectionHeading eyebrow="Hospital environment" title="Facilities designed for care" description="See practical, approved information to help prepare for your visit." link={{ label: "Explore facilities", to: "/facilities" }}/><Preview count={facilities.length} singular="facility" empty="Facility details and approved images are being prepared."/></HomeSection>
-    <HomeSection id="reviews"><SectionHeading eyebrow="Patient voices" title="Verified patient experiences" description="Only reviewed and approved patient feedback will be displayed." link={{ label: "Read reviews", to: "/reviews" }}/><Preview count={reviews.length} singular="review" empty="No patient reviews are published yet."/></HomeSection>
-    <HomeSection id="faq" muted><SectionHeading eyebrow="Practical answers" title="Frequently asked questions" description="Clear information for patients, families, and visitors." link={{ label: "View all questions", to: "/faq" }}/><Preview count={faqs.length} singular="answer" empty="Answers are being prepared for publication."/></HomeSection>
-    <HomeSection id="media"><SectionHeading eyebrow="Media & content" title="Hospital news and health resources" description="Read hospital updates and clinically reviewed information." link={{ label: "Browse resources", to: "/blog" }}/><Preview count={articles.length} singular="article" empty="No articles have been published yet."/></HomeSection>
-    <HomeSection id="location" muted><div className="grid gap-10 lg:grid-cols-2"><SectionHeading eyebrow="Location & contact" title="Plan your visit" description="Verified address, phone, email, WhatsApp, and map information will be shown here." link={{ label: "Contact information", to: "/contact" }}/><div className="grid min-h-56 place-items-center border border-dashed border-border bg-background text-center"><div><MapPin className="mx-auto text-primary"/><p className="mt-3 font-semibold">Location not yet published</p><p className="mt-2 text-sm text-muted-foreground">A map will appear after the address is verified.</p></div></div></div></HomeSection>
-    <section className="bg-hero text-primary-foreground"><div className="mx-auto flex max-w-7xl flex-col gap-7 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8"><div><p className="text-sm font-semibold text-highlight">Appointments & enquiries</p><h2 className="mt-3 text-3xl font-semibold">How can we help you today?</h2><p className="mt-3 text-primary-foreground/70">Contact the hospital for current care and appointment information.</p></div><Button asChild size="lg" className="bg-highlight text-highlight-foreground hover:bg-highlight/90"><Link to="/contact">Contact the hospital <ArrowRight/></Link></Button></div></section>
-  </PublicPage>;
+  const departments = useQuery(departmentsQuery);
+  const doctors = useQuery(doctorsQuery);
+  const professional = useQuery(professionalServicesQuery);
+  const hospital = useQuery(hospitalServicesQuery);
+  const facilities = useQuery(facilitiesQuery);
+  const reviews = useQuery(reviewsQuery);
+  const faq = useQuery(faqQuery);
+  const media = useQuery(mediaQuery({ homeOnly: true }));
+  const posts = useQuery(blogPostsQuery);
+
+  return (
+    <PublicPage>
+      {/* 1. Hero */}
+      <section className="border-b border-border bg-hero">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+          <p className="text-sm font-semibold text-primary">{siteConfig.tagline}</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight sm:text-6xl">
+            Care that listens. Expertise you can trust.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            {siteConfig.name} brings departments, specialists and support services together so patients and families always
+            know where to turn.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-4">
+            <Button asChild size="lg"><Link to="/doctors">Find a doctor</Link></Button>
+            <Button asChild size="lg" variant="outline"><Link to="/contact">Make an enquiry</Link></Button>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Hospital introduction */}
+      <ContentSection>
+        <SectionHeading
+          eyebrow="About the hospital"
+          title="A hospital organised around the people it serves"
+          description="Clear departments, verified clinician profiles and practical visit information, kept accurate by the hospital team."
+          link={{ label: "About us", to: "/about" }}
+        />
+      </ContentSection>
+
+      {/* 3. Departments */}
+      <ContentSection muted>
+        <SectionHeading eyebrow="Specialties" title="Departments and specialties" description="Explore the clinical areas of the hospital." link={{ label: "All departments", to: "/departments" }} />
+        <Async
+          query={departments}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="Departments are being prepared" description="No departments have been published yet." />}
+        >
+          {(data) => <Grid>{data.slice(0, 6).map((item) => <DepartmentCard key={item.id} department={item} />)}</Grid>}
+        </Async>
+      </ContentSection>
+
+      {/* 4. Professional services */}
+      <ContentSection>
+        <SectionHeading eyebrow="Specialist support" title="Professional services" description="Specialist clinical and professional support for individual care needs." link={{ label: "All services", to: "/services" }} />
+        <Async
+          query={professional}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="Professional services are being prepared" description="No professional services have been published yet." />}
+        >
+          {(data) => <Grid>{data.slice(0, 6).map((item) => <ProfessionalServiceCard key={item.id} service={item} />)}</Grid>}
+        </Async>
+      </ContentSection>
+
+      {/* 5. Hospital services */}
+      <ContentSection muted>
+        <SectionHeading eyebrow="Hospital care" title="Hospital services" description="Clinical, diagnostic and support services available across the hospital." link={{ label: "All services", to: "/services" }} />
+        <Async
+          query={hospital}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="Hospital services are being prepared" description="No hospital services have been published yet." />}
+        >
+          {(data) => <Grid>{data.slice(0, 6).map((item) => <HospitalServiceCard key={item.id} service={item} />)}</Grid>}
+        </Async>
+      </ContentSection>
+
+      {/* 6. Doctors */}
+      <ContentSection>
+        <SectionHeading eyebrow="Medical team" title="Meet our doctors" description="Verified clinician profiles with qualifications, specialties and availability." link={{ label: "All doctors", to: "/doctors" }} />
+        <Async
+          query={doctors}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="Doctor profiles are being prepared" description="No clinician profiles have been published yet." />}
+        >
+          {(data) => <Grid>{data.slice(0, 6).map((item) => <DoctorCard key={item.id} doctor={item} />)}</Grid>}
+        </Async>
+      </ContentSection>
+
+      {/* 7. Facilities */}
+      <ContentSection muted>
+        <SectionHeading eyebrow="Hospital environment" title="Facilities" description="Practical details and approved images to help you prepare for a visit." link={{ label: "All facilities", to: "/facilities" }} />
+        <Async
+          query={facilities}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="Facility information is being prepared" description="No facilities have been published yet." />}
+        >
+          {(data) => <Grid>{data.slice(0, 6).map((item) => <FacilityCard key={item.id} facility={item} />)}</Grid>}
+        </Async>
+      </ContentSection>
+
+      {/* 8. Reviews */}
+      <ContentSection>
+        <SectionHeading eyebrow="Patient voices" title="Patient reviews" description="Only reviewed and approved patient experiences appear here." link={{ label: "All reviews", to: "/reviews" }} />
+        <Async
+          query={reviews}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="No reviews are published yet" description="Verified patient feedback will appear here once approved." />}
+        >
+          {(data) => <div className="mt-8 grid gap-6 md:grid-cols-2">{data.slice(0, 4).map((item) => <ReviewCard key={item.id} review={item} />)}</div>}
+        </Async>
+      </ContentSection>
+
+      {/* 9. FAQ */}
+      <ContentSection muted>
+        <SectionHeading eyebrow="Help centre" title="Frequently asked questions" description="Practical answers for patients, families and visitors." link={{ label: "All questions", to: "/faq" }} />
+        <Async
+          query={faq}
+          isEmpty={(data) => data.faqs.length === 0}
+          empty={<UnpublishedPanel title="Answers are being prepared" description="No questions have been published yet." />}
+        >
+          {(data) => (
+            <Accordion type="single" collapsible className="mt-8 max-w-3xl">
+              {data.faqs.slice(0, 6).map((item) => (
+                <AccordionItem key={item.id} value={item.id}>
+                  <AccordionTrigger>{item.question}</AccordionTrigger>
+                  <AccordionContent>{item.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+        </Async>
+      </ContentSection>
+
+      {/* 10. Media and content */}
+      <ContentSection>
+        <SectionHeading eyebrow="Media" title="Videos, reels and podcasts" description="Watch and listen to content published by the hospital team." link={{ label: "All media", to: "/media" }} />
+        <Async
+          query={media}
+          isEmpty={(data) => data.length === 0}
+          empty={<UnpublishedPanel title="Media is being prepared" description="No media has been published yet." />}
+        >
+          {(data) => <div className="mt-8"><MediaGrid items={data} /></div>}
+        </Async>
+        <div className="mt-14">
+          <SectionHeading eyebrow="Health resources" title="Latest articles" description="Health information reviewed before publication." link={{ label: "All articles", to: "/blog" }} />
+          <Async
+            query={posts}
+            isEmpty={(data) => data.length === 0}
+            empty={<UnpublishedPanel title="Articles are being prepared" description="No articles have been published yet." />}
+          >
+            {(data) => <Grid>{data.slice(0, 3).map((item) => <ArticleCard key={item.id} post={item} />)}</Grid>}
+          </Async>
+        </div>
+      </ContentSection>
+
+      {/* 11. Location and contact */}
+      <ContentSection muted>
+        <SectionHeading eyebrow="Visit us" title="Location and contact" description="Verified contact details for the hospital." link={{ label: "Contact page", to: "/contact" }} />
+        <div className="mt-8 grid gap-6 sm:grid-cols-2">
+          <div className="border border-border bg-background p-6">
+            <MapPin className="text-primary" />
+            <p className="mt-5 font-semibold">Address</p>
+            <p className="mt-2 text-sm text-muted-foreground">{siteConfig.contact.address ?? "Not yet published"}</p>
+          </div>
+          <div className="border border-border bg-background p-6">
+            <Phone className="text-primary" />
+            <p className="mt-5 font-semibold">Phone</p>
+            <p className="mt-2 text-sm text-muted-foreground">{siteConfig.contact.phone ?? "Not yet published"}</p>
+          </div>
+        </div>
+      </ContentSection>
+
+      {/* 12. Final enquiry CTA */}
+      <ContentSection>
+        <div className="grid gap-10 lg:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-semibold sm:text-4xl">Request an appointment or ask a question</h2>
+            <p className="mt-4 leading-7 text-muted-foreground">
+              Send your details and the hospital team will follow up on the number you share.
+            </p>
+            <Link to="/doctors" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+              Browse doctors first <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <EnquiryForm source="home" />
+        </div>
+      </ContentSection>
+    </PublicPage>
+  );
 }
