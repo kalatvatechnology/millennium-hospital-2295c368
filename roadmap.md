@@ -40,3 +40,6 @@
 - [x] Redesign only the public Doctors directory with real-data search, filters, sorting, pagination, premium cards, and responsive states
 
 - [x] Create and verify the CMS-driven hospital demonstration content without schema or production changes
+- [x] Remove only the explicitly labelled doctor-profile demonstration records and preserve legacy content
+- [ ] Add the minimum approved Doctor Profile CMS fields and relationships (blocked pending schema approval)
+- [ ] Build and verify the final CMS-driven Doctor Profile and editor after schema approval
