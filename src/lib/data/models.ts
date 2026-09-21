@@ -84,11 +84,14 @@ export type DoctorAchievement = {
   organization: string | null;
   year: number | null;
   description: string | null;
+  image_url: string | null;
+  image_alt: string | null;
   display_order: number;
 };
 export type DoctorLocation = {
   id: string;
   name: string;
+  public_name: string | null;
   slug: string;
   address_line: string | null;
   city: string | null;

@@ -113,7 +113,7 @@ function DoctorDetail() {
     doctor.languages.length > 0 ||
     Boolean(doctor.department) ||
     Boolean(doctor.experience_years) ||
-    Object.keys(doctor.social_links).length > 0;
+    (data.socialLinks?.length ?? 0) > 0 || Object.keys(doctor.social_links).length > 0;
   const showSpecializations =
     visible(doctor.section_visibility, "specializations") &&
     (data.specializations.length > 0 || doctor.expertise.length > 0);
@@ -372,11 +372,14 @@ function DoctorDetail() {
                   </div>
                 ) : null}
               </dl>
-              {Object.keys(doctor.social_links).length ? (
+              {(data.socialLinks?.length ?? 0) > 0 || Object.keys(doctor.social_links).length ? (
                 <div className="mt-6 border-t border-border pt-5">
                   <p className="text-sm font-semibold">Professional links</p>
                   <div className="mt-3 flex flex-wrap gap-3">
-                    {Object.entries(doctor.social_links).map(([label, url]) => (
+                    {(data.socialLinks?.length
+                      ? data.socialLinks.map(({ platform, url }) => [platform, url] as const)
+                      : Object.entries(doctor.social_links)
+                    ).map(([label, url]) => (
                       <a
                         key={label}
                         href={url}
@@ -498,6 +501,9 @@ function DoctorDetail() {
                 <p className="text-xs font-bold uppercase tracking-wider text-primary">
                   {item.achievement_type}
                 </p>
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.image_alt ?? ""} className="mb-4 aspect-video w-full rounded-md object-cover" />
+                ) : null}
                 <h3 className="mt-2 text-lg font-semibold">{item.title}</h3>
                 {item.organization || item.year ? (
                   <p className="mt-2 text-muted-foreground">
@@ -520,7 +526,7 @@ function DoctorDetail() {
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {data.locations.map((location) => (
               <article key={location.id} className="rounded-xl border border-border p-6">
-                <h3 className="text-xl font-semibold">{location.name}</h3>
+                <h3 className="text-xl font-semibold">{location.public_name || location.name}</h3>
                 <p className="mt-3 leading-7 text-muted-foreground">
                   {[location.address_line, location.city, location.state, location.postal_code]
                     .filter(Boolean)

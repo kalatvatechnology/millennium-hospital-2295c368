@@ -138,16 +138,17 @@ export async function getDoctor(slug: string, preview = false) {
       achievementResult,
       locationResult,
       faqResult,
+      socialResult,
     ] = await Promise.all([
       db
         .from("professional_service_doctors")
         .select("professional_services(*)")
         .eq("doctor_id", doctor.id),
       db
-        .from("reviews")
-        .select("*")
+        .from("doctor_review_selections")
+        .select("display_order,reviews(*)")
         .eq("doctor_id", doctor.id)
-        .eq("show_publicly", true)
+        .eq("enabled", true)
         .order("display_order"),
       db
         .from("media_doctors")
@@ -182,19 +183,25 @@ export async function getDoctor(slug: string, preview = false) {
         .order("display_order"),
       db
         .from("doctor_achievements")
-        .select("id,achievement_type,title,organization,year,description,display_order")
+        .select("id,achievement_type,title,organization,year,description,image_url,image_alt,display_order")
         .eq("doctor_id", doctor.id)
         .eq("enabled", true)
         .order("display_order"),
       db
         .from("doctor_locations")
-        .select("consultation_availability,display_order,locations(*)")
+        .select("consultation_availability,public_name,map_url,display_order,locations(*)")
         .eq("doctor_id", doctor.id)
         .eq("enabled", true)
         .order("display_order"),
       db
         .from("doctor_faqs")
         .select("display_order,faqs(*)")
+        .eq("doctor_id", doctor.id)
+        .eq("enabled", true)
+        .order("display_order"),
+      db
+        .from("doctor_social_links")
+        .select("platform,url,display_order")
         .eq("doctor_id", doctor.id)
         .eq("enabled", true)
         .order("display_order"),
@@ -206,7 +213,10 @@ export async function getDoctor(slug: string, preview = false) {
         .filter(Boolean)
         .map(mapService)
         .filter((item) => item.status === "published"),
-      reviews: rows(reviewResult).map(mapReview),
+      reviews: rows(reviewResult)
+        .map((item) => item["reviews"])
+        .filter((item) => item?.show_publicly === true)
+        .map(mapReview),
       media: rows(mediaResult)
         .map((item) => item["media_items"])
         .filter(Boolean)
@@ -220,6 +230,8 @@ export async function getDoctor(slug: string, preview = false) {
       locations: rows(locationResult)
         .map((item) => ({
           ...(item["locations"] ?? {}),
+          public_name: item["public_name"] ?? null,
+          map_url: item["map_url"] ?? item["locations"]?.map_url ?? null,
           consultation_availability: item["consultation_availability"] ?? null,
           display_order: item["display_order"] ?? 0,
         }))
@@ -228,6 +240,7 @@ export async function getDoctor(slug: string, preview = false) {
         .map((item) => item["faqs"])
         .filter((item) => item?.published === true)
         .map(mapFaq),
+      socialLinks: rows(socialResult) as { platform: string; url: string; display_order: number }[],
     };
   }
   const [serviceResult, reviewResult] = await Promise.all([
