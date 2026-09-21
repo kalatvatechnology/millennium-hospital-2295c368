@@ -8,6 +8,8 @@ export const siteConfig = {
     email: null as string | null,
     whatsapp: null as string | null,
     address: null as string | null,
+    mapUrl: null as string | null,
+    openingHours: null as string | null,
   },
   social: {
     facebook: null as string | null,
