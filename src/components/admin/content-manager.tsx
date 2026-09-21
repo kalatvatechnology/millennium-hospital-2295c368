@@ -164,7 +164,13 @@ function FieldInput({
   );
 }
 
-function DepartmentField({ value, onChange }: { value: string; onChange: (next: string | null) => void }) {
+function DepartmentField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (next: string | null) => void;
+}) {
   const departments = useQuery({
     queryKey: ["doctor-editor-departments"],
     queryFn: async () => {
@@ -176,26 +182,82 @@ function DepartmentField({ value, onChange }: { value: string; onChange: (next: 
   return (
     <div>
       <Label htmlFor="field-department_id">Department</Label>
-      <Select value={value || "none"} onValueChange={(next) => onChange(next === "none" ? null : next)}>
-        <SelectTrigger id="field-department_id" className="mt-2"><SelectValue placeholder="Select a department" /></SelectTrigger>
+      <Select
+        value={value || "none"}
+        onValueChange={(next) => onChange(next === "none" ? null : next)}
+      >
+        <SelectTrigger id="field-department_id" className="mt-2">
+          <SelectValue placeholder="Select a department" />
+        </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">No department selected</SelectItem>
-          {(departments.data ?? []).map((department) => <SelectItem key={department.id} value={department.id}>{department.name}</SelectItem>)}
+          {(departments.data ?? []).map((department) => (
+            <SelectItem key={department.id} value={department.id}>
+              {department.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
   );
 }
 
-function ImageField({ label, value, alt, onValueChange, onAltChange }: { label: string; value: string; alt: string; onValueChange: (next: string) => void; onAltChange: (next: string) => void }) {
-  return <div className="grid gap-3 rounded-md border border-border p-4">
-    <h3 className="font-semibold">{label}</h3>
-    {value ? <img src={value} alt={alt || "Selected doctor image preview"} className="aspect-[16/9] w-full rounded-md border border-border object-cover" /> : <div className="flex aspect-[16/9] items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">No image selected</div>}
-    <div><Label htmlFor={`${label}-url`}>Image URL</Label><Input id={`${label}-url`} className="mt-2" value={value} onChange={(event) => onValueChange(event.target.value)} /></div>
-    <div><Label htmlFor={`${label}-alt`}>Alternative text</Label><Input id={`${label}-alt`} className="mt-2" value={alt} onChange={(event) => onAltChange(event.target.value)} /></div>
-    {value ? <Button type="button" variant="outline" className="w-fit" onClick={() => onValueChange("")}>Remove image</Button> : null}
-    <p className="text-sm text-muted-foreground">Managed image upload is unavailable until an approved image bucket and access policies exist.</p>
-  </div>;
+function ImageField({
+  label,
+  value,
+  alt,
+  onValueChange,
+  onAltChange,
+}: {
+  label: string;
+  value: string;
+  alt: string;
+  onValueChange: (next: string) => void;
+  onAltChange: (next: string) => void;
+}) {
+  return (
+    <div className="grid gap-3 rounded-md border border-border p-4">
+      <h3 className="font-semibold">{label}</h3>
+      {value ? (
+        <img
+          src={value}
+          alt={alt || "Selected doctor image preview"}
+          className="aspect-[16/9] w-full rounded-md border border-border object-cover"
+        />
+      ) : (
+        <div className="flex aspect-[16/9] items-center justify-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
+          No image selected
+        </div>
+      )}
+      <div>
+        <Label htmlFor={`${label}-url`}>Image URL</Label>
+        <Input
+          id={`${label}-url`}
+          className="mt-2"
+          value={value}
+          onChange={(event) => onValueChange(event.target.value)}
+        />
+      </div>
+      <div>
+        <Label htmlFor={`${label}-alt`}>Alternative text</Label>
+        <Input
+          id={`${label}-alt`}
+          className="mt-2"
+          value={alt}
+          onChange={(event) => onAltChange(event.target.value)}
+        />
+      </div>
+      {value ? (
+        <Button type="button" variant="outline" className="w-fit" onClick={() => onValueChange("")}>
+          Remove image
+        </Button>
+      ) : null}
+      <p className="text-sm text-muted-foreground">
+        Managed image upload is unavailable until an approved image bucket and access policies
+        exist.
+      </p>
+    </div>
+  );
 }
 
 function statusOf(row: Record<string, any>) {
@@ -450,12 +512,7 @@ function AvailableContentManager({ type }: { type: ContentType }) {
                     "consultation_info",
                     "social_links",
                   ],
-                  seo: [
-                    "seo_title",
-                    "seo_description",
-                    "canonical_url",
-                    "og_image_url",
-                  ],
+                  seo: ["seo_title", "seo_description", "canonical_url", "og_image_url"],
                   publishing: ["verification_status", "display_order", "published", "status"],
                 };
                 return (
@@ -466,31 +523,112 @@ function AvailableContentManager({ type }: { type: ContentType }) {
                           names[group].includes(field.name) &&
                           !(field.publishControl && !canPublish),
                       )
-                       .map((field) => field.name === "department_id" ? (
-                        <DepartmentField key={field.name} value={editing?.values[field.name] ?? ""} onChange={(next) => setEditing((current) => current ? { ...current, values: { ...current.values, department_id: next } } : current)} />
-                       ) : (
-                        <FieldInput
-                          key={field.name}
-                          field={field}
-                          value={editing?.values[field.name]}
-                          onChange={(next) =>
-                            setEditing((current) =>
-                              current
-                                ? { ...current, values: { ...current.values, [field.name]: next } }
-                                : current,
-                            )
-                          }
-                        />
-                      ))}
+                      .map((field) =>
+                        field.name === "department_id" ? (
+                          <DepartmentField
+                            key={field.name}
+                            value={editing?.values[field.name] ?? ""}
+                            onChange={(next) =>
+                              setEditing((current) =>
+                                current
+                                  ? {
+                                      ...current,
+                                      values: { ...current.values, department_id: next },
+                                    }
+                                  : current,
+                              )
+                            }
+                          />
+                        ) : (
+                          <FieldInput
+                            key={field.name}
+                            field={field}
+                            value={editing?.values[field.name]}
+                            onChange={(next) =>
+                              setEditing((current) =>
+                                current
+                                  ? {
+                                      ...current,
+                                      values: { ...current.values, [field.name]: next },
+                                    }
+                                  : current,
+                              )
+                            }
+                          />
+                        ),
+                      )}
                   </TabsContent>
                 );
               })}
               <TabsContent value="hero" className="grid gap-5 pt-4">
-                <div className="grid gap-5 lg:grid-cols-2"><ImageField label="Profile image" value={editing?.values["photo_url"] ?? ""} alt={editing?.values["profile_image_alt"] ?? ""} onValueChange={(next) => setEditing((current) => current ? { ...current, values: { ...current.values, photo_url: next } } : current)} onAltChange={(next) => setEditing((current) => current ? { ...current, values: { ...current.values, profile_image_alt: next } } : current)} /><ImageField label="Hero image" value={editing?.values["hero_image_url"] ?? ""} alt={editing?.values["hero_image_alt"] ?? ""} onValueChange={(next) => setEditing((current) => current ? { ...current, values: { ...current.values, hero_image_url: next } } : current)} onAltChange={(next) => setEditing((current) => current ? { ...current, values: { ...current.values, hero_image_alt: next } } : current)} /></div>
+                <div className="grid gap-5 lg:grid-cols-2">
+                  <ImageField
+                    label="Profile image"
+                    value={editing?.values["photo_url"] ?? ""}
+                    alt={editing?.values["profile_image_alt"] ?? ""}
+                    onValueChange={(next) =>
+                      setEditing((current) =>
+                        current
+                          ? { ...current, values: { ...current.values, photo_url: next } }
+                          : current,
+                      )
+                    }
+                    onAltChange={(next) =>
+                      setEditing((current) =>
+                        current
+                          ? { ...current, values: { ...current.values, profile_image_alt: next } }
+                          : current,
+                      )
+                    }
+                  />
+                  <ImageField
+                    label="Hero image"
+                    value={editing?.values["hero_image_url"] ?? ""}
+                    alt={editing?.values["hero_image_alt"] ?? ""}
+                    onValueChange={(next) =>
+                      setEditing((current) =>
+                        current
+                          ? { ...current, values: { ...current.values, hero_image_url: next } }
+                          : current,
+                      )
+                    }
+                    onAltChange={(next) =>
+                      setEditing((current) =>
+                        current
+                          ? { ...current, values: { ...current.values, hero_image_alt: next } }
+                          : current,
+                      )
+                    }
+                  />
+                </div>
               </TabsContent>
-              {(["hero", "specializations", "experience", "achievements", "locations", "media", "reviews"] as DoctorProfileTab[]).map((tab) => (
-                <div key={tab} hidden={doctorTab !== tab} className={tab === "hero" ? "mt-5" : "mt-4"}>
-                  {editing?.id ? <DoctorProfileSections ref={doctorSectionsRef} doctorId={editing.id} activeTab={tab} /> : <p className="text-sm text-muted-foreground">Save the doctor first, then add profile sections and relationships.</p>}
+              {(
+                [
+                  "hero",
+                  "specializations",
+                  "experience",
+                  "achievements",
+                  "locations",
+                  "media",
+                  "reviews",
+                ] as DoctorProfileTab[]
+              ).map((tab) => (
+                <div
+                  key={tab}
+                  hidden={doctorTab !== tab}
+                  className={tab === "hero" ? "mt-5" : "mt-4"}
+                >
+                  {editing?.id ? (
+                    <DoctorProfileSections
+                      ref={doctorSectionsRef}
+                      doctorId={editing.id}
+                      activeTab={tab}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Save the doctor first, then add profile sections and relationships.
+                    </p>
+                  )}
                 </div>
               ))}
             </Tabs>

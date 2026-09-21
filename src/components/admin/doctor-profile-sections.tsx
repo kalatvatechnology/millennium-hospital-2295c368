@@ -29,72 +29,796 @@ type Row = {
 type Field = { name: string; label: string; multiline?: boolean; type?: "number" | "boolean" };
 type Section = { table: string; title: string; fields: Field[] };
 
-const statisticsSection: Section = { table: "doctor_statistics", title: "Statistics", fields: [{ name: "value", label: "Value" }, { name: "label", label: "Label" }, { name: "icon", label: "Icon" }] };
-const specializationsSection: Section = { table: "doctor_specializations", title: "Specializations", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description", multiline: true }, { name: "icon", label: "Icon" }] };
-const experienceSection: Section = { table: "doctor_experience", title: "Experience", fields: [{ name: "position", label: "Position" }, { name: "organization", label: "Organization" }, { name: "start_year", label: "Start year", type: "number" }, { name: "end_year", label: "End year", type: "number" }, { name: "is_present", label: "Currently working here", type: "boolean" }, { name: "description", label: "Description", multiline: true }] };
-const educationSection: Section = { table: "doctor_education", title: "Education", fields: [{ name: "qualification", label: "Qualification" }, { name: "institution", label: "Institution" }, { name: "year", label: "Year", type: "number" }, { name: "description", label: "Description", multiline: true }] };
-const achievementsSection: Section = { table: "doctor_achievements", title: "Achievements & memberships", fields: [{ name: "title", label: "Title" }, { name: "achievement_type", label: "Type" }, { name: "organization", label: "Organization" }, { name: "year", label: "Year", type: "number" }, { name: "description", label: "Description", multiline: true }] };
+const statisticsSection: Section = {
+  table: "doctor_statistics",
+  title: "Statistics",
+  fields: [
+    { name: "value", label: "Value" },
+    { name: "label", label: "Label" },
+    { name: "icon", label: "Icon" },
+  ],
+};
+const specializationsSection: Section = {
+  table: "doctor_specializations",
+  title: "Specializations",
+  fields: [
+    { name: "title", label: "Title" },
+    { name: "description", label: "Description", multiline: true },
+    { name: "icon", label: "Icon" },
+  ],
+};
+const experienceSection: Section = {
+  table: "doctor_experience",
+  title: "Experience",
+  fields: [
+    { name: "position", label: "Position" },
+    { name: "organization", label: "Organization" },
+    { name: "start_year", label: "Start year", type: "number" },
+    { name: "end_year", label: "End year", type: "number" },
+    { name: "is_present", label: "Currently working here", type: "boolean" },
+    { name: "description", label: "Description", multiline: true },
+  ],
+};
+const educationSection: Section = {
+  table: "doctor_education",
+  title: "Education",
+  fields: [
+    { name: "qualification", label: "Qualification" },
+    { name: "institution", label: "Institution" },
+    { name: "year", label: "Year", type: "number" },
+    { name: "description", label: "Description", multiline: true },
+  ],
+};
+const achievementsSection: Section = {
+  table: "doctor_achievements",
+  title: "Achievements & memberships",
+  fields: [
+    { name: "title", label: "Title" },
+    { name: "achievement_type", label: "Type" },
+    { name: "organization", label: "Organization" },
+    { name: "year", label: "Year", type: "number" },
+    { name: "description", label: "Description", multiline: true },
+  ],
+};
 
-const visibilityLabels: Record<string, string> = { statistics: "Statistics", quote: "Quote", specializations: "Specializations", services: "Professional services", experience: "Experience", education: "Education", achievements: "Achievements & memberships", locations: "Locations", media: "Videos & media", reviews: "Patient reviews", faqs: "FAQs" };
+const visibilityLabels: Record<string, string> = {
+  statistics: "Statistics",
+  quote: "Quote",
+  specializations: "Specializations",
+  services: "Professional services",
+  experience: "Experience",
+  education: "Education",
+  achievements: "Achievements & memberships",
+  locations: "Locations",
+  media: "Videos & media",
+  reviews: "Patient reviews",
+  faqs: "FAQs",
+};
 
-type Relationship = { key: string; source: string; link: string; sourceId: string; label: string; text: string; controls?: ("enabled" | "display_order" | "consultation_availability" | "show_on_profile")[] };
-const servicesRelationship: Relationship = { key: "services", source: "professional_services", link: "professional_service_doctors", sourceId: "professional_service_id", label: "Professional services", text: "title" };
-const locationsRelationship: Relationship = { key: "locations", source: "locations", link: "doctor_locations", sourceId: "location_id", label: "Locations", text: "name", controls: ["enabled", "display_order", "consultation_availability"] };
-const mediaRelationship: Relationship = { key: "media", source: "media_items", link: "media_doctors", sourceId: "media_id", label: "Media", text: "title", controls: ["enabled", "show_on_profile", "display_order"] };
-const faqsRelationship: Relationship = { key: "faqs", source: "faqs", link: "doctor_faqs", sourceId: "faq_id", label: "FAQs", text: "question", controls: ["enabled", "display_order"] };
+type Relationship = {
+  key: string;
+  source: string;
+  link: string;
+  sourceId: string;
+  label: string;
+  text: string;
+  controls?: ("enabled" | "display_order" | "consultation_availability" | "show_on_profile")[];
+};
+const servicesRelationship: Relationship = {
+  key: "services",
+  source: "professional_services",
+  link: "professional_service_doctors",
+  sourceId: "professional_service_id",
+  label: "Professional services",
+  text: "title",
+};
+const locationsRelationship: Relationship = {
+  key: "locations",
+  source: "locations",
+  link: "doctor_locations",
+  sourceId: "location_id",
+  label: "Locations",
+  text: "name",
+  controls: ["enabled", "display_order", "consultation_availability"],
+};
+const mediaRelationship: Relationship = {
+  key: "media",
+  source: "media_items",
+  link: "media_doctors",
+  sourceId: "media_id",
+  label: "Media",
+  text: "title",
+  controls: ["enabled", "show_on_profile", "display_order"],
+};
+const faqsRelationship: Relationship = {
+  key: "faqs",
+  source: "faqs",
+  link: "doctor_faqs",
+  sourceId: "faq_id",
+  label: "FAQs",
+  text: "question",
+  controls: ["enabled", "display_order"],
+};
 
 export type DoctorProfileSectionsHandle = { save: () => Promise<void> };
-export type DoctorProfileTab = "hero" | "specializations" | "experience" | "achievements" | "locations" | "media" | "reviews";
+export type DoctorProfileTab =
+  "hero" | "specializations" | "experience" | "achievements" | "locations" | "media" | "reviews";
 
-export const DoctorProfileSections = forwardRef<DoctorProfileSectionsHandle, { doctorId: string; activeTab: DoctorProfileTab }>(function DoctorProfileSections({ doctorId, activeTab }, ref) {
+export const DoctorProfileSections = forwardRef<
+  DoctorProfileSectionsHandle,
+  { doctorId: string; activeTab: DoctorProfileTab }
+>(function DoctorProfileSections({ doctorId, activeTab }, ref) {
   const editors = useMemo(() => new Map<string, () => Promise<void>>(), []);
-  useImperativeHandle(ref, () => ({ save: async () => { for (const save of editors.values()) await save(); } }), [editors]);
-  return <div className="grid gap-6">
-    <div hidden={activeTab !== "hero"}><VisibilityEditor doctorId={doctorId} register={(save) => editors.set("visibility", save)} /><div className="mt-6"><SectionEditor doctorId={doctorId} section={statisticsSection} register={(save) => editors.set("doctor_statistics", save)} /></div></div>
-    <div hidden={activeTab !== "specializations"}><SectionEditor doctorId={doctorId} section={specializationsSection} register={(save) => editors.set("doctor_specializations", save)} /><div className="mt-6"><RelationshipGroup doctorId={doctorId} relation={servicesRelationship} register={(save) => editors.set("services", save)} /></div></div>
-    <div hidden={activeTab !== "experience"} className="grid gap-6"><SectionEditor doctorId={doctorId} section={experienceSection} register={(save) => editors.set("doctor_experience", save)} /><SectionEditor doctorId={doctorId} section={educationSection} register={(save) => editors.set("doctor_education", save)} /></div>
-    <div hidden={activeTab !== "achievements"}><SectionEditor doctorId={doctorId} section={achievementsSection} register={(save) => editors.set("doctor_achievements", save)} /></div>
-    <div hidden={activeTab !== "locations"}><RelationshipGroup doctorId={doctorId} relation={locationsRelationship} register={(save) => editors.set("locations", save)} /></div>
-    <div hidden={activeTab !== "media"}><RelationshipGroup doctorId={doctorId} relation={mediaRelationship} register={(save) => editors.set("media", save)} /></div>
-    <div hidden={activeTab !== "reviews"} className="grid gap-6"><ReviewSelector doctorId={doctorId} register={(save) => editors.set("reviews", save)} /><RelationshipGroup doctorId={doctorId} relation={faqsRelationship} register={(save) => editors.set("faqs", save)} /></div>
-  </div>;
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: async () => {
+        for (const save of editors.values()) await save();
+      },
+    }),
+    [editors],
+  );
+  return (
+    <div className="grid gap-6">
+      <div hidden={activeTab !== "hero"}>
+        <VisibilityEditor
+          doctorId={doctorId}
+          register={(save) => editors.set("visibility", save)}
+        />
+        <div className="mt-6">
+          <SectionEditor
+            doctorId={doctorId}
+            section={statisticsSection}
+            register={(save) => editors.set("doctor_statistics", save)}
+          />
+        </div>
+      </div>
+      <div hidden={activeTab !== "specializations"}>
+        <SectionEditor
+          doctorId={doctorId}
+          section={specializationsSection}
+          register={(save) => editors.set("doctor_specializations", save)}
+        />
+        <div className="mt-6">
+          <RelationshipGroup
+            doctorId={doctorId}
+            relation={servicesRelationship}
+            register={(save) => editors.set("services", save)}
+          />
+        </div>
+      </div>
+      <div hidden={activeTab !== "experience"} className="grid gap-6">
+        <SectionEditor
+          doctorId={doctorId}
+          section={experienceSection}
+          register={(save) => editors.set("doctor_experience", save)}
+        />
+        <SectionEditor
+          doctorId={doctorId}
+          section={educationSection}
+          register={(save) => editors.set("doctor_education", save)}
+        />
+      </div>
+      <div hidden={activeTab !== "achievements"}>
+        <SectionEditor
+          doctorId={doctorId}
+          section={achievementsSection}
+          register={(save) => editors.set("doctor_achievements", save)}
+        />
+      </div>
+      <div hidden={activeTab !== "locations"}>
+        <RelationshipGroup
+          doctorId={doctorId}
+          relation={locationsRelationship}
+          register={(save) => editors.set("locations", save)}
+        />
+      </div>
+      <div hidden={activeTab !== "media"}>
+        <RelationshipGroup
+          doctorId={doctorId}
+          relation={mediaRelationship}
+          register={(save) => editors.set("media", save)}
+        />
+      </div>
+      <div hidden={activeTab !== "reviews"} className="grid gap-6">
+        <ReviewSelector doctorId={doctorId} register={(save) => editors.set("reviews", save)} />
+        <RelationshipGroup
+          doctorId={doctorId}
+          relation={faqsRelationship}
+          register={(save) => editors.set("faqs", save)}
+        />
+      </div>
+    </div>
+  );
 });
 
-function normalizeRow(row: Row, index: number) { return { ...row, enabled: row.enabled !== false, display_order: index }; }
-function SectionEditor({ doctorId, section, register }: { doctorId: string; section: Section; register: (save: () => Promise<void>) => void }) {
-  const query = useQuery({ queryKey: ["doctor-profile-section", section.table, doctorId], queryFn: async () => { const { data, error } = await db.from(section.table).select("*").eq("doctor_id", doctorId).order("display_order"); if (error) throw error; return data ?? []; } });
-  const [rows, setRows] = useState<Row[]>([]); const [editingId, setEditingId] = useState<string | null>(null); const [pendingDelete, setPendingDelete] = useState<Row | null>(null); const [error, setError] = useState<string | null>(null);
+function normalizeRow(row: Row, index: number) {
+  return { ...row, enabled: row.enabled !== false, display_order: index };
+}
+function SectionEditor({
+  doctorId,
+  section,
+  register,
+}: {
+  doctorId: string;
+  section: Section;
+  register: (save: () => Promise<void>) => void;
+}) {
+  const query = useQuery({
+    queryKey: ["doctor-profile-section", section.table, doctorId],
+    queryFn: async () => {
+      const { data, error } = await db
+        .from(section.table)
+        .select("*")
+        .eq("doctor_id", doctorId)
+        .order("display_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const [rows, setRows] = useState<Row[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Row | null>(null);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => setRows((query.data ?? []).map(normalizeRow)), [query.data]);
-  const save = async () => { setError(null); try { const original = query.data ?? []; const removed = original.filter((old: Row) => !rows.some((row) => row.id === old.id)).map((row: Row) => row.id).filter(Boolean); if (removed.length) { const { error: deleteError } = await db.from(section.table).delete().in("id", removed); if (deleteError) throw deleteError; } for (const [index, row] of rows.entries()) { const payload: Record<string, any> = { doctor_id: doctorId, enabled: row.enabled !== false, display_order: index }; section.fields.forEach((field) => { let value = row[field.name]; if (field.type === "number") value = value === "" || value == null ? null : Number(value); payload[field.name] = value === "" ? null : value; }); if (section.table === "doctor_experience" && payload["is_present"]) payload["end_year"] = null; const command = String(row.id).startsWith("new-") ? db.from(section.table).insert(payload) : db.from(section.table).update(payload).eq("id", row.id); const { error: writeError } = await command; if (writeError) throw writeError; } } catch (cause) { setError(userFacingDataError(cause)); throw cause; } };
-  useEffect(() => { register(save); });
-  const add = () => { const id = `new-${crypto.randomUUID()}`; const row: Row = { id, enabled: true, display_order: rows.length }; section.fields.forEach((field) => row[field.name] = field.type === "boolean" ? false : ""); setRows((current) => [...current, row]); setEditingId(id); };
-  const move = (index: number, delta: number) => setRows((current) => { const target = index + delta; const sourceRow = current[index]; const targetRow = current[target]; if (!sourceRow || !targetRow) return current; const next = [...current]; next[index] = targetRow; next[target] = sourceRow; return next.map(normalizeRow); });
-  return <section className="rounded-md border border-border p-4"><div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{section.title}</h3><Button type="button" size="sm" variant="outline" onClick={add}><Plus className="size-4" /> Add</Button></div><AdminError message={error} />
-    <div className="mt-4 grid gap-3">{rows.map((row, index) => <div key={row.id} className="rounded-md bg-secondary p-3">{editingId === row.id ? <div className="grid gap-3 sm:grid-cols-2">{section.fields.map((field) => <div key={field.name} className={field.multiline ? "sm:col-span-2" : ""}>{field.type === "boolean" ? <label className="flex items-center gap-3 text-sm font-medium"><Checkbox checked={Boolean(row[field.name])} onCheckedChange={(checked) => setRows((current) => current.map((item) => item.id === row.id ? { ...item, [field.name]: checked === true, ...(field.name === "is_present" && checked ? { end_year: "" } : {}) } : item))} />{field.label}</label> : <><Label htmlFor={`${row.id}-${field.name}`}>{field.label}</Label>{field.multiline ? <Textarea id={`${row.id}-${field.name}`} className="mt-1" value={row[field.name] ?? ""} onChange={(event) => setRows((current) => current.map((item) => item.id === row.id ? { ...item, [field.name]: event.target.value } : item))} /> : <Input id={`${row.id}-${field.name}`} className="mt-1" type={field.type === "number" ? "number" : "text"} disabled={field.name === "end_year" && row.is_present} value={row[field.name] ?? ""} onChange={(event) => setRows((current) => current.map((item) => item.id === row.id ? { ...item, [field.name]: event.target.value } : item))} />}</>}</div>)}</div> : <p className="text-sm font-medium">{String(row[section.fields[0]?.name ?? "id"] || "Untitled")}</p>}
-      <div className="mt-3 flex flex-wrap items-center gap-2"><label className="mr-auto flex items-center gap-2 text-sm"><Switch checked={row.enabled !== false} onCheckedChange={(checked) => setRows((current) => current.map((item) => item.id === row.id ? { ...item, enabled: checked } : item))} />Enabled</label><Button type="button" size="icon" variant="ghost" aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}><ChevronUp className="size-4" /></Button><Button type="button" size="icon" variant="ghost" aria-label="Move down" disabled={index === rows.length - 1} onClick={() => move(index, 1)}><ChevronDown className="size-4" /></Button><Button type="button" size="icon" variant="ghost" aria-label="Edit" onClick={() => setEditingId(editingId === row.id ? null : row.id)}><Pencil className="size-4" /></Button><Button type="button" size="icon" variant="ghost" aria-label="Delete" onClick={() => setPendingDelete(row)}><Trash2 className="size-4" /></Button></div></div>)}</div>
-    <ConfirmDialog open={pendingDelete !== null} onOpenChange={(open) => { if (!open) setPendingDelete(null); }} title={`Delete this ${section.title.toLowerCase()} item?`} description="This change is staged until you save the doctor." onConfirm={() => { if (pendingDelete) setRows((current) => current.filter((row) => row.id !== pendingDelete.id).map(normalizeRow)); setPendingDelete(null); }} />
-  </section>;
+  const save = async () => {
+    setError(null);
+    try {
+      const original = query.data ?? [];
+      const removed = original
+        .filter((old: Row) => !rows.some((row) => row.id === old.id))
+        .map((row: Row) => row.id)
+        .filter(Boolean);
+      if (removed.length) {
+        const { error: deleteError } = await db.from(section.table).delete().in("id", removed);
+        if (deleteError) throw deleteError;
+      }
+      for (const [index, row] of rows.entries()) {
+        const payload: Record<string, any> = {
+          doctor_id: doctorId,
+          enabled: row.enabled !== false,
+          display_order: index,
+        };
+        section.fields.forEach((field) => {
+          let value = row[field.name];
+          if (field.type === "number") value = value === "" || value == null ? null : Number(value);
+          payload[field.name] = value === "" ? null : value;
+        });
+        if (section.table === "doctor_experience" && payload["is_present"])
+          payload["end_year"] = null;
+        const command = String(row.id).startsWith("new-")
+          ? db.from(section.table).insert(payload)
+          : db.from(section.table).update(payload).eq("id", row.id);
+        const { error: writeError } = await command;
+        if (writeError) throw writeError;
+      }
+    } catch (cause) {
+      setError(userFacingDataError(cause));
+      throw cause;
+    }
+  };
+  useEffect(() => {
+    register(save);
+  });
+  const add = () => {
+    const id = `new-${crypto.randomUUID()}`;
+    const row: Row = { id, enabled: true, display_order: rows.length };
+    section.fields.forEach((field) => (row[field.name] = field.type === "boolean" ? false : ""));
+    setRows((current) => [...current, row]);
+    setEditingId(id);
+  };
+  const move = (index: number, delta: number) =>
+    setRows((current) => {
+      const target = index + delta;
+      const sourceRow = current[index];
+      const targetRow = current[target];
+      if (!sourceRow || !targetRow) return current;
+      const next = [...current];
+      next[index] = targetRow;
+      next[target] = sourceRow;
+      return next.map(normalizeRow);
+    });
+  return (
+    <section className="rounded-md border border-border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold">{section.title}</h3>
+        <Button type="button" size="sm" variant="outline" onClick={add}>
+          <Plus className="size-4" /> Add
+        </Button>
+      </div>
+      <AdminError message={error} />
+      <div className="mt-4 grid gap-3">
+        {rows.map((row, index) => (
+          <div key={row.id} className="rounded-md bg-secondary p-3">
+            {editingId === row.id ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {section.fields.map((field) => (
+                  <div key={field.name} className={field.multiline ? "sm:col-span-2" : ""}>
+                    {field.type === "boolean" ? (
+                      <label className="flex items-center gap-3 text-sm font-medium">
+                        <Checkbox
+                          checked={Boolean(row[field.name])}
+                          onCheckedChange={(checked) =>
+                            setRows((current) =>
+                              current.map((item) =>
+                                item.id === row.id
+                                  ? {
+                                      ...item,
+                                      [field.name]: checked === true,
+                                      ...(field.name === "is_present" && checked
+                                        ? { end_year: "" }
+                                        : {}),
+                                    }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
+                        {field.label}
+                      </label>
+                    ) : (
+                      <>
+                        <Label htmlFor={`${row.id}-${field.name}`}>{field.label}</Label>
+                        {field.multiline ? (
+                          <Textarea
+                            id={`${row.id}-${field.name}`}
+                            className="mt-1"
+                            value={row[field.name] ?? ""}
+                            onChange={(event) =>
+                              setRows((current) =>
+                                current.map((item) =>
+                                  item.id === row.id
+                                    ? { ...item, [field.name]: event.target.value }
+                                    : item,
+                                ),
+                              )
+                            }
+                          />
+                        ) : (
+                          <Input
+                            id={`${row.id}-${field.name}`}
+                            className="mt-1"
+                            type={field.type === "number" ? "number" : "text"}
+                            disabled={field.name === "end_year" && row.is_present}
+                            value={row[field.name] ?? ""}
+                            onChange={(event) =>
+                              setRows((current) =>
+                                current.map((item) =>
+                                  item.id === row.id
+                                    ? { ...item, [field.name]: event.target.value }
+                                    : item,
+                                ),
+                              )
+                            }
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm font-medium">
+                {String(row[section.fields[0]?.name ?? "id"] || "Untitled")}
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <label className="mr-auto flex items-center gap-2 text-sm">
+                <Switch
+                  checked={row.enabled !== false}
+                  onCheckedChange={(checked) =>
+                    setRows((current) =>
+                      current.map((item) =>
+                        item.id === row.id ? { ...item, enabled: checked } : item,
+                      ),
+                    )
+                  }
+                />
+                Enabled
+              </label>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                aria-label="Move up"
+                disabled={index === 0}
+                onClick={() => move(index, -1)}
+              >
+                <ChevronUp className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                aria-label="Move down"
+                disabled={index === rows.length - 1}
+                onClick={() => move(index, 1)}
+              >
+                <ChevronDown className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                aria-label="Edit"
+                onClick={() => setEditingId(editingId === row.id ? null : (row.id ?? null))}
+              >
+                <Pencil className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                aria-label="Delete"
+                onClick={() => setPendingDelete(row)}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+        title={`Delete this ${section.title.toLowerCase()} item?`}
+        description="This change is staged until you save the doctor."
+        onConfirm={() => {
+          if (pendingDelete)
+            setRows((current) =>
+              current.filter((row) => row.id !== pendingDelete.id).map(normalizeRow),
+            );
+          setPendingDelete(null);
+        }}
+      />
+    </section>
+  );
 }
 
-function VisibilityEditor({ doctorId, register }: { doctorId: string; register: (save: () => Promise<void>) => void }) {
-  const query = useQuery({ queryKey: ["doctor-profile-visibility", doctorId], queryFn: async () => { const { data, error } = await db.from("doctors").select("section_visibility").eq("id", doctorId).single(); if (error) throw error; return (data?.section_visibility ?? {}) as Record<string, boolean>; } });
-  const [values, setValues] = useState<Record<string, boolean>>({}); useEffect(() => setValues(query.data ?? {}), [query.data]);
-  const save = async () => { const { error } = await db.from("doctors").update({ section_visibility: values }).eq("id", doctorId); if (error) throw error; }; useEffect(() => register(save));
-  return <section className="rounded-md border border-border p-4"><h3 className="font-semibold">Section visibility</h3><p className="mt-2 text-sm text-muted-foreground">Enabled sections still stay hidden when they have no valid content.</p><div className="mt-4 grid gap-3 sm:grid-cols-2">{Object.entries(visibilityLabels).map(([name, label]) => <label key={name} className="flex items-center gap-3 rounded-md bg-secondary p-3 text-sm font-medium"><Switch checked={values[name] !== false} onCheckedChange={(checked) => setValues((current) => ({ ...current, [name]: checked }))} />{label}</label>)}</div></section>;
+function VisibilityEditor({
+  doctorId,
+  register,
+}: {
+  doctorId: string;
+  register: (save: () => Promise<void>) => void;
+}) {
+  const query = useQuery({
+    queryKey: ["doctor-profile-visibility", doctorId],
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("doctors")
+        .select("section_visibility")
+        .eq("id", doctorId)
+        .single();
+      if (error) throw error;
+      return (data?.section_visibility ?? {}) as Record<string, boolean>;
+    },
+  });
+  const [values, setValues] = useState<Record<string, boolean>>({});
+  useEffect(() => setValues(query.data ?? {}), [query.data]);
+  const save = async () => {
+    const { error } = await db
+      .from("doctors")
+      .update({ section_visibility: values })
+      .eq("id", doctorId);
+    if (error) throw error;
+  };
+  useEffect(() => register(save));
+  return (
+    <section className="rounded-md border border-border p-4">
+      <h3 className="font-semibold">Section visibility</h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Enabled sections still stay hidden when they have no valid content.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {Object.entries(visibilityLabels).map(([name, label]) => (
+          <label
+            key={name}
+            className="flex items-center gap-3 rounded-md bg-secondary p-3 text-sm font-medium"
+          >
+            <Switch
+              checked={values[name] !== false}
+              onCheckedChange={(checked) =>
+                setValues((current) => ({ ...current, [name]: checked }))
+              }
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+    </section>
+  );
 }
 
-function RelationshipGroup({ doctorId, relation, register }: { doctorId: string; relation: Relationship; register: (save: () => Promise<void>) => void }) {
-  const query = useQuery({ queryKey: ["doctor-profile-relation", relation.key, doctorId], queryFn: async () => { const select = relation.controls?.length ? `${relation.sourceId},${relation.controls.join(",")}` : relation.sourceId; const [source, links] = await Promise.all([db.from(relation.source).select(`id,${relation.text}`).order(relation.text), db.from(relation.link).select(select).eq("doctor_id", doctorId)]); if (source.error) throw source.error; if (links.error) throw links.error; return { options: source.data ?? [], links: links.data ?? [] }; } });
-  const [links, setLinks] = useState<Row[]>([]); useEffect(() => setLinks((query.data?.links ?? []).map(normalizeRow)), [query.data]);
-  const save = async () => { const original = query.data?.links ?? []; const removed = original.filter((old: Row) => !links.some((row) => row[relation.sourceId] === old[relation.sourceId])); for (const row of removed) { const { error } = await db.from(relation.link).delete().eq("doctor_id", doctorId).eq(relation.sourceId, row[relation.sourceId]); if (error) throw error; } for (const [index, row] of links.entries()) { const { id: _id, ...payload } = row; void _id; payload["doctor_id"] = doctorId; if (relation.controls?.includes("display_order")) payload["display_order"] = index; const existing = original.some((old: Row) => old[relation.sourceId] === row[relation.sourceId]); const command = existing ? db.from(relation.link).update(payload).eq("doctor_id", doctorId).eq(relation.sourceId, row[relation.sourceId]) : db.from(relation.link).insert(payload); const { error } = await command; if (error) throw error; } }; useEffect(() => register(save));
-  const linked = new Map(links.map((row) => [row[relation.sourceId], row])); const toggle = (id: string, checked: boolean) => setLinks((current) => checked ? [...current, { id: `new-${id}`, [relation.sourceId]: id, enabled: true, show_on_profile: true, display_order: current.length, consultation_availability: "" }] : current.filter((row) => row[relation.sourceId] !== id));
-  const move = (id: string, delta: number) => setLinks((current) => { const index = current.findIndex((row) => row[relation.sourceId] === id); const target = index + delta; const sourceRow = current[index]; const targetRow = current[target]; if (!sourceRow || !targetRow) return current; const next = [...current]; next[index] = targetRow; next[target] = sourceRow; return next.map(normalizeRow); });
-  return <section className="rounded-md border border-border p-4"><h3 className="font-semibold">{relation.label}</h3><p className="mt-2 text-sm text-muted-foreground">Select existing records. Changes apply only when the doctor is saved.</p><div className="mt-4 grid gap-2">{query.data?.options.length ? query.data.options.map((option: Row) => { const row = linked.get(option.id); const index = links.findIndex((item) => item[relation.sourceId] === option.id); return <div key={option.id} className="rounded-md bg-secondary p-3"><label className="flex items-start gap-3 text-sm"><Checkbox checked={Boolean(row)} onCheckedChange={(checked) => toggle(option.id, checked === true)} /><span className="font-medium">{option[relation.text]}</span></label>{row && relation.controls?.length ? <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-2">{relation.controls.includes("consultation_availability") ? <div className="sm:col-span-2"><Label htmlFor={`${relation.key}-${option.id}-availability`}>Consultation availability</Label><Input id={`${relation.key}-${option.id}-availability`} className="mt-1" value={row.consultation_availability ?? ""} onChange={(event) => setLinks((current) => current.map((item) => item[relation.sourceId] === option.id ? { ...item, consultation_availability: event.target.value } : item))} /></div> : null}{relation.controls.includes("enabled") ? <label className="flex items-center gap-2 text-sm"><Switch checked={row.enabled !== false} onCheckedChange={(checked) => setLinks((current) => current.map((item) => item[relation.sourceId] === option.id ? { ...item, enabled: checked } : item))} />Enabled</label> : null}{relation.controls.includes("show_on_profile") ? <label className="flex items-center gap-2 text-sm"><Switch checked={row.show_on_profile !== false} onCheckedChange={(checked) => setLinks((current) => current.map((item) => item[relation.sourceId] === option.id ? { ...item, show_on_profile: checked } : item))} />Show on profile</label> : null}{relation.controls.includes("display_order") ? <div className="flex justify-end gap-2"><Button type="button" size="icon" variant="ghost" aria-label={`Move ${option[relation.text]} up`} disabled={index === 0} onClick={() => move(option.id, -1)}><ChevronUp className="size-4" /></Button><Button type="button" size="icon" variant="ghost" aria-label={`Move ${option[relation.text]} down`} disabled={index === links.length - 1} onClick={() => move(option.id, 1)}><ChevronDown className="size-4" /></Button></div> : null}</div> : null}</div>; }) : <p className="text-sm text-muted-foreground">No records available.</p>}</div></section>;
+function RelationshipGroup({
+  doctorId,
+  relation,
+  register,
+}: {
+  doctorId: string;
+  relation: Relationship;
+  register: (save: () => Promise<void>) => void;
+}) {
+  const query = useQuery({
+    queryKey: ["doctor-profile-relation", relation.key, doctorId],
+    queryFn: async () => {
+      const select = relation.controls?.length
+        ? `${relation.sourceId},${relation.controls.join(",")}`
+        : relation.sourceId;
+      const [source, links] = await Promise.all([
+        db.from(relation.source).select(`id,${relation.text}`).order(relation.text),
+        db.from(relation.link).select(select).eq("doctor_id", doctorId),
+      ]);
+      if (source.error) throw source.error;
+      if (links.error) throw links.error;
+      return { options: source.data ?? [], links: links.data ?? [] };
+    },
+  });
+  const [links, setLinks] = useState<Row[]>([]);
+  useEffect(() => setLinks((query.data?.links ?? []).map(normalizeRow)), [query.data]);
+  const save = async () => {
+    const original = query.data?.links ?? [];
+    const removed = original.filter(
+      (old: Row) => !links.some((row) => row[relation.sourceId] === old[relation.sourceId]),
+    );
+    for (const row of removed) {
+      const { error } = await db
+        .from(relation.link)
+        .delete()
+        .eq("doctor_id", doctorId)
+        .eq(relation.sourceId, row[relation.sourceId]);
+      if (error) throw error;
+    }
+    for (const [index, row] of links.entries()) {
+      const { id: _id, ...payload } = row;
+      void _id;
+      payload["doctor_id"] = doctorId;
+      if (relation.controls?.includes("display_order")) payload["display_order"] = index;
+      const existing = original.some(
+        (old: Row) => old[relation.sourceId] === row[relation.sourceId],
+      );
+      const command = existing
+        ? db
+            .from(relation.link)
+            .update(payload)
+            .eq("doctor_id", doctorId)
+            .eq(relation.sourceId, row[relation.sourceId])
+        : db.from(relation.link).insert(payload);
+      const { error } = await command;
+      if (error) throw error;
+    }
+  };
+  useEffect(() => register(save));
+  const linked = new Map(links.map((row) => [row[relation.sourceId], row]));
+  const toggle = (id: string, checked: boolean) =>
+    setLinks((current) =>
+      checked
+        ? [
+            ...current,
+            {
+              id: `new-${id}`,
+              [relation.sourceId]: id,
+              enabled: true,
+              show_on_profile: true,
+              display_order: current.length,
+              consultation_availability: "",
+            },
+          ]
+        : current.filter((row) => row[relation.sourceId] !== id),
+    );
+  const move = (id: string, delta: number) =>
+    setLinks((current) => {
+      const index = current.findIndex((row) => row[relation.sourceId] === id);
+      const target = index + delta;
+      const sourceRow = current[index];
+      const targetRow = current[target];
+      if (!sourceRow || !targetRow) return current;
+      const next = [...current];
+      next[index] = targetRow;
+      next[target] = sourceRow;
+      return next.map(normalizeRow);
+    });
+  return (
+    <section className="rounded-md border border-border p-4">
+      <h3 className="font-semibold">{relation.label}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Select existing records. Changes apply only when the doctor is saved.
+      </p>
+      <div className="mt-4 grid gap-2">
+        {query.data?.options.length ? (
+          query.data.options.map((option: Row) => {
+            const optionId = option.id;
+            if (!optionId) return null;
+            const row = linked.get(optionId);
+            const index = links.findIndex((item) => item[relation.sourceId] === optionId);
+            return (
+              <div key={option.id} className="rounded-md bg-secondary p-3">
+                <label className="flex items-start gap-3 text-sm">
+                  <Checkbox
+                    checked={Boolean(row)}
+                    onCheckedChange={(checked) => toggle(optionId, checked === true)}
+                  />
+                  <span className="font-medium">{option[relation.text]}</span>
+                </label>
+                {row && relation.controls?.length ? (
+                  <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-2">
+                    {relation.controls.includes("consultation_availability") ? (
+                      <div className="sm:col-span-2">
+                        <Label htmlFor={`${relation.key}-${option.id}-availability`}>
+                          Consultation availability
+                        </Label>
+                        <Input
+                          id={`${relation.key}-${option.id}-availability`}
+                          className="mt-1"
+                          value={row.consultation_availability ?? ""}
+                          onChange={(event) =>
+                            setLinks((current) =>
+                              current.map((item) =>
+                                item[relation.sourceId] === option.id
+                                  ? { ...item, consultation_availability: event.target.value }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
+                      </div>
+                    ) : null}
+                    {relation.controls.includes("enabled") ? (
+                      <label className="flex items-center gap-2 text-sm">
+                        <Switch
+                          checked={row.enabled !== false}
+                          onCheckedChange={(checked) =>
+                            setLinks((current) =>
+                              current.map((item) =>
+                                item[relation.sourceId] === option.id
+                                  ? { ...item, enabled: checked }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
+                        Enabled
+                      </label>
+                    ) : null}
+                    {relation.controls.includes("show_on_profile") ? (
+                      <label className="flex items-center gap-2 text-sm">
+                        <Switch
+                          checked={row.show_on_profile !== false}
+                          onCheckedChange={(checked) =>
+                            setLinks((current) =>
+                              current.map((item) =>
+                                item[relation.sourceId] === option.id
+                                  ? { ...item, show_on_profile: checked }
+                                  : item,
+                              ),
+                            )
+                          }
+                        />
+                        Show on profile
+                      </label>
+                    ) : null}
+                    {relation.controls.includes("display_order") ? (
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Move ${option[relation.text]} up`}
+                          disabled={index === 0}
+                          onClick={() => move(optionId, -1)}
+                        >
+                          <ChevronUp className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Move ${option[relation.text]} down`}
+                          disabled={index === links.length - 1}
+                          onClick={() => move(optionId, 1)}
+                        >
+                          <ChevronDown className="size-4" />
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-muted-foreground">No records available.</p>
+        )}
+      </div>
+    </section>
+  );
 }
 
-function ReviewSelector({ doctorId, register }: { doctorId: string; register: (save: () => Promise<void>) => void }) {
-  const query = useQuery({ queryKey: ["doctor-profile-reviews", doctorId], queryFn: async () => { const { data, error } = await db.from("reviews").select("id,author_name,content,doctor_id").eq("review_type", "doctor").eq("show_publicly", true).or(`doctor_id.is.null,doctor_id.eq.${doctorId}`).order("display_order"); if (error) throw error; return data ?? []; } });
-  const [selected, setSelected] = useState<Set<string>>(new Set()); useEffect(() => setSelected(new Set((query.data ?? []).filter((row: Row) => row.doctor_id === doctorId).map((row: Row) => row.id))), [doctorId, query.data]);
-  const save = async () => { for (const row of query.data ?? []) { const doctor_id = selected.has(row.id) ? doctorId : null; if (row.doctor_id !== doctor_id) { const { error } = await db.from("reviews").update({ doctor_id }).eq("id", row.id).eq("show_publicly", true); if (error) throw error; } } }; useEffect(() => register(save));
-  return <section className="rounded-md border border-border p-4"><h3 className="font-semibold">Approved patient reviews</h3><p className="mt-2 text-sm text-muted-foreground">Select only approved doctor reviews. Review text remains read-only here.</p><div className="mt-4 grid gap-2">{query.data?.length ? query.data.map((row: Row) => <label key={row.id} className="flex gap-3 rounded-md bg-secondary p-3 text-sm"><Checkbox checked={selected.has(row.id)} onCheckedChange={(checked) => setSelected((current) => { const next = new Set(current); checked ? next.add(row.id) : next.delete(row.id); return next; })} /><span><span className="font-medium">{row.author_name}</span><span className="mt-1 line-clamp-2 block text-muted-foreground">{row.content}</span></span></label>) : <p className="text-sm text-muted-foreground">No approved doctor reviews are available.</p>}</div></section>;
+function ReviewSelector({
+  doctorId,
+  register,
+}: {
+  doctorId: string;
+  register: (save: () => Promise<void>) => void;
+}) {
+  const query = useQuery({
+    queryKey: ["doctor-profile-reviews", doctorId],
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("reviews")
+        .select("id,author_name,content,doctor_id")
+        .eq("review_type", "doctor")
+        .eq("show_publicly", true)
+        .or(`doctor_id.is.null,doctor_id.eq.${doctorId}`)
+        .order("display_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  useEffect(
+    () =>
+      setSelected(
+        new Set(
+          (query.data ?? [])
+            .filter((row: Row) => row.doctor_id === doctorId)
+            .map((row: Row) => row.id),
+        ),
+      ),
+    [doctorId, query.data],
+  );
+  const save = async () => {
+    for (const row of query.data ?? []) {
+      const doctor_id = selected.has(row.id) ? doctorId : null;
+      if (row.doctor_id !== doctor_id) {
+        const { error } = await db
+          .from("reviews")
+          .update({ doctor_id })
+          .eq("id", row.id)
+          .eq("show_publicly", true);
+        if (error) throw error;
+      }
+    }
+  };
+  useEffect(() => register(save));
+  return (
+    <section className="rounded-md border border-border p-4">
+      <h3 className="font-semibold">Approved patient reviews</h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Select only approved doctor reviews. Review text remains read-only here.
+      </p>
+      <div className="mt-4 grid gap-2">
+        {query.data?.length ? (
+          query.data.map((row: Row) => {
+            const rowId = row.id;
+            if (!rowId) return null;
+            return (
+              <label key={rowId} className="flex gap-3 rounded-md bg-secondary p-3 text-sm">
+                <Checkbox
+                  checked={selected.has(rowId)}
+                  onCheckedChange={(checked) =>
+                    setSelected((current) => {
+                      const next = new Set(current);
+                      checked ? next.add(rowId) : next.delete(rowId);
+                      return next;
+                    })
+                  }
+                />
+                <span>
+                  <span className="font-medium">{row.author_name}</span>
+                  <span className="mt-1 line-clamp-2 block text-muted-foreground">
+                    {row.content}
+                  </span>
+                </span>
+              </label>
+            );
+          })
+        ) : (
+          <p className="text-sm text-muted-foreground">No approved doctor reviews are available.</p>
+        )}
+      </div>
+    </section>
+  );
 }
