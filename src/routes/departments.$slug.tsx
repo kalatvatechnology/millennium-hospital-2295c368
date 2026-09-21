@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, ShieldCheck, Stethoscope } from "lucide-react
 import { PublicPage } from "@/components/layout/public-page";
 import { DoctorCard, ProfessionalServiceCard } from "@/components/content/cards";
 import { Async } from "@/components/shared/async";
-import { ContentSection, EmptyState, PageIntro, UnpublishedPanel } from "@/components/shared/page";
+import { ContentSection, EmptyState, UnpublishedPanel } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
 import { departmentQuery } from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";

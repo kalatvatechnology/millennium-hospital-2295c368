@@ -4,7 +4,7 @@ import { ArrowDown, Building2, CircleHelp, HeartHandshake, Route as RouteIcon } 
 import { PublicPage } from "@/components/layout/public-page";
 import { EnquiryForm } from "@/components/content/enquiry-form";
 import { Async } from "@/components/shared/async";
-import { ContentSection, EmptyState, PageIntro } from "@/components/shared/page";
+import { ContentSection, EmptyState } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
 import { hospitalServiceQuery } from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";

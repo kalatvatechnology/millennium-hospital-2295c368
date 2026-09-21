@@ -5,7 +5,7 @@ import { PublicPage } from "@/components/layout/public-page";
 import { DepartmentCard, DoctorCard } from "@/components/content/cards";
 import { EnquiryForm } from "@/components/content/enquiry-form";
 import { Async } from "@/components/shared/async";
-import { ContentSection, EmptyState, PageIntro } from "@/components/shared/page";
+import { ContentSection, EmptyState } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
 import { professionalServiceQuery } from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";
