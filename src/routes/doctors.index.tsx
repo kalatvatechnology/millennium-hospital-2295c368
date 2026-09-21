@@ -234,16 +234,22 @@ function DoctorsPage() {
   const list = useMemo(() => doctors.data ?? [], [doctors.data]);
   const departments = useMemo(
     () =>
-      [...new Set(list.map((doctor) => doctor.department?.name).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b),
-      ),
+      [
+        ...new Set(
+          list.flatMap((doctor) =>
+            doctor.department?.name ? [doctor.department.name] : [],
+          ),
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
     [list],
   );
   const locations = useMemo(
     () =>
-      [...new Set(list.map((doctor) => doctor.location).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b),
-      ),
+      [
+        ...new Set(
+          list.flatMap((doctor) => (doctor.location ? [doctor.location] : [])),
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
     [list],
   );
 
@@ -305,6 +311,13 @@ function DoctorsPage() {
     setLocation(draftLocation);
     setPage(1);
     setFiltersOpen(false);
+  }
+
+  function changeSort(value: string) {
+    if (value === "relevance" || value === "name" || value === "experience") {
+      setSort(value);
+      setPage(1);
+    }
   }
 
   return (
@@ -412,10 +425,7 @@ function DoctorsPage() {
                     <Label htmlFor="doctor-sort">Sort by</Label>
                     <Select
                       value={sort}
-                      onValueChange={(value) => {
-                        setSort(value as SortOption);
-                        setPage(1);
-                      }}
+                      onValueChange={changeSort}
                     >
                       <SelectTrigger id="doctor-sort" className="mt-2 w-full bg-card">
                         <SelectValue />
