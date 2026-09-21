@@ -186,7 +186,13 @@ function HomePage() {
           isEmpty={(data) => data.length === 0}
           empty={<UnpublishedPanel title="No reviews are published yet" description="Verified patient feedback will appear here once approved." />}
         >
-          {(data) => <div className="mt-8 grid gap-6 md:grid-cols-2">{data.slice(0, 4).map((item) => <ReviewCard key={item.id} review={item} />)}</div>}
+          {(data) => {
+            const selected = [
+              ...data.filter((item) => !item.doctor),
+              ...data.filter((item) => item.doctor),
+            ].slice(0, 4);
+            return <div className="mt-8 grid gap-6 md:grid-cols-2">{selected.map((item) => <ReviewCard key={item.id} review={item} />)}</div>;
+          }}
         </Async>
       </ContentSection>
 

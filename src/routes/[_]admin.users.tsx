@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
+import { ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
 import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
@@ -52,6 +52,19 @@ const OPERATIONAL_ROLES: Role[] = [
   "writer",
   "editor",
 ];
+const RESPONSIBILITY_MODULES = [
+  "Doctors",
+  "Departments",
+  "Professional services",
+  "Hospital services",
+  "Facilities",
+  "Appointment enquiries",
+  "Media & content",
+  "FAQs",
+  "Reviews",
+  "Blog / resources",
+] as const;
+const RESPONSIBILITY_ACTIONS = ["View", "Create", "Edit", "Publish", "Delete", "Manage"] as const;
 
 function AdminUsers() {
   if (!backendFeatures.userManagement) return <AdminFeatureUnavailable title="Users and roles" />;
@@ -235,9 +248,42 @@ function AvailableUsers() {
             </label>
           ))}
         </fieldset>
+        {editing?.roles.includes("admin") ? (
+          <fieldset className="grid gap-3 border-t border-border pt-5">
+            <legend className="text-sm font-medium">Delegated responsibilities</legend>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Frontend ready · Backend required. These controls remain unavailable until individual
+              responsibilities are covered by the approved permission model.
+            </p>
+            <div className="overflow-x-auto border border-border">
+              <table className="w-full min-w-[42rem] text-sm">
+                <thead className="bg-secondary text-left">
+                  <tr>
+                    <th className="p-3 font-semibold">Area</th>
+                    {RESPONSIBILITY_ACTIONS.map((action) => (
+                      <th key={action} className="p-3 text-center font-semibold">{action}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {RESPONSIBILITY_MODULES.map((module) => (
+                    <tr key={module}>
+                      <th className="p-3 text-left font-medium">{module}</th>
+                      {RESPONSIBILITY_ACTIONS.map((action) => (
+                        <td key={action} className="p-3 text-center">
+                          <Checkbox disabled aria-label={`${action} ${module}`} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </fieldset>
+        ) : null}
         {!usesProductionContract ? (
           <div>
-            <Label>Linked doctor profile</Label>
+            <Label htmlFor="linked-doctor-profile">Linked doctor profile</Label>
             <Select
               value={editing?.doctorId || "none"}
               onValueChange={(next) =>
@@ -246,7 +292,7 @@ function AvailableUsers() {
                 )
               }
             >
-              <SelectTrigger className="mt-2">
+              <SelectTrigger id="linked-doctor-profile" className="mt-2">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

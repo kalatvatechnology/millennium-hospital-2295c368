@@ -38,14 +38,14 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
   return (
     <div className="grid gap-10">
       {others.length ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-3 xl:grid-cols-4">
           {others.map((item) => (
             <MediaCard key={item.id} item={item} />
           ))}
         </div>
       ) : null}
       {reels.length ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
           {reels.map((item) => (
             <MediaCard key={item.id} item={item} />
           ))}

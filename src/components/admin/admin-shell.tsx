@@ -6,7 +6,7 @@ import { useAdminSession } from "@/hooks/use-admin-session";
 import { Button } from "@/components/ui/button";
 import { LoadingState, EmptyState } from "@/components/shared/page";
 import { ROLE_LABELS, type Permission } from "@/lib/permissions";
-import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
+import { backendFeatures } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
 
 type NavItem = { label: string; to: string; permission: Permission | Permission[] | null };

@@ -23,7 +23,30 @@ function ReviewsPage() {
           isEmpty={(data) => data.length === 0}
           empty={<EmptyState title="No reviews are published yet" description="Verified patient feedback will appear here once it is approved." />}
         >
-          {(data) => <div className="grid gap-6 md:grid-cols-2">{data.map((review) => <ReviewCard key={review.id} review={review} />)}</div>}
+          {(data) => {
+            const hospitalReviews = data.filter((review) => !review.doctor);
+            const doctorReviews = data.filter((review) => review.doctor);
+            return (
+              <div className="grid gap-14">
+                {hospitalReviews.length ? (
+                  <section aria-labelledby="hospital-reviews-title">
+                    <h2 id="hospital-reviews-title" className="text-2xl font-semibold">Hospital reviews</h2>
+                    <div className="mt-6 grid gap-6 md:grid-cols-2">
+                      {hospitalReviews.map((review) => <ReviewCard key={review.id} review={review} />)}
+                    </div>
+                  </section>
+                ) : null}
+                {doctorReviews.length ? (
+                  <section aria-labelledby="doctor-reviews-title">
+                    <h2 id="doctor-reviews-title" className="text-2xl font-semibold">Doctor reviews</h2>
+                    <div className="mt-6 grid gap-6 md:grid-cols-2">
+                      {doctorReviews.map((review) => <ReviewCard key={review.id} review={review} />)}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            );
+          }}
         </Async>
       </ContentSection>
     </PublicPage>
