@@ -12,7 +12,6 @@ import { createPageMeta } from "@/lib/seo";
 import { ENQUIRY_STATUSES, usesProductionContract, type ProductionEnquiryStatus } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
 import { listStaffEnquiries, updateEnquiryStatus } from "@/lib/data/staff-repository";
-import type { StaffEnquiry } from "@/lib/data/models";
 
 export const Route = createFileRoute("/_admin/enquiries")({
   head: () => ({
@@ -110,7 +109,7 @@ function AdminEnquiries() {
       {enquiries.isPending ? (
         <LoadingState />
       ) : enquiries.isError ? (
-        <ErrorState />
+        <ErrorState description={userFacingDataError(enquiries.error)} />
       ) : rows.length === 0 ? (
         <EmptyState title="No enquiries found" description="New website enquiries will appear here." />
       ) : (
@@ -149,6 +148,7 @@ function AdminEnquiries() {
                     ) : null}
                   </div>
                 </div>
+                {updateStatus.isError ? <p role="alert" className="mt-3 text-sm font-medium text-destructive">{userFacingDataError(updateStatus.error)}</p> : null}
                 <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                   {row.familyMemberName ? <div><dt className="font-semibold">Family member</dt><dd className="text-muted-foreground">{row.familyMemberName}</dd></div> : null}
                   {row.doctor ? <div><dt className="font-semibold">Doctor</dt><dd className="text-muted-foreground">{row.doctor.name}</dd></div> : null}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingState, EmptyState } from "@/components/shared/page";
 import { ROLE_LABELS, type Permission } from "@/lib/permissions";
 import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
+import { userFacingDataError } from "@/lib/data/errors";
 
 type NavItem = { label: string; to: string; permission: Permission | Permission[] | null };
 
@@ -44,7 +45,7 @@ export function AdminShell({
   actions?: ReactNode;
   children: ReactNode;
 }) {
-  const { session, roles, loading, isStaff, can, signOut } = useAdminSession();
+  const { session, roles, loading, error, isStaff, can, signOut } = useAdminSession();
   const navigate = useNavigate();
   const [navOpen, setNavOpen] = useState(false);
 
@@ -52,13 +53,23 @@ export function AdminShell({
     if (!loading && (!session || !isStaff)) navigate({ to: "/_admin/login" });
   }, [loading, session, isStaff, navigate]);
 
-  if (loading || !session || !isStaff) {
+  if (loading || (!error && (!session || !isStaff))) {
     return (
       <main className="grid min-h-screen place-items-center bg-admin">
         <LoadingState />
       </main>
     );
   }
+
+  if (error) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-admin p-6">
+        <EmptyState title="Staff access could not be verified" description={userFacingDataError(error)} />
+      </main>
+    );
+  }
+
+  if (!session || !isStaff) return null;
 
   const allows = (permission: Permission | Permission[] | null | undefined) =>
     permission === null || permission === undefined ? true : Array.isArray(permission) ? permission.some(can) : can(permission);

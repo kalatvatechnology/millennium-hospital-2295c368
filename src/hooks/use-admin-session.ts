@@ -13,6 +13,7 @@ export function useAdminSession() {
   const [isStaff, setIsStaff] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, next) => {
@@ -37,13 +38,24 @@ export function useAdminSession() {
     let active = true;
     setLoading(true);
     void (async () => {
-      const [access, staffProfile] = await Promise.all([getStaffAccess(session.user.id), getStaffProfile(session.user.id)]);
-      if (!active) return;
-      setRoles(access.roles);
-      setPermissions(access.permissions);
-      setIsStaff(access.isStaff);
-      setProfile(staffProfile ? { id: staffProfile.id, full_name: staffProfile.fullName, email: staffProfile.email, doctor_id: staffProfile.doctorId } : null);
-      setLoading(false);
+      try {
+        const [access, staffProfile] = await Promise.all([getStaffAccess(session.user.id), getStaffProfile(session.user.id)]);
+        if (!active) return;
+        setRoles(access.roles);
+        setPermissions(access.permissions);
+        setIsStaff(access.isStaff);
+        setProfile(staffProfile ? { id: staffProfile.id, full_name: staffProfile.fullName, email: staffProfile.email, doctor_id: staffProfile.doctorId } : null);
+        setError(null);
+      } catch (nextError) {
+        if (!active) return;
+        setRoles([]);
+        setPermissions(new Set());
+        setIsStaff(false);
+        setProfile(null);
+        setError(nextError);
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => {
       active = false;
@@ -57,6 +69,7 @@ export function useAdminSession() {
     profile,
     roles,
     loading,
+    error,
     isStaff,
     can,
     signOut: () => supabase.auth.signOut(),
