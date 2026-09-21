@@ -392,6 +392,36 @@ export function contentTypeByKey(key: string) {
   return contentTypes.find((type) => type.key === key);
 }
 
+export function emptyContentValues(type: ContentType) {
+  const values: Record<string, any> = {};
+  for (const field of type.fields) {
+    values[field.name] = field.type === "boolean" ? false : field.type === "select" ? (field.options?.[0]?.value ?? "") : "";
+  }
+  return values;
+}
+
+export function contentFormValues(type: ContentType, row: Record<string, any>) {
+  const values: Record<string, any> = {};
+  for (const field of type.fields) {
+    const raw = row[field.name];
+    values[field.name] = field.type === "list" ? (Array.isArray(raw) ? raw.join(", ") : "") : field.type === "boolean" ? Boolean(raw) : (raw ?? "");
+  }
+  return values;
+}
+
+export function contentPayload(type: ContentType, values: Record<string, any>, canPublish: boolean) {
+  const payload: Record<string, any> = {};
+  for (const field of type.fields) {
+    if (field.publishControl && !canPublish) continue;
+    const raw = values[field.name];
+    if (field.type === "list") payload[field.name] = String(raw).split(",").map((item) => item.trim()).filter(Boolean);
+    else if (field.type === "boolean") payload[field.name] = Boolean(raw);
+    else if (field.type === "number") { if (raw !== "" && raw !== null) payload[field.name] = Number(raw); }
+    else payload[field.name] = raw === "" ? null : raw;
+  }
+  return payload;
+}
+
 export async function listRecords(type: ContentType) {
   if (type.available === false) return [];
   const { data, error } = await (supabase as any)
@@ -403,6 +433,17 @@ export async function listRecords(type: ContentType) {
   return (data ?? []) as Record<string, any>[];
 }
 
+export async function getRecord(type: ContentType, id: string) {
+  if (type.available === false) throw classifyDataError(new Error("table does not exist"));
+  const { data, error } = await (supabase as any)
+    .from(type.table)
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) throw classifyDataError(error);
+  return data as Record<string, any>;
+}
+
 export async function saveRecord(
   type: ContentType,
   id: string | null,
@@ -410,12 +451,12 @@ export async function saveRecord(
 ) {
   if (type.available === false) throw classifyDataError(new Error("table does not exist"));
   const query = (supabase as any).from(type.table);
-  const { error } = id ? await query.update(values).eq("id", id) : await query.insert(values);
+  const { data, error } = id ? await query.update(values).eq("id", id).select().single() : await query.insert(values).select().single();
   if (error) throw classifyDataError(error);
   await logAction({
     action: id ? "update" : "create",
     entityTable: type.table,
-    entityId: id,
+    entityId: id || data?.id,
     summary: `${id ? "Updated" : "Created"} ${type.singular}: ${values[type.titleField] ?? ""}`,
   });
 }

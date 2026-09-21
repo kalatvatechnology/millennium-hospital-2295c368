@@ -84,11 +84,14 @@ export type DoctorAchievement = {
   organization: string | null;
   year: number | null;
   description: string | null;
+  image_url: string | null;
+  image_alt: string | null;
   display_order: number;
 };
 export type DoctorLocation = {
   id: string;
   name: string;
+  public_name: string | null;
   slug: string;
   address_line: string | null;
   city: string | null;
@@ -163,7 +166,20 @@ export type BlogPost = {
   slug: string;
   excerpt: string | null;
   body: string | null;
+  body_document?: Record<string, unknown> | null;
   cover_image_url: string | null;
+  featured_image_alt?: string | null;
+  featured_image_caption?: string | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  canonical_url?: string | null;
+  robots_index?: boolean;
+  og_title?: string | null;
+  og_description?: string | null;
+  og_image_url?: string | null;
+  visualizations?: unknown[];
+  engagement_enabled?: boolean;
+  comments_enabled?: boolean;
   published_at: string | null;
   category?: { name: string; slug: string } | null;
   author?: { name: string; slug: string } | null;

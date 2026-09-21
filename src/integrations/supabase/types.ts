@@ -118,6 +118,97 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          moderated_at: string | null
+          moderated_by: string | null
+          post_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          post_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          post_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_moderated_by_fkey"
+            columns: ["moderated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_likes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_post_departments: {
         Row: {
           department_id: string
@@ -272,56 +363,104 @@ export type Database = {
         Row: {
           author_id: string | null
           body: string | null
+          body_document: Json
+          canonical_url: string | null
           category_id: string | null
           clinical_review_notes: string | null
           clinical_review_status: Database["public"]["Enums"]["clinical_review_status"]
           clinical_reviewed_at: string | null
           clinical_reviewer_id: string | null
+          comments_enabled: boolean
           cover_image_url: string | null
           created_at: string
+          engagement_enabled: boolean
           excerpt: string | null
+          featured_image_alt: string | null
+          featured_image_caption: string | null
+          focus_topic: string | null
           id: string
+          meta_description: string | null
+          og_description: string | null
+          og_image_url: string | null
+          og_title: string | null
           published_at: string | null
+          related_keywords: string[]
+          robots_index: boolean
+          search_intent: string | null
+          seo_title: string | null
           slug: string
           status: Database["public"]["Enums"]["post_status"]
           title: string
           updated_at: string
+          visualizations: Json
         }
         Insert: {
           author_id?: string | null
           body?: string | null
+          body_document?: Json
+          canonical_url?: string | null
           category_id?: string | null
           clinical_review_notes?: string | null
           clinical_review_status?: Database["public"]["Enums"]["clinical_review_status"]
           clinical_reviewed_at?: string | null
           clinical_reviewer_id?: string | null
+          comments_enabled?: boolean
           cover_image_url?: string | null
           created_at?: string
+          engagement_enabled?: boolean
           excerpt?: string | null
+          featured_image_alt?: string | null
+          featured_image_caption?: string | null
+          focus_topic?: string | null
           id?: string
+          meta_description?: string | null
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
           published_at?: string | null
+          related_keywords?: string[]
+          robots_index?: boolean
+          search_intent?: string | null
+          seo_title?: string | null
           slug: string
           status?: Database["public"]["Enums"]["post_status"]
           title: string
           updated_at?: string
+          visualizations?: Json
         }
         Update: {
           author_id?: string | null
           body?: string | null
+          body_document?: Json
+          canonical_url?: string | null
           category_id?: string | null
           clinical_review_notes?: string | null
           clinical_review_status?: Database["public"]["Enums"]["clinical_review_status"]
           clinical_reviewed_at?: string | null
           clinical_reviewer_id?: string | null
+          comments_enabled?: boolean
           cover_image_url?: string | null
           created_at?: string
+          engagement_enabled?: boolean
           excerpt?: string | null
+          featured_image_alt?: string | null
+          featured_image_caption?: string | null
+          focus_topic?: string | null
           id?: string
+          meta_description?: string | null
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
           published_at?: string | null
+          related_keywords?: string[]
+          robots_index?: boolean
+          search_intent?: string | null
+          seo_title?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["post_status"]
           title?: string
           updated_at?: string
+          visualizations?: Json
         }
         Relationships: [
           {
@@ -389,6 +528,8 @@ export type Database = {
           doctor_id: string
           enabled: boolean
           id: string
+          image_alt: string | null
+          image_url: string | null
           organization: string | null
           title: string
           updated_at: string
@@ -402,6 +543,8 @@ export type Database = {
           doctor_id: string
           enabled?: boolean
           id?: string
+          image_alt?: string | null
+          image_url?: string | null
           organization?: string | null
           title: string
           updated_at?: string
@@ -415,6 +558,8 @@ export type Database = {
           doctor_id?: string
           enabled?: boolean
           id?: string
+          image_alt?: string | null
+          image_url?: string | null
           organization?: string | null
           title?: string
           updated_at?: string
@@ -573,6 +718,8 @@ export type Database = {
           doctor_id: string
           enabled: boolean
           location_id: string
+          map_url: string | null
+          public_name: string | null
         }
         Insert: {
           consultation_availability?: string | null
@@ -580,6 +727,8 @@ export type Database = {
           doctor_id: string
           enabled?: boolean
           location_id: string
+          map_url?: string | null
+          public_name?: string | null
         }
         Update: {
           consultation_availability?: string | null
@@ -587,6 +736,8 @@ export type Database = {
           doctor_id?: string
           enabled?: boolean
           location_id?: string
+          map_url?: string | null
+          public_name?: string | null
         }
         Relationships: [
           {
@@ -648,6 +799,83 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "doctor_profile_change_requests_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_review_selections: {
+        Row: {
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          review_id: string
+        }
+        Insert: {
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          review_id: string
+        }
+        Update: {
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_review_selections_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_review_selections_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_social_links: {
+        Row: {
+          created_at: string
+          display_order: number
+          doctor_id: string
+          enabled: boolean
+          id: string
+          platform: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          doctor_id: string
+          enabled?: boolean
+          id?: string
+          platform: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          doctor_id?: string
+          enabled?: boolean
+          id?: string
+          platform?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_social_links_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
@@ -1702,6 +1930,8 @@ export type Database = {
           reviewed_at: string | null
           show_publicly: boolean
           source: string | null
+          source_type: string
+          source_url: string | null
           updated_at: string
         }
         Insert: {
@@ -1716,6 +1946,8 @@ export type Database = {
           reviewed_at?: string | null
           show_publicly?: boolean
           source?: string | null
+          source_type?: string
+          source_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -1730,6 +1962,8 @@ export type Database = {
           reviewed_at?: string | null
           show_publicly?: boolean
           source?: string | null
+          source_type?: string
+          source_url?: string | null
           updated_at?: string
         }
         Relationships: [

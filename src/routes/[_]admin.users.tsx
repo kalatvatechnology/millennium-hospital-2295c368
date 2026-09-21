@@ -1,37 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
 import {
-  AdminError,
   DataTable,
-  FormModal,
   Pagination,
   SearchField,
   StatusBadge,
   type Column,
 } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ROLE_DESCRIPTIONS, ROLE_LABELS, type Role } from "@/lib/permissions";
+import { ROLE_LABELS, type Role } from "@/lib/permissions";
 import { createPageMeta } from "@/lib/seo";
 import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 import { AdminFeatureUnavailable } from "@/components/admin/feature-unavailable";
-import {
-  listStaffDoctorOptions,
-  listStaffUsers,
-  updateStaffUser,
-} from "@/lib/data/staff-repository";
+import { listStaffUsers } from "@/lib/data/staff-repository";
 import type { StaffProfile } from "@/lib/data/models";
-import { userFacingDataError } from "@/lib/data/errors";
 
 export const Route = createFileRoute("/_admin/users")({
   head: () => ({
@@ -44,52 +28,18 @@ export const Route = createFileRoute("/_admin/users")({
 });
 
 const PAGE_SIZE = 20;
-const OPERATIONAL_ROLES: Role[] = [
-  "super_admin",
-  "admin",
-  "front_desk",
-  "doctor",
-  "writer",
-  "editor",
-];
-const RESPONSIBILITY_MODULES = [
-  "Doctors",
-  "Departments",
-  "Professional services",
-  "Hospital services",
-  "Facilities",
-  "Appointment enquiries",
-  "Media & content",
-  "FAQs",
-  "Reviews",
-  "Blog / resources",
-] as const;
-const RESPONSIBILITY_ACTIONS = ["View", "Create", "Edit", "Publish", "Delete", "Manage"] as const;
-
 function AdminUsers() {
   if (!backendFeatures.userManagement) return <AdminFeatureUnavailable title="Users and roles" />;
   return <AvailableUsers />;
 }
 
 function AvailableUsers() {
-  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState<{
-    profile: StaffProfile;
-    roles: Role[];
-    doctorId: string;
-  } | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const profiles = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: listStaffUsers,
-  });
-
-  const doctors = useQuery({
-    queryKey: ["admin-users-doctors"],
-    queryFn: listStaffDoctorOptions,
   });
 
   const rolesByUser = useMemo(() => {
@@ -109,23 +59,6 @@ function AvailableUsers() {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
   const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  const save = useMutation({
-    mutationFn: async () => {
-      if (!editing) return;
-      await updateStaffUser({
-        ...editing.profile,
-        roles: editing.roles,
-        doctorId: editing.doctorId || null,
-      });
-    },
-    onSuccess: () => {
-      setEditing(null);
-      setError(null);
-      void queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
-    },
-    onError: (mutationError: Error) => setError(userFacingDataError(mutationError)),
-  });
 
   const columns: Column<StaffProfile>[] = [
     {
@@ -161,18 +94,10 @@ function AvailableUsers() {
       header: "Actions",
       className: "text-right",
       cell: (row) => (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() =>
-            setEditing({
-              profile: row,
-              roles: rolesByUser.get(row.id) ?? [],
-              doctorId: row.doctorId ?? "",
-            })
-          }
-        >
-          Manage access
+        <Button asChild size="sm" variant="outline">
+          <Link to="/_admin/users/$userId" params={{ userId: row.id }}>
+            Manage access
+          </Link>
         </Button>
       ),
     },
@@ -184,15 +109,16 @@ function AvailableUsers() {
       description="Grant and remove staff access. Only super admins can change roles."
       requires="users.manage"
     >
-      <SearchField
-        value={search}
-        onChange={(next) => {
-          setSearch(next);
-          setPage(1);
-        }}
-        placeholder="Search staff"
-      />
-      <AdminError message={error} />
+      <div className="flex flex-wrap items-end gap-4">
+        <SearchField
+          value={search}
+          onChange={(next) => {
+            setSearch(next);
+            setPage(1);
+          }}
+          placeholder="Search staff"
+        />
+      </div>
       <div className="mt-6">
         <DataTable
           rows={rows}
@@ -210,105 +136,6 @@ function AvailableUsers() {
           onPageChange={setPage}
         />
       </div>
-
-      <FormModal
-        open={editing !== null}
-        onOpenChange={(open) => (open ? null : setEditing(null))}
-        title="Manage access"
-        description={editing?.profile.email ?? editing?.profile.id ?? ""}
-        busy={save.isPending}
-        onSubmit={() => save.mutate()}
-      >
-        <fieldset className="grid gap-3">
-          <legend className="text-sm font-medium">Roles</legend>
-          {OPERATIONAL_ROLES.map((role) => (
-            <label key={role} className="flex items-start gap-3">
-              <Checkbox
-                checked={editing?.roles.includes(role) ?? false}
-                onCheckedChange={(checked) =>
-                  setEditing((current) =>
-                    current
-                      ? {
-                          ...current,
-                          roles:
-                            checked === true
-                              ? [...current.roles, role]
-                              : current.roles.filter((item) => item !== role),
-                        }
-                      : current,
-                  )
-                }
-              />
-              <span>
-                <span className="font-medium">{ROLE_LABELS[role]}</span>
-                <span className="block text-sm text-muted-foreground">
-                  {ROLE_DESCRIPTIONS[role]}
-                </span>
-              </span>
-            </label>
-          ))}
-        </fieldset>
-        {editing?.roles.includes("admin") ? (
-          <fieldset className="grid gap-3 border-t border-border pt-5">
-            <legend className="text-sm font-medium">Delegated responsibilities</legend>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Frontend ready · Backend required. These controls remain unavailable until individual
-              responsibilities are covered by the approved permission model.
-            </p>
-            <div className="overflow-x-auto border border-border">
-              <table className="w-full min-w-[42rem] text-sm">
-                <thead className="bg-secondary text-left">
-                  <tr>
-                    <th className="p-3 font-semibold">Area</th>
-                    {RESPONSIBILITY_ACTIONS.map((action) => (
-                      <th key={action} className="p-3 text-center font-semibold">
-                        {action}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {RESPONSIBILITY_MODULES.map((module) => (
-                    <tr key={module}>
-                      <th className="p-3 text-left font-medium">{module}</th>
-                      {RESPONSIBILITY_ACTIONS.map((action) => (
-                        <td key={action} className="p-3 text-center">
-                          <Checkbox disabled aria-label={`${action} ${module}`} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </fieldset>
-        ) : null}
-        {!usesProductionContract ? (
-          <div>
-            <Label htmlFor="linked-doctor-profile">Linked doctor profile</Label>
-            <Select
-              value={editing?.doctorId || "none"}
-              onValueChange={(next) =>
-                setEditing((current) =>
-                  current ? { ...current, doctorId: next === "none" ? "" : next } : current,
-                )
-              }
-            >
-              <SelectTrigger id="linked-doctor-profile" className="mt-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Not linked</SelectItem>
-                {(doctors.data ?? []).map((doctor) => (
-                  <SelectItem key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : null}
-      </FormModal>
     </AdminShell>
   );
 }
