@@ -20,12 +20,17 @@ function unwrap<T>({ data, error }: { data: T; error: { message: string } | null
   return data;
 }
 
+function unwrapList<T>({ data, error }: { data: T[] | null; error: { message: string } | null }): T[] {
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
 /* ---------------- Departments ---------------- */
 
 export const departmentsQuery = queryOptions({
   queryKey: ["departments"],
   queryFn: async () =>
-    unwrap(await supabase.from("departments").select("*").eq("published", true).order("display_order").order("name")),
+    unwrapList(await supabase.from("departments").select("*").eq("published", true).order("display_order").order("name")),
 });
 
 export const departmentQuery = (slug: string) =>
@@ -36,7 +41,7 @@ export const departmentQuery = (slug: string) =>
         await supabase.from("departments").select("*").eq("slug", slug).eq("published", true).maybeSingle(),
       );
       if (!department) return null;
-      const doctors = unwrap(
+      const doctors = unwrapList(
         await supabase
           .from("doctors")
           .select("*, department:departments(id,name,slug)")
@@ -44,7 +49,7 @@ export const departmentQuery = (slug: string) =>
           .eq("published", true)
           .order("display_order"),
       );
-      const services = unwrap(
+      const services = unwrapList(
         await supabase
           .from("professional_service_departments")
           .select("professional_services(*)")
@@ -63,7 +68,7 @@ export const departmentQuery = (slug: string) =>
 export const doctorsQuery = queryOptions({
   queryKey: ["doctors"],
   queryFn: async () =>
-    unwrap(
+    unwrapList(
       await supabase
         .from("doctors")
         .select("*, department:departments(id,name,slug)")
@@ -98,11 +103,11 @@ export const doctorQuery = (slug: string) =>
       ]);
       return {
         doctor,
-        services: unwrap(services)
+        services: unwrapList(services)
           .map((row) => row.professional_services)
           .filter((s): s is ProfessionalService => Boolean(s?.published)),
-        reviews: unwrap(reviews),
-        media: unwrap(media)
+        reviews: unwrapList(reviews),
+        media: unwrapList(media)
           .map((row) => row.media_items)
           .filter((m): m is MediaItem => Boolean(m?.published)),
       };
@@ -114,7 +119,7 @@ export const doctorQuery = (slug: string) =>
 export const professionalServicesQuery = queryOptions({
   queryKey: ["professional-services"],
   queryFn: async () =>
-    unwrap(
+    unwrapList(
       await supabase.from("professional_services").select("*").eq("published", true).order("display_order").order("title"),
     ),
 });
@@ -122,7 +127,7 @@ export const professionalServicesQuery = queryOptions({
 export const hospitalServicesQuery = queryOptions({
   queryKey: ["hospital-services"],
   queryFn: async () =>
-    unwrap(
+    unwrapList(
       await supabase.from("hospital_services").select("*").eq("published", true).order("display_order").order("title"),
     ),
 });
@@ -144,10 +149,10 @@ export const professionalServiceQuery = (slug: string) =>
       ]);
       return {
         service,
-        departments: unwrap(departments)
+        departments: unwrapList(departments)
           .map((row) => row.departments)
           .filter((d): d is Department => Boolean(d?.published)),
-        doctors: unwrap(doctors)
+        doctors: unwrapList(doctors)
           .map((row) => row.doctors)
           .filter((d): d is DoctorWithDepartment => Boolean(d?.published)),
       };
@@ -166,7 +171,7 @@ export const hospitalServiceQuery = (slug: string) =>
 export const facilitiesQuery = queryOptions({
   queryKey: ["facilities"],
   queryFn: async () =>
-    unwrap(await supabase.from("facilities").select("*").eq("published", true).order("display_order").order("name")),
+    unwrapList(await supabase.from("facilities").select("*").eq("published", true).order("display_order").order("name")),
 });
 
 export const facilityQuery = (slug: string) =>
@@ -185,12 +190,12 @@ export const facilityQuery = (slug: string) =>
       ]);
       return {
         facility,
-        doctors: unwrap(doctors).map((r) => r.doctors).filter((d): d is DoctorWithDepartment => Boolean(d?.published)),
-        departments: unwrap(departments).map((r) => r.departments).filter((d): d is Department => Boolean(d?.published)),
-        professionalServices: unwrap(professional)
+        doctors: unwrapList(doctors).map((r) => r.doctors).filter((d): d is DoctorWithDepartment => Boolean(d?.published)),
+        departments: unwrapList(departments).map((r) => r.departments).filter((d): d is Department => Boolean(d?.published)),
+        professionalServices: unwrapList(professional)
           .map((r) => r.professional_services)
           .filter((s): s is ProfessionalService => Boolean(s?.published)),
-        hospitalServices: unwrap(hospital)
+        hospitalServices: unwrapList(hospital)
           .map((r) => r.hospital_services)
           .filter((s): s is HospitalService => Boolean(s?.published)),
       };
@@ -205,7 +210,7 @@ export const mediaQuery = (options?: { homeOnly?: boolean }) =>
     queryFn: async () => {
       let request = supabase.from("media_items").select("*").eq("published", true);
       if (options?.homeOnly) request = request.eq("show_on_home", true);
-      return unwrap(await request.order("display_order").order("created_at", { ascending: false }));
+      return unwrapList(await request.order("display_order").order("created_at", { ascending: false }));
     },
   });
 
@@ -218,7 +223,7 @@ export const faqQuery = queryOptions({
       supabase.from("faq_categories").select("*").eq("published", true).order("display_order"),
       supabase.from("faqs").select("*").eq("published", true).order("display_order"),
     ]);
-    return { categories: unwrap(categories), faqs: unwrap(faqs) };
+    return { categories: unwrapList(categories), faqs: unwrapList(faqs) };
   },
 });
 
@@ -227,7 +232,7 @@ export const faqQuery = queryOptions({
 export const reviewsQuery = queryOptions({
   queryKey: ["reviews"],
   queryFn: async () =>
-    unwrap(
+    unwrapList(
       await supabase
         .from("reviews")
         .select("*, doctor:doctors(name,slug)")
@@ -242,7 +247,7 @@ export const reviewsQuery = queryOptions({
 export const blogPostsQuery = queryOptions({
   queryKey: ["blog-posts"],
   queryFn: async () =>
-    unwrap(
+    unwrapList(
       await supabase
         .from("blog_posts")
         .select("*, category:blog_categories(name,slug), author:blog_authors(name,slug)")
@@ -264,7 +269,7 @@ export const blogPostQuery = (slug: string) =>
           .maybeSingle(),
       );
       if (!post) return null;
-      const related = unwrap(
+      const related = unwrapList(
         await supabase.from("blog_post_doctors").select("doctors(name,slug,published)").eq("post_id", post.id),
       );
       return {
@@ -286,10 +291,10 @@ export const enquiryOptionsQuery = queryOptions({
       supabase.from("hospital_services").select("id,title").eq("published", true).order("title"),
     ]);
     return {
-      doctors: unwrap(doctors),
-      departments: unwrap(departments),
-      professionalServices: unwrap(professional),
-      hospitalServices: unwrap(hospital),
+      doctors: unwrapList(doctors),
+      departments: unwrapList(departments),
+      professionalServices: unwrapList(professional),
+      hospitalServices: unwrapList(hospital),
     };
   },
 });
