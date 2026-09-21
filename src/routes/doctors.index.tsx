@@ -53,6 +53,7 @@ export const Route = createFileRoute("/doctors/")({
 });
 
 function FilterFields({
+  idPrefix,
   department,
   location,
   departments,
@@ -60,6 +61,7 @@ function FilterFields({
   onDepartmentChange,
   onLocationChange,
 }: {
+  idPrefix: string;
   department: string;
   location: string;
   departments: string[];
@@ -70,9 +72,12 @@ function FilterFields({
   return (
     <div className="space-y-6">
       <div>
-        <Label htmlFor="doctor-department">Department</Label>
+        <Label htmlFor={`${idPrefix}-doctor-department`}>Department</Label>
         <Select value={department} onValueChange={onDepartmentChange}>
-          <SelectTrigger id="doctor-department" className="mt-2 w-full bg-background">
+          <SelectTrigger
+            id={`${idPrefix}-doctor-department`}
+            className="mt-2 w-full bg-background"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -86,9 +91,12 @@ function FilterFields({
         </Select>
       </div>
       <div>
-        <Label htmlFor="doctor-location">Location</Label>
+        <Label htmlFor={`${idPrefix}-doctor-location`}>Location</Label>
         <Select value={location} onValueChange={onLocationChange}>
-          <SelectTrigger id="doctor-location" className="mt-2 w-full bg-background">
+          <SelectTrigger
+            id={`${idPrefix}-doctor-location`}
+            className="mt-2 w-full bg-background"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -184,7 +192,13 @@ function DirectoryDoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 
         <div className="mt-auto grid gap-2 pt-6 sm:grid-cols-2">
           <Button asChild>
-            <Link to="/contact">Book appointment</Link>
+            <Link
+              to="/doctors/$slug"
+              params={{ slug: doctor.slug }}
+              hash="request-appointment"
+            >
+              Book appointment
+            </Link>
           </Button>
           {siteConfig.contact.phone ? (
             <Button asChild variant="outline">
@@ -365,6 +379,7 @@ function DoctorsPage() {
               </div>
               <div className="mt-6">
                 <FilterFields
+                  idPrefix="desktop"
                   department={draftDepartment}
                   location={draftLocation}
                   departments={departments}
@@ -400,6 +415,7 @@ function DoctorsPage() {
                       </SheetHeader>
                       <div className="mt-8">
                         <FilterFields
+                          idPrefix="mobile"
                           department={draftDepartment}
                           location={draftLocation}
                           departments={departments}
