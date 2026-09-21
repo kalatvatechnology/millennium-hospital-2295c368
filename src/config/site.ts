@@ -20,8 +20,10 @@ export const siteConfig = {
 
 export const primaryNavigation = [
   { label: "About", to: "/about" },
+  { label: "Departments", to: "/departments" },
   { label: "Doctors", to: "/doctors" },
   { label: "Services", to: "/services" },
   { label: "Facilities", to: "/facilities" },
+  { label: "Media", to: "/media" },
   { label: "Resources", to: "/blog" },
 ] as const;

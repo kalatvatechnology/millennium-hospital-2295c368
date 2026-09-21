@@ -25,6 +25,7 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
 import { Route as AdminIndexRouteImport } from './routes/[_]admin.index'
 import { Route as AdminDashboardRouteImport } from './routes/[_]admin.dashboard'
+import { Route as AdminEnquiriesRouteImport } from './routes/[_]admin.enquiries'
 import { Route as AdminLoginRouteImport } from './routes/[_]admin.login'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -118,6 +119,11 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
+  id: '/enquiries',
+  path: '/enquiries',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/enquiries': typeof AdminEnquiriesRoute
   '/_admin/login': typeof AdminLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/reviews': typeof ReviewsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/enquiries': typeof AdminEnquiriesRoute
   '/_admin/login': typeof AdminLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/enquiries': typeof AdminEnquiriesRoute
   '/_admin/login': typeof AdminLoginRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/terms-and-conditions'
     | '/_admin/dashboard'
+    | '/_admin/enquiries'
     | '/_admin/login'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/terms-and-conditions'
     | '/_admin/dashboard'
+    | '/_admin/enquiries'
     | '/_admin/login'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/terms-and-conditions'
     | '/_admin/dashboard'
+    | '/_admin/enquiries'
     | '/_admin/login'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -483,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/enquiries': {
+      id: '/_admin/enquiries'
+      path: '/enquiries'
+      fullPath: '/_admin/enquiries'
+      preLoaderRoute: typeof AdminEnquiriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/login': {
       id: '/_admin/login'
       path: '/login'
@@ -572,12 +591,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminEnquiriesRoute: typeof AdminEnquiriesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminEnquiriesRoute: AdminEnquiriesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
