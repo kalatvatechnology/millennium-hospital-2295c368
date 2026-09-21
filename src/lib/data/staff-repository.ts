@@ -8,7 +8,7 @@ import type {
   StaffEnquiry,
   StaffProfile,
 } from "./models";
-import { isRole, permissionsForRoles, ROLES, type Permission, type Role } from "../permissions";
+import { isRole, permissionsForRoles, type Permission, type Role } from "../permissions";
 
 type Row = Record<string, unknown>;
 type Result<T> = { data: T | null; error: unknown; count?: number | null };
@@ -71,19 +71,15 @@ export async function getStaffAccess(userId: string): Promise<StaffAccess> {
     };
   }
 
-  const [isStaff, canAdmin, canEditContent, doctorRole, recognizedStaffRole] = await Promise.all([
+  const [isStaff, canAdmin, canEditContent, doctorRole] = await Promise.all([
     permissionRpc(productionPermissionFunctions.isStaff),
     permissionRpc(productionPermissionFunctions.canAdmin),
     permissionRpc(productionPermissionFunctions.canEditContent),
     permissionRpc(productionPermissionFunctions.hasRole, { _user_id: userId, _role: "doctor" }),
-    permissionRpc(productionPermissionFunctions.hasAnyRole, {
-      _user_id: userId,
-      _roles: [...ROLES],
-    }),
   ]);
 
   const permissions = new Set<Permission>();
-  if (isStaff && recognizedStaffRole) permissions.add("content.read");
+  if (isStaff) permissions.add("content.read");
   if (canEditContent) permissions.add("content.write");
   if (canAdmin) {
     permissions.add("content.publish");
@@ -95,7 +91,7 @@ export async function getStaffAccess(userId: string): Promise<StaffAccess> {
     permissions.add("blog.review");
     permissions.add("profile.request");
   }
-  return { roles, permissions, isStaff: isStaff && recognizedStaffRole, doctorRole };
+  return { roles, permissions, isStaff, doctorRole };
 }
 
 export async function getStaffProfile(userId: string): Promise<Omit<StaffProfile, "roles"> | null> {

@@ -25,7 +25,7 @@ function DoctorsPage() {
   const [specialty, setSpecialty] = useState("all");
   const [department, setDepartment] = useState("all");
 
-  const list = doctors.data ?? [];
+  const list = useMemo(() => doctors.data ?? [], [doctors.data]);
   const specialties = [...new Set(list.map((doctor) => doctor.specialty).filter((value): value is string => Boolean(value)))];
   const departments = [...new Set(list.map((doctor) => doctor.department?.name).filter((value): value is string => Boolean(value)))];
 
