@@ -46,9 +46,12 @@ import { Route as AdminProfileRequestsRouteImport } from './routes/[_]admin.prof
 import { Route as AdminReviewsRouteImport } from './routes/[_]admin.reviews'
 import { Route as AdminSeoRouteImport } from './routes/[_]admin.seo'
 import { Route as AdminSeoAnalyticsRouteImport } from './routes/[_]admin.seo-analytics'
+import { Route as AdminSeoAuditRouteImport } from './routes/[_]admin.seo-audit'
 import { Route as AdminSeoHistoryRouteImport } from './routes/[_]admin.seo-history'
 import { Route as AdminSeoKeywordsRouteImport } from './routes/[_]admin.seo-keywords'
+import { Route as AdminSeoLocalRouteImport } from './routes/[_]admin.seo-local'
 import { Route as AdminSeoTargetsRouteImport } from './routes/[_]admin.seo-targets'
+import { Route as AdminSeoTechnicalRouteImport } from './routes/[_]admin.seo-technical'
 import { Route as AdminUsersRouteImport } from './routes/[_]admin.users'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -259,6 +262,11 @@ const AdminSeoAnalyticsRoute = AdminSeoAnalyticsRouteImport.update({
   path: '/seo-analytics',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSeoAuditRoute = AdminSeoAuditRouteImport.update({
+  id: '/seo-audit',
+  path: '/seo-audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSeoHistoryRoute = AdminSeoHistoryRouteImport.update({
   id: '/seo-history',
   path: '/seo-history',
@@ -269,9 +277,19 @@ const AdminSeoKeywordsRoute = AdminSeoKeywordsRouteImport.update({
   path: '/seo-keywords',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSeoLocalRoute = AdminSeoLocalRouteImport.update({
+  id: '/seo-local',
+  path: '/seo-local',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSeoTargetsRoute = AdminSeoTargetsRouteImport.update({
   id: '/seo-targets',
   path: '/seo-targets',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSeoTechnicalRoute = AdminSeoTechnicalRouteImport.update({
+  id: '/seo-technical',
+  path: '/seo-technical',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -433,9 +451,12 @@ export interface FileRoutesByFullPath {
   '/_admin/reviews': typeof AdminReviewsRoute
   '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
+  '/_admin/seo-audit': typeof AdminSeoAuditRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
+  '/_admin/seo-local': typeof AdminSeoLocalRoute
   '/_admin/seo-targets': typeof AdminSeoTargetsRoute
+  '/_admin/seo-technical': typeof AdminSeoTechnicalRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -489,9 +510,12 @@ export interface FileRoutesByTo {
   '/_admin/reviews': typeof AdminReviewsRoute
   '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
+  '/_admin/seo-audit': typeof AdminSeoAuditRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
+  '/_admin/seo-local': typeof AdminSeoLocalRoute
   '/_admin/seo-targets': typeof AdminSeoTargetsRoute
+  '/_admin/seo-technical': typeof AdminSeoTechnicalRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -555,9 +579,12 @@ export interface FileRoutesById {
   '/_admin/reviews': typeof AdminReviewsRoute
   '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
+  '/_admin/seo-audit': typeof AdminSeoAuditRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
+  '/_admin/seo-local': typeof AdminSeoLocalRoute
   '/_admin/seo-targets': typeof AdminSeoTargetsRoute
+  '/_admin/seo-technical': typeof AdminSeoTechnicalRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -622,9 +649,12 @@ export interface FileRouteTypes {
     | '/_admin/reviews'
     | '/_admin/seo'
     | '/_admin/seo-analytics'
+    | '/_admin/seo-audit'
     | '/_admin/seo-history'
     | '/_admin/seo-keywords'
+    | '/_admin/seo-local'
     | '/_admin/seo-targets'
+    | '/_admin/seo-technical'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -678,9 +708,12 @@ export interface FileRouteTypes {
     | '/_admin/reviews'
     | '/_admin/seo'
     | '/_admin/seo-analytics'
+    | '/_admin/seo-audit'
     | '/_admin/seo-history'
     | '/_admin/seo-keywords'
+    | '/_admin/seo-local'
     | '/_admin/seo-targets'
+    | '/_admin/seo-technical'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -743,9 +776,12 @@ export interface FileRouteTypes {
     | '/_admin/reviews'
     | '/_admin/seo'
     | '/_admin/seo-analytics'
+    | '/_admin/seo-audit'
     | '/_admin/seo-history'
     | '/_admin/seo-keywords'
+    | '/_admin/seo-local'
     | '/_admin/seo-targets'
+    | '/_admin/seo-technical'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -1050,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSeoAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/seo-audit': {
+      id: '/_admin/seo-audit'
+      path: '/seo-audit'
+      fullPath: '/_admin/seo-audit'
+      preLoaderRoute: typeof AdminSeoAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/seo-history': {
       id: '/_admin/seo-history'
       path: '/seo-history'
@@ -1064,11 +1107,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSeoKeywordsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/seo-local': {
+      id: '/_admin/seo-local'
+      path: '/seo-local'
+      fullPath: '/_admin/seo-local'
+      preLoaderRoute: typeof AdminSeoLocalRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/seo-targets': {
       id: '/_admin/seo-targets'
       path: '/seo-targets'
       fullPath: '/_admin/seo-targets'
       preLoaderRoute: typeof AdminSeoTargetsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/seo-technical': {
+      id: '/_admin/seo-technical'
+      path: '/seo-technical'
+      fullPath: '/_admin/seo-technical'
+      preLoaderRoute: typeof AdminSeoTechnicalRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/users': {
@@ -1322,9 +1379,12 @@ interface AdminRouteChildren {
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSeoRoute: typeof AdminSeoRoute
   AdminSeoAnalyticsRoute: typeof AdminSeoAnalyticsRoute
+  AdminSeoAuditRoute: typeof AdminSeoAuditRoute
   AdminSeoHistoryRoute: typeof AdminSeoHistoryRoute
   AdminSeoKeywordsRoute: typeof AdminSeoKeywordsRoute
+  AdminSeoLocalRoute: typeof AdminSeoLocalRoute
   AdminSeoTargetsRoute: typeof AdminSeoTargetsRoute
+  AdminSeoTechnicalRoute: typeof AdminSeoTechnicalRoute
   AdminUsersRoute: typeof AdminUsersRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
   AdminSeoKeywordKeywordIdRoute: typeof AdminSeoKeywordKeywordIdRoute
@@ -1355,9 +1415,12 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSeoRoute: AdminSeoRoute,
   AdminSeoAnalyticsRoute: AdminSeoAnalyticsRoute,
+  AdminSeoAuditRoute: AdminSeoAuditRoute,
   AdminSeoHistoryRoute: AdminSeoHistoryRoute,
   AdminSeoKeywordsRoute: AdminSeoKeywordsRoute,
+  AdminSeoLocalRoute: AdminSeoLocalRoute,
   AdminSeoTargetsRoute: AdminSeoTargetsRoute,
+  AdminSeoTechnicalRoute: AdminSeoTechnicalRoute,
   AdminUsersRoute: AdminUsersRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
   AdminSeoKeywordKeywordIdRoute: AdminSeoKeywordKeywordIdRoute,
