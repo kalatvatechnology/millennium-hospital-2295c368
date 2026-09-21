@@ -44,6 +44,8 @@ import { Route as AdminPagesRouteImport } from './routes/[_]admin.pages'
 import { Route as AdminProfessionalServicesRouteImport } from './routes/[_]admin.professional-services'
 import { Route as AdminProfileRequestsRouteImport } from './routes/[_]admin.profile-requests'
 import { Route as AdminReviewsRouteImport } from './routes/[_]admin.reviews'
+import { Route as AdminSeoAnalyticsRouteImport } from './routes/[_]admin.seo-analytics'
+import { Route as AdminSeoHistoryRouteImport } from './routes/[_]admin.seo-history'
 import { Route as AdminUsersRouteImport } from './routes/[_]admin.users'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -242,6 +244,16 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/reviews',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSeoAnalyticsRoute = AdminSeoAnalyticsRouteImport.update({
+  id: '/seo-analytics',
+  path: '/seo-analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSeoHistoryRoute = AdminSeoHistoryRouteImport.update({
+  id: '/seo-history',
+  path: '/seo-history',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -388,6 +400,8 @@ export interface FileRoutesByFullPath {
   '/_admin/professional-services': typeof AdminProfessionalServicesRoute
   '/_admin/profile-requests': typeof AdminProfileRequestsRouteWithChildren
   '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
+  '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -437,6 +451,8 @@ export interface FileRoutesByTo {
   '/_admin/professional-services': typeof AdminProfessionalServicesRoute
   '/_admin/profile-requests': typeof AdminProfileRequestsRouteWithChildren
   '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
+  '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -496,6 +512,8 @@ export interface FileRoutesById {
   '/_admin/professional-services': typeof AdminProfessionalServicesRoute
   '/_admin/profile-requests': typeof AdminProfileRequestsRouteWithChildren
   '/_admin/reviews': typeof AdminReviewsRoute
+  '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
+  '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/users': typeof AdminUsersRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/departments/$slug': typeof DepartmentsSlugRoute
@@ -556,6 +574,8 @@ export interface FileRouteTypes {
     | '/_admin/professional-services'
     | '/_admin/profile-requests'
     | '/_admin/reviews'
+    | '/_admin/seo-analytics'
+    | '/_admin/seo-history'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -605,6 +625,8 @@ export interface FileRouteTypes {
     | '/_admin/professional-services'
     | '/_admin/profile-requests'
     | '/_admin/reviews'
+    | '/_admin/seo-analytics'
+    | '/_admin/seo-history'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -663,6 +685,8 @@ export interface FileRouteTypes {
     | '/_admin/professional-services'
     | '/_admin/profile-requests'
     | '/_admin/reviews'
+    | '/_admin/seo-analytics'
+    | '/_admin/seo-history'
     | '/_admin/users'
     | '/blog/$slug'
     | '/departments/$slug'
@@ -951,6 +975,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/seo-analytics': {
+      id: '/_admin/seo-analytics'
+      path: '/seo-analytics'
+      fullPath: '/_admin/seo-analytics'
+      preLoaderRoute: typeof AdminSeoAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/seo-history': {
+      id: '/_admin/seo-history'
+      path: '/seo-history'
+      fullPath: '/_admin/seo-history'
+      preLoaderRoute: typeof AdminSeoHistoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/users': {
       id: '/_admin/users'
       path: '/users'
@@ -1186,6 +1224,8 @@ interface AdminRouteChildren {
   AdminProfessionalServicesRoute: typeof AdminProfessionalServicesRoute
   AdminProfileRequestsRoute: typeof AdminProfileRequestsRouteWithChildren
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSeoAnalyticsRoute: typeof AdminSeoAnalyticsRoute
+  AdminSeoHistoryRoute: typeof AdminSeoHistoryRoute
   AdminUsersRoute: typeof AdminUsersRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
   AdminContentContentTypeRecordIdRoute: typeof AdminContentContentTypeRecordIdRoute
@@ -1212,6 +1252,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProfessionalServicesRoute: AdminProfessionalServicesRoute,
   AdminProfileRequestsRoute: AdminProfileRequestsRouteWithChildren,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSeoAnalyticsRoute: AdminSeoAnalyticsRoute,
+  AdminSeoHistoryRoute: AdminSeoHistoryRoute,
   AdminUsersRoute: AdminUsersRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
   AdminContentContentTypeRecordIdRoute: AdminContentContentTypeRecordIdRoute,
