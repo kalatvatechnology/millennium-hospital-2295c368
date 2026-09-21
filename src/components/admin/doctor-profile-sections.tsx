@@ -44,6 +44,8 @@ const specializationsSection: Section = {
   fields: [
     { name: "title", label: "Title" },
     { name: "description", label: "Description", multiline: true },
+    { name: "image_url", label: "Image URL" },
+    { name: "image_alt", label: "Image alternative text" },
     { name: "icon", label: "Icon" },
   ],
 };
