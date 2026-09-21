@@ -79,8 +79,14 @@ export async function getStaffAccess(userId: string): Promise<StaffAccess> {
   ]);
 
   const permissions = new Set<Permission>();
-  if (isStaff) permissions.add("content.read");
-  if (canEditContent) permissions.add("content.write");
+  if (isStaff) {
+    permissions.add("content.read");
+    permissions.add("seo.read");
+  }
+  if (canEditContent) {
+    permissions.add("content.write");
+    permissions.add("seo.manage");
+  }
   if (canAdmin) {
     permissions.add("content.publish");
     permissions.add("enquiries.manage");
@@ -91,6 +97,7 @@ export async function getStaffAccess(userId: string): Promise<StaffAccess> {
     permissions.add("blog.review");
     permissions.add("profile.request");
   }
+
   return { roles, permissions, isStaff, doctorRole };
 }
 
