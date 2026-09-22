@@ -228,16 +228,17 @@ export async function getDoctor(slug: string, preview = false) {
         .filter((item) => item.status === "published"),
       statistics: rows(statisticResult)
         .map((item) => {
-          const definition = item["doctor_statistic_definitions"] as
-            | { name?: unknown; meaning?: unknown; default_icon_url?: unknown; active?: unknown }
-            | null;
+          const definition = item["doctor_statistic_definitions"] as {
+            name?: unknown;
+            meaning?: unknown;
+            default_icon_url?: unknown;
+            active?: unknown;
+          } | null;
           return {
             id: String(item["id"] ?? ""),
             value: String(item["value"] ?? ""),
             label:
-              typeof definition?.name === "string"
-                ? definition.name
-                : String(item["label"] ?? ""),
+              typeof definition?.name === "string" ? definition.name : String(item["label"] ?? ""),
             icon:
               typeof item["icon_override_url"] === "string"
                 ? item["icon_override_url"]

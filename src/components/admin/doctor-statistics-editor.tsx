@@ -54,10 +54,7 @@ export const DoctorStatisticsEditor = forwardRef<
     onEnabledChange: (enabled: boolean) => void;
     onDirty?: () => void;
   }
->(function DoctorStatisticsEditor(
-  { doctorId, enabled, canWrite, onEnabledChange, onDirty },
-  ref,
-) {
+>(function DoctorStatisticsEditor({ doctorId, enabled, canWrite, onEnabledChange, onDirty }, ref) {
   const query = useQuery({
     queryKey: ["doctor-statistics-workspace", doctorId],
     queryFn: async () => {
@@ -105,7 +102,8 @@ export const DoctorStatisticsEditor = forwardRef<
     setBaselineAssignments(structuredClone(nextAssignments));
   }, [query.data]);
 
-  const definitionFor = (row: Assignment) => definitions.find((item) => item.id === row.statistic_id);
+  const definitionFor = (row: Assignment) =>
+    definitions.find((item) => item.id === row.statistic_id);
   const markDirty = () => onDirty?.();
   const reset = () => {
     const paths = [...uploadedPaths.current];
@@ -118,10 +116,13 @@ export const DoctorStatisticsEditor = forwardRef<
     setEditing(null);
     setError(null);
   };
-  useEffect(() => () => {
-    const paths = [...uploadedPaths.current];
-    if (paths.length) void supabase.storage.from(bucket).remove(paths);
-  }, []);
+  useEffect(
+    () => () => {
+      const paths = [...uploadedPaths.current];
+      if (paths.length) void supabase.storage.from(bucket).remove(paths);
+    },
+    [],
+  );
 
   const save = async () => {
     setError(null);
@@ -152,16 +153,21 @@ export const DoctorStatisticsEditor = forwardRef<
         }
       }
       const original = query.data?.assignments ?? [];
-      const removed = original.filter((row: any) => !assignments.some((item) => item.id === row.id));
+      const removed = original.filter(
+        (row: any) => !assignments.some((item) => item.id === row.id),
+      );
       if (removed.length) {
         const { error: deleteError } = await db
           .from("doctor_statistics")
           .delete()
-          .in("id", removed.map((row: any) => row.id));
+          .in(
+            "id",
+            removed.map((row: any) => row.id),
+          );
         if (deleteError) throw deleteError;
       }
       for (const [index, row] of assignments.entries()) {
-        const resolvedId = idMap.get(row.statistic_id) ?? row.statistic_id || null;
+        const resolvedId = (idMap.get(row.statistic_id) ?? row.statistic_id) || null;
         const definition = definitions.find((item) => item.id === row.statistic_id);
         if (!row.value.trim()) throw new Error("Every assigned statistic needs a doctor value.");
         const payload = {
@@ -223,7 +229,10 @@ export const DoctorStatisticsEditor = forwardRef<
   };
 
   const filtered = useMemo(
-    () => definitions.filter((item) => item.active && item.name.toLowerCase().includes(search.toLowerCase())),
+    () =>
+      definitions.filter(
+        (item) => item.active && item.name.toLowerCase().includes(search.toLowerCase()),
+      ),
     [definitions, search],
   );
   const assign = (definitionId: string) => {
@@ -234,7 +243,16 @@ export const DoctorStatisticsEditor = forwardRef<
     const id = `new-${crypto.randomUUID()}`;
     setAssignments((current) => [
       ...current,
-      { id, statistic_id: definitionId, value: "", label: "", icon: "", icon_override_url: "", enabled: true, display_order: current.length },
+      {
+        id,
+        statistic_id: definitionId,
+        value: "",
+        label: "",
+        icon: "",
+        icon_override_url: "",
+        enabled: true,
+        display_order: current.length,
+      },
     ]);
     setEditing(id);
     setMode("closed");
@@ -249,7 +267,16 @@ export const DoctorStatisticsEditor = forwardRef<
     ]);
     setAssignments((current) => [
       ...current,
-      { id: assignmentId, statistic_id: definitionId, value: "", label: "", icon: "", icon_override_url: "", enabled: true, display_order: current.length },
+      {
+        id: assignmentId,
+        statistic_id: definitionId,
+        value: "",
+        label: "",
+        icon: "",
+        icon_override_url: "",
+        enabled: true,
+        display_order: current.length,
+      },
     ]);
     setEditing(assignmentId);
     setMode("closed");
@@ -278,36 +305,86 @@ export const DoctorStatisticsEditor = forwardRef<
     <section className="border-t border-border pt-6" aria-labelledby="statistics-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 id="statistics-heading" className="text-lg font-semibold">Statistics</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Reusable profile highlights with doctor-specific values.</p>
+          <h3 id="statistics-heading" className="text-lg font-semibold">
+            Statistics
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Reusable profile highlights with doctor-specific values.
+          </p>
         </div>
         <label className="flex items-center gap-3 text-sm font-semibold">
           <span>{enabled ? "ON" : "OFF"}</span>
-          <Switch checked={enabled} disabled={!canWrite} aria-label="Statistics section visibility" onCheckedChange={(checked) => { onEnabledChange(checked); markDirty(); }} />
+          <Switch
+            checked={enabled}
+            disabled={!canWrite}
+            aria-label="Statistics section visibility"
+            onCheckedChange={(checked) => {
+              onEnabledChange(checked);
+              markDirty();
+            }}
+          />
         </label>
       </div>
       {!enabled ? null : (
         <div className="mt-5">
-          <Button type="button" variant="outline" disabled={!canWrite} onClick={() => setMode(mode === "closed" ? "existing" : "closed")}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!canWrite}
+            onClick={() => setMode(mode === "closed" ? "existing" : "closed")}
+          >
             <Plus className="size-4" /> Add Statistic
           </Button>
           {mode !== "closed" ? (
             <div className="mt-4 grid gap-4 rounded-md border border-border p-4">
               <div className="flex gap-2" role="group" aria-label="Add statistic method">
-                <Button type="button" size="sm" variant={mode === "existing" ? "default" : "outline"} onClick={() => setMode("existing")}>Use Existing</Button>
-                <Button type="button" size="sm" variant={mode === "new" ? "default" : "outline"} onClick={() => setMode("new")}>Create New</Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={mode === "existing" ? "default" : "outline"}
+                  onClick={() => setMode("existing")}
+                >
+                  Use Existing
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={mode === "new" ? "default" : "outline"}
+                  onClick={() => setMode("new")}
+                >
+                  Create New
+                </Button>
               </div>
               {mode === "existing" ? (
                 <>
-                  <div className="relative max-w-md"><Search className="absolute left-3 top-3 size-4 text-muted-foreground" /><Input aria-label="Search statistic library" className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search Statistic Library" /></div>
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                    <Input
+                      aria-label="Search statistic library"
+                      className="pl-9"
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search Statistic Library"
+                    />
+                  </div>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {filtered.map((definition) => (
-                      <Button key={definition.id} type="button" variant="outline" className="h-auto justify-start whitespace-normal py-3 text-left" onClick={() => assign(definition.id)}>{definition.name}</Button>
+                      <Button
+                        key={definition.id}
+                        type="button"
+                        variant="outline"
+                        className="h-auto justify-start whitespace-normal py-3 text-left"
+                        onClick={() => assign(definition.id)}
+                      >
+                        {definition.name}
+                      </Button>
                     ))}
                   </div>
                 </>
               ) : (
-                <Button type="button" className="w-fit" onClick={createDefinition}>Create custom statistic</Button>
+                <Button type="button" className="w-fit" onClick={createDefinition}>
+                  Create custom statistic
+                </Button>
               )}
             </div>
           ) : null}
@@ -318,45 +395,236 @@ export const DoctorStatisticsEditor = forwardRef<
               const icon = row.icon_override_url || definition?.default_icon_url || row.icon;
               const isEditing = editing === row.id;
               return (
-                <article key={row.id} className="min-w-0 rounded-md border border-border bg-background p-4">
+                <article
+                  key={row.id}
+                  className="min-w-0 rounded-md border border-border bg-background p-4"
+                >
                   {isEditing ? (
                     <div className="grid gap-4">
                       {definition?.isNew ? (
-                        <><div><Label>Statistic Name</Label><Input className="mt-1" value={definition.name} onChange={(event) => updateDefinition(definition.id, { name: event.target.value })} /></div><div><Label>Meaning</Label><Textarea className="mt-1" value={definition.meaning} onChange={(event) => updateDefinition(definition.id, { meaning: event.target.value })} /></div></>
+                        <>
+                          <div>
+                            <Label>Statistic Name</Label>
+                            <Input
+                              className="mt-1"
+                              value={definition.name}
+                              onChange={(event) =>
+                                updateDefinition(definition.id, { name: event.target.value })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label>Meaning</Label>
+                            <Textarea
+                              className="mt-1"
+                              value={definition.meaning}
+                              onChange={(event) =>
+                                updateDefinition(definition.id, { meaning: event.target.value })
+                              }
+                            />
+                          </div>
+                        </>
                       ) : null}
-                      <IconUpload label="Default PNG Icon" value={definition?.default_icon_url ?? ""} onUpload={(file) => definition && uploadIcon(file, definition.default_icon_url, (url) => updateDefinition(definition.id, { default_icon_url: url }), "definition")} onRemove={() => definition && updateDefinition(definition.id, { default_icon_url: "" })} />
-                      <div><Label>Doctor Value</Label><Input className="mt-1" value={row.value} onChange={(event) => updateAssignment(row.id, { value: event.target.value })} placeholder="e.g. 10+" /></div>
-                      <IconUpload label="Use a different icon for this doctor" value={row.icon_override_url} onUpload={(file) => uploadIcon(file, row.icon_override_url, (url) => updateAssignment(row.id, { icon_override_url: url }), "override")} onRemove={() => updateAssignment(row.id, { icon_override_url: "" })} />
-                      <Button type="button" size="sm" variant="outline" className="w-fit" onClick={() => setEditing(null)}>Done</Button>
+                      <IconUpload
+                        label="Default PNG Icon"
+                        value={definition?.default_icon_url ?? ""}
+                        onUpload={(file) =>
+                          definition &&
+                          uploadIcon(
+                            file,
+                            definition.default_icon_url,
+                            (url) => updateDefinition(definition.id, { default_icon_url: url }),
+                            "definition",
+                          )
+                        }
+                        onRemove={() =>
+                          definition && updateDefinition(definition.id, { default_icon_url: "" })
+                        }
+                      />
+                      <div>
+                        <Label>Doctor Value</Label>
+                        <Input
+                          className="mt-1"
+                          value={row.value}
+                          onChange={(event) =>
+                            updateAssignment(row.id, { value: event.target.value })
+                          }
+                          placeholder="e.g. 10+"
+                        />
+                      </div>
+                      <IconUpload
+                        label="Use a different icon for this doctor"
+                        value={row.icon_override_url}
+                        onUpload={(file) =>
+                          uploadIcon(
+                            file,
+                            row.icon_override_url,
+                            (url) => updateAssignment(row.id, { icon_override_url: url }),
+                            "override",
+                          )
+                        }
+                        onRemove={() => updateAssignment(row.id, { icon_override_url: "" })}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="w-fit"
+                        onClick={() => setEditing(null)}
+                      >
+                        Done
+                      </Button>
                     </div>
                   ) : (
                     <div className="grid min-h-40 place-items-center text-center">
-                      {icon ? <img src={icon} alt="" className="size-12 object-contain" /> : <div className="size-12 rounded-md border border-dashed border-border" aria-hidden="true" />}
-                      <div><strong className="block text-2xl text-primary">{row.value || "Value"}</strong><span className="mt-1 block text-sm font-medium">{definition?.name || row.label || "Statistic"}</span></div>
+                      {icon ? (
+                        <img src={icon} alt="" className="size-12 object-contain" />
+                      ) : (
+                        <div
+                          className="size-12 rounded-md border border-dashed border-border"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <div>
+                        <strong className="block text-2xl text-primary">
+                          {row.value || "Value"}
+                        </strong>
+                        <span className="mt-1 block text-sm font-medium">
+                          {definition?.name || row.label || "Statistic"}
+                        </span>
+                      </div>
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-1 border-t border-border pt-3">
-                    <Switch checked={row.enabled} aria-label={`${definition?.name ?? row.label} enabled`} onCheckedChange={(checked) => updateAssignment(row.id, { enabled: checked })} />
-                    <span className="mr-auto text-xs text-muted-foreground">{row.enabled ? "Enabled" : "Disabled"}</span>
-                    <Button type="button" size="icon" variant="ghost" aria-label="Move statistic up" disabled={index === 0} onClick={() => move(index, -1)}><ChevronUp className="size-4" /></Button>
-                    <Button type="button" size="icon" variant="ghost" aria-label="Move statistic down" disabled={index === assignments.length - 1} onClick={() => move(index, 1)}><ChevronDown className="size-4" /></Button>
-                    <Button type="button" size="icon" variant="ghost" aria-label="Edit statistic assignment" onClick={() => setEditing(isEditing ? null : row.id)}><Pencil className="size-4" /></Button>
-                    <Button type="button" size="icon" variant="ghost" aria-label="Remove statistic assignment" onClick={() => { setAssignments((current) => current.filter((item) => item.id !== row.id)); markDirty(); }}><Trash2 className="size-4" /></Button>
+                    <Switch
+                      checked={row.enabled}
+                      aria-label={`${definition?.name ?? row.label} enabled`}
+                      onCheckedChange={(checked) => updateAssignment(row.id, { enabled: checked })}
+                    />
+                    <span className="mr-auto text-xs text-muted-foreground">
+                      {row.enabled ? "Enabled" : "Disabled"}
+                    </span>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Move statistic up"
+                      disabled={index === 0}
+                      onClick={() => move(index, -1)}
+                    >
+                      <ChevronUp className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Move statistic down"
+                      disabled={index === assignments.length - 1}
+                      onClick={() => move(index, 1)}
+                    >
+                      <ChevronDown className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Edit statistic assignment"
+                      onClick={() => setEditing(isEditing ? null : row.id)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Remove statistic assignment"
+                      onClick={() => {
+                        setAssignments((current) => current.filter((item) => item.id !== row.id));
+                        markDirty();
+                      }}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </article>
               );
             })}
           </div>
-          {!assignments.length ? <p className="mt-5 text-sm text-muted-foreground">No statistics assigned to this doctor.</p> : null}
+          {!assignments.length ? (
+            <p className="mt-5 text-sm text-muted-foreground">
+              No statistics assigned to this doctor.
+            </p>
+          ) : null}
         </div>
       )}
     </section>
   );
 });
 
-function IconUpload({ label, value, onUpload, onRemove }: { label: string; value: string; onUpload: (file?: File) => Promise<void>; onRemove: () => void }) {
+function IconUpload({
+  label,
+  value,
+  onUpload,
+  onRemove,
+}: {
+  label: string;
+  value: string;
+  onUpload: (file?: File) => Promise<void>;
+  onRemove: () => void;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  return <div><Label>{label}</Label><p className="mt-1 text-xs text-muted-foreground">Recommended: 512 × 512 px transparent PNG. Maximum 1 MB.</p>{value ? <img src={value} alt={`${label} preview`} className="mt-2 size-16 rounded-md border border-border object-contain p-1" /> : null}<input ref={input} type="file" accept="image/png" className="sr-only" onChange={(event) => { setBusy(true); setError(null); void onUpload(event.target.files?.[0]).catch((cause) => setError(userFacingDataError(cause))).finally(() => { setBusy(false); if (input.current) input.current.value = ""; }); }} /><div className="mt-2 flex gap-2"><Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => input.current?.click()}><Upload className="size-4" /> {busy ? "Uploading…" : value ? "Replace PNG" : "Upload PNG"}</Button>{value ? <Button type="button" size="sm" variant="ghost" onClick={onRemove}>Remove</Button> : null}</div>{error ? <p className="mt-1 text-sm text-destructive" role="alert">{error}</p> : null}</div>;
+  return (
+    <div>
+      <Label>{label}</Label>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Recommended: 512 × 512 px transparent PNG. Maximum 1 MB.
+      </p>
+      {value ? (
+        <img
+          src={value}
+          alt={`${label} preview`}
+          className="mt-2 size-16 rounded-md border border-border object-contain p-1"
+        />
+      ) : null}
+      <input
+        ref={input}
+        type="file"
+        accept="image/png"
+        className="sr-only"
+        onChange={(event) => {
+          setBusy(true);
+          setError(null);
+          void onUpload(event.target.files?.[0])
+            .catch((cause) => setError(userFacingDataError(cause)))
+            .finally(() => {
+              setBusy(false);
+              if (input.current) input.current.value = "";
+            });
+        }}
+      />
+      <div className="mt-2 flex gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => input.current?.click()}
+        >
+          <Upload className="size-4" /> {busy ? "Uploading…" : value ? "Replace PNG" : "Upload PNG"}
+        </Button>
+        {value ? (
+          <Button type="button" size="sm" variant="ghost" onClick={onRemove}>
+            Remove
+          </Button>
+        ) : null}
+      </div>
+      {error ? (
+        <p className="mt-1 text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
 }

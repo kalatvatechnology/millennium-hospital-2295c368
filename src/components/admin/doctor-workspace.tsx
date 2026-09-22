@@ -666,8 +666,12 @@ export function DoctorWorkspace() {
                     <section aria-labelledby="hero-editor-heading">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <h3 id="hero-editor-heading" className="text-lg font-semibold">Hero</h3>
-                          <p className="mt-1 text-sm text-muted-foreground">Main doctor profile header content.</p>
+                          <h3 id="hero-editor-heading" className="text-lg font-semibold">
+                            Hero
+                          </h3>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Main doctor profile header content.
+                          </p>
                         </div>
                         <label className="flex items-center gap-3 text-sm font-semibold">
                           <span>{values.section_visibility?.hero !== false ? "ON" : "OFF"}</span>
@@ -702,7 +706,8 @@ export function DoctorWorkspace() {
                             canModify={canWrite}
                             onUploaded={(nextValue, path) => {
                               const previousPath = doctorImagePath(values.hero_image_url ?? "");
-                              if (previousPath && previousPath !== path) deletedImagePaths.current.add(previousPath);
+                              if (previousPath && previousPath !== path)
+                                deletedImagePaths.current.add(previousPath);
                               uploadedImagePaths.current.add(path);
                               set("hero_image_url", nextValue);
                             }}
@@ -714,16 +719,43 @@ export function DoctorWorkspace() {
                           />
                           <div>
                             <Label>Image Position / Focal Point</Label>
-                            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Hero image position">
+                            <div
+                              className="mt-2 flex flex-wrap gap-2"
+                              role="group"
+                              aria-label="Hero image position"
+                            >
                               {(["left", "center", "right"] as const).map((position) => (
-                                <Button key={position} type="button" size="sm" variant={(values.hero_image_position ?? "center") === position ? "default" : "outline"} onClick={() => set("hero_image_position", position)}>
-                                  {position[0]?.toUpperCase()}{position.slice(1)}
+                                <Button
+                                  key={position}
+                                  type="button"
+                                  size="sm"
+                                  variant={
+                                    (values.hero_image_position ?? "center") === position
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  onClick={() => set("hero_image_position", position)}
+                                >
+                                  {position[0]?.toUpperCase()}
+                                  {position.slice(1)}
                                 </Button>
                               ))}
                             </div>
                           </div>
-                          <Field name="quote" label="Doctor Quote" kind="textarea" value={values.quote} onChange={(value) => set("quote", value)} />
-                          <Field name="quote_attribution" label="Quote Attribution" kind="text" value={values.quote_attribution} onChange={(value) => set("quote_attribution", value)} />
+                          <Field
+                            name="quote"
+                            label="Doctor Quote"
+                            kind="textarea"
+                            value={values.quote}
+                            onChange={(value) => set("quote", value)}
+                          />
+                          <Field
+                            name="quote_attribution"
+                            label="Quote Attribution"
+                            kind="text"
+                            value={values.quote_attribution}
+                            onChange={(value) => set("quote_attribution", value)}
+                          />
                         </div>
                       ) : null}
                     </section>
@@ -1119,7 +1151,11 @@ function ImageEditor({
         </p>
       </div>
       {value && previewMode === "hero" ? (
-        <HeroImagePreview value={value} alt={alt || `${label} preview`} objectPosition={objectPosition} />
+        <HeroImagePreview
+          value={value}
+          alt={alt || `${label} preview`}
+          objectPosition={objectPosition}
+        />
       ) : value ? (
         <img
           src={value}
@@ -1212,17 +1248,36 @@ function ImageEditor({
     </section>
   );
 }
-function HeroImagePreview({ value, alt, objectPosition }: { value: string; alt: string; objectPosition: "left" | "center" | "right" }) {
+function HeroImagePreview({
+  value,
+  alt,
+  objectPosition,
+}: {
+  value: string;
+  alt: string;
+  objectPosition: "left" | "center" | "right";
+}) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const widths = { desktop: "max-w-2xl", tablet: "max-w-md", mobile: "max-w-56" };
   return (
     <div className="grid gap-3 lg:col-span-2">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Hero preview device">
         {(["desktop", "tablet", "mobile"] as const).map((item) => (
-          <Button key={item} type="button" size="sm" variant={device === item ? "default" : "outline"} onClick={() => setDevice(item)}>{item[0]?.toUpperCase()}{item.slice(1)}</Button>
+          <Button
+            key={item}
+            type="button"
+            size="sm"
+            variant={device === item ? "default" : "outline"}
+            onClick={() => setDevice(item)}
+          >
+            {item[0]?.toUpperCase()}
+            {item.slice(1)}
+          </Button>
         ))}
       </div>
-      <div className={`aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}>
+      <div
+        className={`aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}
+      >
         <img src={value} alt={alt} className={`size-full object-cover object-${objectPosition}`} />
       </div>
     </div>

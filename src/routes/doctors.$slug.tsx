@@ -102,9 +102,10 @@ function DoctorDetail() {
   const whatsapp = doctor.whatsapp_number?.replace(/\D/g, "");
   const heroEnabled = visible(doctor.section_visibility, "hero");
   const portrait = heroEnabled && doctor.hero_image_url ? doctor.hero_image_url : doctor.photo_url;
-  const portraitAlt = heroEnabled && doctor.hero_image_url
-    ? doctor.hero_image_alt ?? `Portrait of ${doctor.name}`
-    : doctor.profile_image_alt ?? `Portrait of ${doctor.name}`;
+  const portraitAlt =
+    heroEnabled && doctor.hero_image_url
+      ? (doctor.hero_image_alt ?? `Portrait of ${doctor.name}`)
+      : (doctor.profile_image_alt ?? `Portrait of ${doctor.name}`);
   const qualifications = doctor.qualifications.length > 0;
   const showStatistics =
     visible(doctor.section_visibility, "statistics") && data.statistics.length > 0;
@@ -321,7 +322,12 @@ function DoctorDetail() {
                   <img src={item.icon} alt="" className="mx-auto mb-3 size-10 object-contain" />
                 ) : null}
                 <strong className="block text-3xl font-semibold text-primary">{item.value}</strong>
-                <span className="mt-1 block text-sm text-muted-foreground" title={item.meaning ?? undefined}>{item.label}</span>
+                <span
+                  className="mt-1 block text-sm text-muted-foreground"
+                  title={item.meaning ?? undefined}
+                >
+                  {item.label}
+                </span>
               </div>
             ))}
           </div>
