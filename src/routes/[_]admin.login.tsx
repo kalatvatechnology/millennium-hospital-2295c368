@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LockKeyhole, Plus } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createPageMeta } from "@/lib/seo";
+import { MillenniumLogo } from "@/components/shared/millennium-logo";
 
 export const Route = createFileRoute("/_admin/login")({
   head: () => ({
@@ -39,7 +40,7 @@ function AdminLogin() {
   return (
     <main className="grid min-h-screen place-items-center bg-secondary px-4 py-12">
       <div className="w-full max-w-md rounded-lg border border-border bg-background p-8 shadow-[var(--shadow-lg)]">
-        <div className="flex items-center gap-3 border-b border-border pb-6"><span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground"><Plus /></span><div><p className="font-heading font-semibold">The Millennium Hospital</p><p className="text-xs text-muted-foreground">Staff workspace</p></div></div>
+        <div className="border-b border-border pb-6"><Link to="/" aria-label="The Millennium Hospital home" className="inline-block"><MillenniumLogo className="w-72 max-w-full" /></Link><p className="mt-3 text-xs font-semibold uppercase text-muted-foreground">Staff workspace</p></div>
         <span className="mt-8 grid size-11 place-items-center rounded-lg bg-secondary text-primary"><LockKeyhole /></span>
         <h1 className="mt-6 text-3xl font-semibold">Staff sign in</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">Only authorised hospital staff accounts can manage content and enquiries.</p>
