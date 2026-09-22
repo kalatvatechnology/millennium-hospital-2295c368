@@ -36,6 +36,7 @@ import {
 import { MediaGrid } from "@/components/content/media";
 import { EnquiryForm } from "@/components/content/enquiry-form";
 import { siteConfig } from "@/config/site";
+import hospitalExteriorAsset from "@/assets/millennium-hospital-exterior.png.asset.json";
 import {
   blogPostsQuery,
   departmentsQuery,
@@ -122,7 +123,17 @@ function HomePage() {
   return (
     <PublicPage>
       {/* 1. Hero — compact */}
-      <section className="border-b border-border bg-secondary">
+      <section className="relative isolate overflow-hidden border-b border-border bg-secondary">
+        <img
+          src={hospitalExteriorAsset.url}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          className="absolute inset-0 -z-20 size-full object-cover object-center opacity-20 sm:opacity-25 lg:object-[center_48%] lg:opacity-30"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-secondary via-secondary/90 to-secondary/55" />
+        <div className="absolute inset-x-0 top-0 -z-10 h-16 bg-gradient-to-b from-secondary to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-16 bg-gradient-to-t from-secondary to-transparent" />
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
           <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div>
@@ -167,7 +178,7 @@ function HomePage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-lg border border-primary/15 bg-background p-4 shadow-[var(--shadow-md)] sm:p-5">
+            <div className="rounded-lg border border-primary/15 bg-background/90 p-4 shadow-[var(--shadow-md)] backdrop-blur-sm sm:p-5">
               <p className="text-xs font-bold uppercase tracking-wide text-primary">
                 Find the right care
               </p>
