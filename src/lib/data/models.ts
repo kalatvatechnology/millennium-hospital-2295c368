@@ -5,7 +5,6 @@ export type Department = {
   id: string;
   name: string;
   slug: string;
-  professional_registration_no: string | null;
   description: string | null;
   display_order: number | null;
   status: ContentStatus;
@@ -15,6 +14,7 @@ export type Doctor = {
   id: string;
   name: string;
   slug: string;
+  professional_registration_no: string | null;
   photo_url: string | null;
   qualifications: string[];
   designation: string | null;

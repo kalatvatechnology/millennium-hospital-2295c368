@@ -442,8 +442,8 @@ export function DoctorWorkspace() {
                   <div className="grid gap-5">
                     <ProfileGroup title="Professional identity">
                       <Field name="professional_registration_no" label="Professional Registration No." kind="text" value={values.professional_registration_no} onChange={(value) => setProfileValue("professional_registration_no", value)} help="Enter the official professional licence or registration number. This is not the internal record ID." />
-                      <Field name="name" label="Doctor Name *" kind="text" value={values.name} onChange={(value) => setProfileValue("name", value)} error={fieldErrors.name} />
-                      <Field name="slug" label="URL Slug *" kind="text" value={values.slug} onChange={(value) => { setSlugIsAutomatic(false); setProfileValue("slug", slugify(value)); }} error={fieldErrors.slug} help={values.slug ? `/doctors/${values.slug}` : "Generated from the doctor name and editable before saving."} />
+                      <Field name="name" label="Doctor Name *" kind="text" value={values.name} onChange={(value) => setProfileValue("name", value)} error={fieldErrors["name"]} />
+                      <Field name="slug" label="URL Slug *" kind="text" value={values.slug} onChange={(value) => { setSlugIsAutomatic(false); setProfileValue("slug", slugify(value)); }} error={fieldErrors["slug"]} help={values.slug ? `/doctors/${values.slug}` : "Generated from the doctor name and editable before saving."} />
                     </ProfileGroup>
                     <ProfileGroup title="Professional information">
                       <div>
@@ -464,19 +464,19 @@ export function DoctorWorkspace() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <InlineFieldError message={fieldErrors.department_id} />
+                      <InlineFieldError message={fieldErrors["department_id"]} />
                       </div>
-                      <Field name="designation" label="Designation *" kind="text" value={values.designation} onChange={(value) => setProfileValue("designation", value)} error={fieldErrors.designation} />
+                      <Field name="designation" label="Designation *" kind="text" value={values.designation} onChange={(value) => setProfileValue("designation", value)} error={fieldErrors["designation"]} />
                       <Field name="qualifications" label="Higher Qualification" kind="text" value={Array.isArray(values.qualifications) ? values.qualifications.join(", ") : values.qualifications} onChange={(value) => setProfileValue("qualifications", value)} />
                       <Field name="specialty" label="Specialization" kind="text" value={values.specialty} onChange={(value) => setProfileValue("specialty", value)} help="Separate multiple specializations with commas." />
                     </ProfileGroup>
                     <ProfileGroup title="Profile content">
-                      <Field name="short_introduction" label="Short Introduction" kind="textarea" value={values.short_introduction} onChange={(value) => setProfileValue("short_introduction", value)} maxLength={100} error={fieldErrors.short_introduction} compact />
-                      <Field name="bio" label="Biography" kind="textarea" value={values.bio} onChange={(value) => setProfileValue("bio", value)} maxLength={500} error={fieldErrors.bio} />
+                      <Field name="short_introduction" label="Short Introduction" kind="textarea" value={values.short_introduction} onChange={(value) => setProfileValue("short_introduction", value)} maxLength={100} error={fieldErrors["short_introduction"]} compact />
+                      <Field name="bio" label="Biography" kind="textarea" value={values.bio} onChange={(value) => setProfileValue("bio", value)} maxLength={500} error={fieldErrors["bio"]} />
                     </ProfileGroup>
                     <ProfileGroup title="Contact">
-                      <PhoneField label="Phone Number" countryCode={values.phone_country_code ?? ""} number={values.phone_number ?? ""} onCountryCode={(value) => set("phone_country_code", value)} onNumber={(value) => setProfileValue("phone_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors.phone_number} />
-                      <PhoneField label="WhatsApp Number" countryCode={values.whatsapp_country_code ?? ""} number={values.whatsapp_number ?? ""} onCountryCode={(value) => set("whatsapp_country_code", value)} onNumber={(value) => setProfileValue("whatsapp_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors.whatsapp_number} />
+                      <PhoneField label="Phone Number" countryCode={values.phone_country_code ?? ""} number={values.phone_number ?? ""} onCountryCode={(value) => set("phone_country_code", value)} onNumber={(value) => setProfileValue("phone_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors["phone_number"]} />
+                      <PhoneField label="WhatsApp Number" countryCode={values.whatsapp_country_code ?? ""} number={values.whatsapp_number ?? ""} onCountryCode={(value) => set("whatsapp_country_code", value)} onNumber={(value) => setProfileValue("whatsapp_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors["whatsapp_number"]} />
                     </ProfileGroup>
                     <ProfileGroup title="Profile image" singleColumn>
                     <ImageEditor
@@ -787,7 +787,7 @@ function ImageEditor({
     setUploading(true);
     try {
       const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-      const filename = `${slugify(doctorName) || "doctor"}.${extension}`;
+      const filename = `${slugify(doctorName ?? "") || "doctor"}.${extension}`;
       const path = `${crypto.randomUUID()}/${filename}`;
       const { error } = await supabase.storage.from("doctor-profile-images").upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
