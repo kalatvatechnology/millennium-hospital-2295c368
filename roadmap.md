@@ -53,3 +53,5 @@
 - [x] Update Doctor Profile content limits to 500 characters for introductions and 1,000 for biographies
 - [x] Upgrade Doctor Hero & Statistics with progressive controls, reusable definitions, secure icons, and public rendering
 - [x] Separate the Doctor Hero background from the portrait while preserving legacy Hero image data
+
+- [ ] Implement department-aware Doctor Profile CMS relationships, selectors, creation flows, and compatibility checks
