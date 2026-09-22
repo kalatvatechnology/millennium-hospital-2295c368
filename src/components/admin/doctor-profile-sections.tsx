@@ -31,15 +31,6 @@ type Row = {
 type Field = { name: string; label: string; multiline?: boolean; type?: "number" | "boolean" };
 type Section = { table: string; title: string; fields: Field[] };
 
-const statisticsSection: Section = {
-  table: "doctor_statistics",
-  title: "Statistics",
-  fields: [
-    { name: "value", label: "Value" },
-    { name: "label", label: "Label" },
-    { name: "icon", label: "Icon" },
-  ],
-};
 const specializationsSection: Section = {
   table: "doctor_specializations",
   title: "Specializations",
@@ -153,7 +144,6 @@ const faqsRelationship: Relationship = {
 
 export type DoctorProfileSectionsHandle = { save: () => Promise<void> };
 export type DoctorProfileTab =
-  | "hero"
   | "specializations"
   | "services"
   | "experience"
@@ -180,23 +170,6 @@ export const DoctorProfileSections = forwardRef<
   );
   return (
     <div className="grid gap-6">
-      <div hidden={activeTab !== "hero"}>
-        <VisibilityEditor
-          doctorId={doctorId}
-          register={(save) => {
-            editors.set("visibility", save);
-          }}
-        />
-        <div className="mt-6">
-          <SectionEditor
-            doctorId={doctorId}
-            section={statisticsSection}
-            register={(save) => {
-              editors.set("doctor_statistics", save);
-            }}
-          />
-        </div>
-      </div>
       <div hidden={activeTab !== "specializations"}>
         <SectionEditor
           doctorId={doctorId}
@@ -532,74 +505,6 @@ function SectionEditor({
               )}
             </div>
           </div>
-        ))}
-      </div>
-      {section.table === "doctor_statistics" && previewRow ? (
-        <div className="mt-6 border-t border-border pt-5">
-          <p className="text-xs font-semibold uppercase text-muted-foreground">Live preview</p>
-          <div className="mt-3 max-w-sm bg-background px-4 py-8 text-center shadow-[var(--shadow-sm)]">
-            <strong className="block text-3xl font-semibold text-primary">
-              {previewRow["value"] || "Value"}
-            </strong>
-            <span className="mt-1 block text-sm text-muted-foreground">
-              {previewRow["label"] || "Statistic label"}
-            </span>
-          </div>
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-function VisibilityEditor({
-  doctorId,
-  register,
-}: {
-  doctorId: string;
-  register: (save: () => Promise<void>) => void;
-}) {
-  const query = useQuery({
-    queryKey: ["doctor-profile-visibility", doctorId],
-    queryFn: async () => {
-      const { data, error } = await db
-        .from("doctors")
-        .select("section_visibility")
-        .eq("id", doctorId)
-        .single();
-      if (error) throw error;
-      return (data?.section_visibility ?? {}) as Record<string, boolean>;
-    },
-  });
-  const [values, setValues] = useState<Record<string, boolean>>({});
-  useEffect(() => setValues(query.data ?? {}), [query.data]);
-  const save = async () => {
-    const { error } = await db
-      .from("doctors")
-      .update({ section_visibility: values })
-      .eq("id", doctorId);
-    if (error) throw error;
-  };
-  useEffect(() => register(save));
-  return (
-    <section className="rounded-md border border-border p-4">
-      <h3 className="font-semibold">Section visibility</h3>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Enabled sections still stay hidden when they have no valid content.
-      </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {Object.entries(visibilityLabels).map(([name, label]) => (
-          <label
-            key={name}
-            className="flex items-center gap-3 rounded-md bg-secondary p-3 text-sm font-medium"
-          >
-            <Switch
-              checked={values[name] !== false}
-              onCheckedChange={(checked) =>
-                setValues((current) => ({ ...current, [name]: checked }))
-              }
-            />
-            {label}
-          </label>
         ))}
       </div>
     </section>

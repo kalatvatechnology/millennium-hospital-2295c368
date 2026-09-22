@@ -51,3 +51,4 @@
 - [x] Rebuild the responsive About Us page from the approved visual direction and verified hospital content
 - [x] Upgrade the Doctor Workspace Profile with structured identity, contact, image, validation, and draft controls
 - [x] Update Doctor Profile content limits to 500 characters for introductions and 1,000 for biographies
+- [ ] Upgrade Doctor Hero & Statistics with progressive controls, reusable definitions, secure icons, and public rendering

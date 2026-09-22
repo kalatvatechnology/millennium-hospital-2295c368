@@ -24,6 +24,7 @@ export type Doctor = {
   short_introduction: string | null;
   hero_image_url: string | null;
   hero_image_alt: string | null;
+  hero_image_position: "left" | "center" | "right";
   profile_image_alt: string | null;
   quote: string | null;
   quote_attribution: string | null;
@@ -52,6 +53,7 @@ export type DoctorStatistic = {
   value: string;
   label: string;
   icon: string | null;
+  meaning: string | null;
   display_order: number;
 };
 export type DoctorSpecialization = {

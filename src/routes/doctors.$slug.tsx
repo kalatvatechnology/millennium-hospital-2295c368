@@ -100,9 +100,11 @@ function DoctorDetail() {
   const { doctor } = data;
   const phone = doctor.phone_number?.replace(/[^+\d]/g, "");
   const whatsapp = doctor.whatsapp_number?.replace(/\D/g, "");
-  const portrait = doctor.photo_url ?? doctor.hero_image_url;
-  const portraitAlt =
-    doctor.profile_image_alt ?? doctor.hero_image_alt ?? `Portrait of ${doctor.name}`;
+  const heroEnabled = visible(doctor.section_visibility, "hero");
+  const portrait = heroEnabled && doctor.hero_image_url ? doctor.hero_image_url : doctor.photo_url;
+  const portraitAlt = heroEnabled && doctor.hero_image_url
+    ? doctor.hero_image_alt ?? `Portrait of ${doctor.name}`
+    : doctor.profile_image_alt ?? `Portrait of ${doctor.name}`;
   const qualifications = doctor.qualifications.length > 0;
   const showStatistics =
     visible(doctor.section_visibility, "statistics") && data.statistics.length > 0;
@@ -183,7 +185,13 @@ function DoctorDetail() {
                   <img
                     src={portrait}
                     alt={portraitAlt}
-                    className="size-full object-cover"
+                    className={`size-full object-cover ${
+                      doctor.hero_image_position === "left"
+                        ? "object-left"
+                        : doctor.hero_image_position === "right"
+                          ? "object-right"
+                          : "object-center"
+                    }`}
                     loading="eager"
                   />
                 ) : (
@@ -309,8 +317,11 @@ function DoctorDetail() {
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-border px-4 sm:px-6 md:grid-cols-4 lg:px-8">
             {data.statistics.map((item) => (
               <div key={item.id} className="bg-background px-4 py-8 text-center">
+                {item.icon ? (
+                  <img src={item.icon} alt="" className="mx-auto mb-3 size-10 object-contain" />
+                ) : null}
                 <strong className="block text-3xl font-semibold text-primary">{item.value}</strong>
-                <span className="mt-1 block text-sm text-muted-foreground">{item.label}</span>
+                <span className="mt-1 block text-sm text-muted-foreground" title={item.meaning ?? undefined}>{item.label}</span>
               </div>
             ))}
           </div>
