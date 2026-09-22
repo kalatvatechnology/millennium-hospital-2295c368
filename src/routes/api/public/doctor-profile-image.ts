@@ -39,7 +39,13 @@ export const Route = createFileRoute("/api/public/doctor-profile-image")({
 
         const storage = createPublicStorageClient(url, key).storage.from(BUCKET);
         const { data, error } = await storage.download(path);
-        if (error) return new Response("Not found", { status: 404 });
+        if (error) {
+          console.error("[Doctor profile image] Storage download failed", {
+            statusCode: error.statusCode,
+            error: error.error,
+          });
+          return new Response("Not found", { status: 404 });
+        }
 
         const contentType = data.type.toLowerCase();
         if (!allowedContentTypes.has(contentType)) {
