@@ -729,7 +729,7 @@ export function DoctorWorkspace() {
                             <div
                               className="mt-2 flex flex-wrap gap-2"
                               role="group"
-                                aria-label="Hero background focal position"
+                              aria-label="Hero background focal position"
                             >
                               {(["left", "center", "right"] as const).map((position) => (
                                 <Button
