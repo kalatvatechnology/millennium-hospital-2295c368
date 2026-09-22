@@ -197,6 +197,13 @@ export function DoctorWorkspace() {
     [],
   );
   useEffect(() => {
+    // A failure belongs to the section it happened in; never carry it into another section.
+    setError(null);
+    setFieldErrors({});
+    setSavedMessage(null);
+  }, [section, doctorId]);
+
+  useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
     if (!next) return;
     const prepared = clone(next);
