@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Plus, Save, Trash2, Upload } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { AdminError } from "@/components/admin/ui";
 import {
@@ -49,23 +49,28 @@ const sections = [
 ] as const;
 type SectionKey = (typeof sections)[number][0];
 const sectionKeys = new Set<string>(sections.map(([key]) => key));
-const profileFields = [
-  ["name", "Doctor name", "text"],
-  ["slug", "Web address (slug)", "text"],
-  ["specialty", "Specialty", "text"],
-  ["designation", "Designation", "text"],
-  ["qualifications", "Qualifications (comma separated)", "text"],
-  ["short_introduction", "Short introduction", "textarea"],
-  ["bio", "Biography", "textarea"],
-  ["phone_number", "Phone", "text"],
-  ["whatsapp_number", "WhatsApp", "text"],
-] as const;
 const socialPlatforms = ["Instagram", "Facebook", "LinkedIn", "YouTube", "X / Twitter", "Other"];
+const countryCodes = [
+  ["+91", "India (+91)"],
+  ["+1", "United States / Canada (+1)"],
+  ["+44", "United Kingdom (+44)"],
+  ["+971", "United Arab Emirates (+971)"],
+  ["+61", "Australia (+61)"],
+] as const;
+const slugify = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 
 type SocialRow = { id: string; platform: string; url: string; enabled: boolean };
 const blankDoctor = () => ({
   name: "",
   slug: "",
+  professional_registration_no: "",
   department_id: null,
   specialty: "",
   designation: "",
@@ -73,7 +78,9 @@ const blankDoctor = () => ({
   short_introduction: "",
   bio: "",
   phone_number: "",
+  phone_country_code: "",
   whatsapp_number: "",
+  whatsapp_country_code: "",
   photo_url: "",
   profile_image_alt: "",
   hero_image_url: "",
@@ -150,12 +157,16 @@ export function DoctorWorkspace() {
   const [socialBaseline, setSocialBaseline] = useState<SocialRow[]>([]);
   const [detailReset, setDetailReset] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [slugIsAutomatic, setSlugIsAutomatic] = useState(isNew);
+  const [savedMessage, setSavedMessage] = useState<string | null>(null);
   useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
     if (!next) return;
     const prepared = clone(next);
     setValues(prepared);
     setBaseline(clone(prepared));
+    setSlugIsAutomatic(isNew);
     const links = socialQuery.data?.length
       ? socialQuery.data
       : Object.entries((prepared.social_links ?? {}) as Record<string, string>).map(
@@ -196,9 +207,50 @@ export function DoctorWorkspace() {
     ),
     ...(canPublish ? {} : { published: baseline.published }),
   });
+  const validateProfile = async () => {
+    const issues: Record<string, string> = {};
+    const name = String(values.name ?? "").trim();
+    const slug = slugify(String(values.slug ?? ""));
+    if (!name) issues.name = "Doctor name is required.";
+    if (!slug) issues.slug = "A URL slug is required.";
+    if (!values.department_id) issues.department_id = "Department is required.";
+    if (!String(values.designation ?? "").trim()) issues.designation = "Designation is required.";
+    if (String(values.short_introduction ?? "").length > 100)
+      issues.short_introduction = "Short introduction must be 100 characters or fewer.";
+    if (String(values.bio ?? "").length > 500)
+      issues.bio = "Biography must be 500 characters or fewer.";
+    for (const key of ["phone_number", "whatsapp_number"] as const) {
+      const number = String(values[key] ?? "").trim();
+      if (number && !/^\d{6,15}$/.test(number))
+        issues[key] = "Enter 6–15 digits without spaces or the country code.";
+    }
+    if (slug) {
+      let slugQuery = db.from("doctors").select("id").eq("slug", slug).limit(1);
+      if (!isNew) slugQuery = slugQuery.neq("id", doctorId);
+      const { data, error: slugError } = await slugQuery;
+      if (slugError) throw slugError;
+      if (data?.length) {
+        let suffix = 2;
+        let candidate = `${slug}-${suffix}`;
+        while (suffix < 100) {
+          let candidateQuery = db.from("doctors").select("id").eq("slug", candidate).limit(1);
+          if (!isNew) candidateQuery = candidateQuery.neq("id", doctorId);
+          const { data: match, error: candidateError } = await candidateQuery;
+          if (candidateError) throw candidateError;
+          if (!match?.length) break;
+          suffix += 1;
+          candidate = `${slug}-${suffix}`;
+        }
+        issues.slug = `This slug is already used. Try “${candidate}”.`;
+      }
+    }
+    setFieldErrors(issues);
+    if (Object.keys(issues).length) throw new Error("Please correct the highlighted fields.");
+  };
   const save = useMutation({
     mutationFn: async () => {
       if (!doctorType) throw new Error("Doctor content configuration is unavailable");
+      if (section === "profile") await validateProfile();
       if (detailTab && !isNew) {
         await detailRef.current?.save();
         if (section !== "hero") return doctorId;
@@ -226,7 +278,7 @@ export function DoctorWorkspace() {
           if (linkError) throw linkError;
         }
       }
-      const data = payload();
+      const data = { ...payload(), slug: slugify(String(values.slug ?? "")) };
       if (isNew) {
         const { data: created, error: createError } = await db
           .from("doctors")
@@ -241,6 +293,8 @@ export function DoctorWorkspace() {
     },
     onSuccess: (savedId) => {
       setError(null);
+      setFieldErrors({});
+      setSavedMessage("Draft saved.");
       setBaseline(clone(values));
       setSocialBaseline(clone(social));
       setDetailReset((current) => current + 1);
@@ -257,7 +311,7 @@ export function DoctorWorkspace() {
           replace: true,
         });
     },
-    onError: (cause: Error) => setError(userFacingDataError(cause)),
+    onError: (cause: Error) => setError(cause.message || userFacingDataError(cause)),
   });
   const remove = useMutation({
     mutationFn: async () => {
@@ -278,6 +332,15 @@ export function DoctorWorkspace() {
   };
   const set = (name: string, value: any) =>
     setValues((current: Record<string, any>) => ({ ...current, [name]: value }));
+  const setProfileValue = (name: string, value: string) => {
+    setSavedMessage(null);
+    setFieldErrors((current) => ({ ...current, [name]: "" }));
+    setValues((current: Record<string, any>) => ({
+      ...current,
+      [name]: value,
+      ...(name === "name" && slugIsAutomatic ? { slug: slugify(value) } : {}),
+    }));
+  };
   const imageOptions = useMemo(
     () =>
       (media.data ?? []).flatMap((item: any) =>
@@ -376,28 +439,18 @@ export function DoctorWorkspace() {
               <AdminError message={error} />
               <div className="mt-6">
                 {section === "profile" ? (
-                  <div className="grid gap-5 lg:grid-cols-2">
-                    {profileFields.map(([name, label, kind]) => (
-                      <Field
-                        key={name}
-                        name={name}
-                        label={label}
-                        kind={kind}
-                        value={
-                          name === "qualifications" && Array.isArray(values[name])
-                            ? values[name].join(", ")
-                            : values[name]
-                        }
-                        onChange={(value) => set(name, value)}
-                      />
-                    ))}
-                    <div>
-                      <Label htmlFor="doctor-department">Department</Label>
+                  <div className="grid gap-5">
+                    <ProfileGroup title="Professional identity">
+                      <Field name="professional_registration_no" label="Professional Registration No." kind="text" value={values.professional_registration_no} onChange={(value) => setProfileValue("professional_registration_no", value)} help="Enter the official professional licence or registration number. This is not the internal record ID." />
+                      <Field name="name" label="Doctor Name *" kind="text" value={values.name} onChange={(value) => setProfileValue("name", value)} error={fieldErrors.name} />
+                      <Field name="slug" label="URL Slug *" kind="text" value={values.slug} onChange={(value) => { setSlugIsAutomatic(false); setProfileValue("slug", slugify(value)); }} error={fieldErrors.slug} help={values.slug ? `/doctors/${values.slug}` : "Generated from the doctor name and editable before saving."} />
+                    </ProfileGroup>
+                    <ProfileGroup title="Professional information">
+                      <div>
+                      <Label htmlFor="doctor-department">Department *</Label>
                       <Select
                         value={values.department_id || "none"}
-                        onValueChange={(value) =>
-                          set("department_id", value === "none" ? null : value)
-                        }
+                        onValueChange={(value) => { set("department_id", value === "none" ? null : value); setFieldErrors((current) => ({ ...current, department_id: "" })); }}
                       >
                         <SelectTrigger id="doctor-department" className="mt-2">
                           <SelectValue placeholder="Select a department" />
@@ -411,7 +464,21 @@ export function DoctorWorkspace() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
+                      <InlineFieldError message={fieldErrors.department_id} />
+                      </div>
+                      <Field name="designation" label="Designation *" kind="text" value={values.designation} onChange={(value) => setProfileValue("designation", value)} error={fieldErrors.designation} />
+                      <Field name="qualifications" label="Higher Qualification" kind="text" value={Array.isArray(values.qualifications) ? values.qualifications.join(", ") : values.qualifications} onChange={(value) => setProfileValue("qualifications", value)} />
+                      <Field name="specialty" label="Specialization" kind="text" value={values.specialty} onChange={(value) => setProfileValue("specialty", value)} help="Separate multiple specializations with commas." />
+                    </ProfileGroup>
+                    <ProfileGroup title="Profile content">
+                      <Field name="short_introduction" label="Short Introduction" kind="textarea" value={values.short_introduction} onChange={(value) => setProfileValue("short_introduction", value)} maxLength={100} error={fieldErrors.short_introduction} compact />
+                      <Field name="bio" label="Biography" kind="textarea" value={values.bio} onChange={(value) => setProfileValue("bio", value)} maxLength={500} error={fieldErrors.bio} />
+                    </ProfileGroup>
+                    <ProfileGroup title="Contact">
+                      <PhoneField label="Phone Number" countryCode={values.phone_country_code ?? ""} number={values.phone_number ?? ""} onCountryCode={(value) => set("phone_country_code", value)} onNumber={(value) => setProfileValue("phone_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors.phone_number} />
+                      <PhoneField label="WhatsApp Number" countryCode={values.whatsapp_country_code ?? ""} number={values.whatsapp_number ?? ""} onCountryCode={(value) => set("whatsapp_country_code", value)} onNumber={(value) => setProfileValue("whatsapp_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors.whatsapp_number} />
+                    </ProfileGroup>
+                    <ProfileGroup title="Profile image" singleColumn>
                     <ImageEditor
                       label="Profile image"
                       value={values.photo_url ?? ""}
@@ -420,7 +487,11 @@ export function DoctorWorkspace() {
                       ratio="4:5"
                       onValue={(value) => set("photo_url", value)}
                       onAlt={(value) => set("profile_image_alt", value)}
+                      doctorName={values.name ?? ""}
+                      designation={values.designation ?? ""}
+                      canUpload={canWrite}
                     />
+                    </ProfileGroup>
                   </div>
                 ) : null}
                 {section === "hero" ? (
@@ -555,7 +626,8 @@ export function DoctorWorkspace() {
                   </div>
                 ) : null}
               </div>
-              <div className="sticky bottom-0 mt-8 flex justify-end gap-3 border-t border-border bg-admin/95 py-4 backdrop-blur">
+              <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-border bg-admin/95 py-4 backdrop-blur">
+                {savedMessage ? <p className="mr-auto text-sm font-medium text-primary" role="status">{savedMessage}</p> : null}
                 <Button type="button" variant="outline" onClick={cancel}>
                   Cancel
                 </Button>
@@ -564,8 +636,13 @@ export function DoctorWorkspace() {
                   disabled={!canWrite || save.isPending}
                   onClick={() => save.mutate()}
                 >
-                  <Save className="size-4" /> {save.isPending ? "Saving…" : "Save"}
+                  <Save className="size-4" /> {save.isPending ? "Saving…" : section === "profile" ? "Save Draft" : "Save"}
                 </Button>
+                {section === "profile" && !isNew ? (
+                  <Button type="button" variant="outline" disabled={!canWrite || save.isPending} onClick={() => save.mutate(undefined, { onSuccess: () => void navigate({ to: "/_admin/doctors/$doctorId/$section", params: { doctorId, section: "hero" } }) })}>
+                    Save &amp; Continue
+                  </Button>
+                ) : null}
               </div>
             </>
           )}
