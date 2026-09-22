@@ -584,8 +584,8 @@ export function DoctorWorkspace() {
                       />
                       {canWrite ? (
                         <p className="text-sm text-muted-foreground">
-                          New uploads remain unavailable until public image delivery is approved. Select an
-                          existing image above or save the profile without one.
+                          New uploads remain unavailable until public image delivery is approved.
+                          Select an existing image above or save the profile without one.
                         </p>
                       ) : null}
                     </ProfileGroup>
