@@ -31,6 +31,7 @@ type Definition = {
   meaning: string;
   default_icon_url: string;
   active: boolean;
+  department_id?: string | null;
   isNew?: boolean;
 };
 type Assignment = {
@@ -49,12 +50,16 @@ export const DoctorStatisticsEditor = forwardRef<
   DoctorStatisticsEditorHandle,
   {
     doctorId: string;
+    departmentIds: string[];
     enabled: boolean;
     canWrite: boolean;
     onEnabledChange: (enabled: boolean) => void;
     onDirty?: () => void;
   }
->(function DoctorStatisticsEditor({ doctorId, enabled, canWrite, onEnabledChange, onDirty }, ref) {
+>(function DoctorStatisticsEditor(
+  { doctorId, departmentIds, enabled, canWrite, onEnabledChange, onDirty },
+  ref,
+) {
   const query = useQuery({
     queryKey: ["doctor-statistics-workspace", doctorId],
     queryFn: async () => {
@@ -85,6 +90,7 @@ export const DoctorStatisticsEditor = forwardRef<
       meaning: row.meaning ?? "",
       default_icon_url: row.default_icon_url ?? "",
       active: row.active,
+      department_id: row.department_id ?? null,
     }));
     const nextAssignments = (query.data?.assignments ?? []).map((row: any, index: number) => ({
       id: row.id,
@@ -268,9 +274,12 @@ export const DoctorStatisticsEditor = forwardRef<
   const filtered = useMemo(
     () =>
       definitions.filter(
-        (item) => item.active && item.name.toLowerCase().includes(search.toLowerCase()),
+        (item) =>
+          item.active &&
+          (!item.department_id || departmentIds.includes(item.department_id)) &&
+          item.name.toLowerCase().includes(search.toLowerCase()),
       ),
-    [definitions, search],
+    [definitions, departmentIds, search],
   );
   const assign = (definitionId: string) => {
     if (assignments.some((row) => row.statistic_id === definitionId)) {
