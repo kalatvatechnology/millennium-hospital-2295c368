@@ -71,6 +71,7 @@ export type ProfessionalSnapshot = {
 export type ProfessionalEditorHandle = {
   snapshot: () => ProfessionalSnapshot;
   save: (doctorId: string) => Promise<void>;
+  reset: () => void;
 };
 
 export const DepartmentProfessionalEditor = forwardRef<
@@ -135,7 +136,7 @@ export const DepartmentProfessionalEditor = forwardRef<
   const [dialog, setDialog] = useState<{ kind: "designation" | "qualification" | "specialization"; departmentId: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reset = () => {
     if (!query.data) return;
     const ids = query.data.departmentLinks.map((row: any) => row.department_id);
     setDepartmentIds(ids);
@@ -146,6 +147,11 @@ export const DepartmentProfessionalEditor = forwardRef<
     setSpecializationIds(query.data.specializationLinks.map((row: any) => row.specialization_id));
     onDepartmentsChange(ids);
     setError(null);
+  };
+  useEffect(() => {
+    reset();
+    // The query payload is the saved baseline; the callback is stabilized by the workspace.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data, onDepartmentsChange]);
 
   const updateDepartments = (ids: string[]) => {
@@ -252,7 +258,7 @@ export const DepartmentProfessionalEditor = forwardRef<
       if (insertError) throw insertError;
     }
   };
-  useImperativeHandle(ref, () => ({ snapshot, save }));
+  useImperativeHandle(ref, () => ({ snapshot, save, reset }));
 
   const createOption = async (kind: "designation" | "qualification" | "specialization", departmentId: string, values: { name: string; description?: string }) => {
     const table =

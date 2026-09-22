@@ -417,6 +417,7 @@ export function DoctorWorkspace() {
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-workspace-department-links"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-department-professional"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", "doctors"] });
       if (isNew)
         void navigate({
@@ -453,6 +454,7 @@ export function DoctorWorkspace() {
     setValues(clone(baseline));
     setSocial(clone(socialBaseline));
     statisticsRef.current?.reset();
+    professionalRef.current?.reset();
     servicesRef.current?.reset();
     specializationsRef.current?.reset();
     setDetailReset((current) => current + 1);
