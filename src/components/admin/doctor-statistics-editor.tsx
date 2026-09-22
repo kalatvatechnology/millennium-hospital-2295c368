@@ -223,7 +223,8 @@ export const DoctorStatisticsEditor = forwardRef<
       );
       if (stale.length) {
         const { error: cleanupError } = await supabase.storage.from(bucket).remove(stale);
-        if (cleanupError) setError("Changes were saved, but one superseded icon could not be removed.");
+        if (cleanupError)
+          setError("Changes were saved, but one superseded icon could not be removed.");
       }
       uploadedPaths.current.clear();
       removedPaths.current.clear();
