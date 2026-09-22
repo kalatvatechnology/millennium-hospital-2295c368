@@ -179,10 +179,13 @@ export function DoctorWorkspace() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [slugIsAutomatic, setSlugIsAutomatic] = useState(isNew);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
-  useEffect(() => () => {
-    const paths = [...uploadedImagePaths.current];
-    if (paths.length) void supabase.storage.from(doctorImageBucket).remove(paths);
-  });
+  useEffect(
+    () => () => {
+      const paths = [...uploadedImagePaths.current];
+      if (paths.length) void supabase.storage.from(doctorImageBucket).remove(paths);
+    },
+    [],
+  );
   useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
     if (!next) return;
