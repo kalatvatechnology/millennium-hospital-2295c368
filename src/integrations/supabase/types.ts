@@ -998,8 +998,10 @@ export type Database = {
           location: string | null
           name: string
           og_image_url: string | null
+          phone_country_code: string | null
           phone_number: string | null
           photo_url: string | null
+          professional_registration_no: string | null
           profile_image_alt: string | null
           published: boolean
           qualifications: string[]
@@ -1014,6 +1016,7 @@ export type Database = {
           specialty: string | null
           updated_at: string
           verification_status: Database["public"]["Enums"]["verification_status"]
+          whatsapp_country_code: string | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -1032,8 +1035,10 @@ export type Database = {
           location?: string | null
           name: string
           og_image_url?: string | null
+          phone_country_code?: string | null
           phone_number?: string | null
           photo_url?: string | null
+          professional_registration_no?: string | null
           profile_image_alt?: string | null
           published?: boolean
           qualifications?: string[]
@@ -1048,6 +1053,7 @@ export type Database = {
           specialty?: string | null
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
+          whatsapp_country_code?: string | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -1066,8 +1072,10 @@ export type Database = {
           location?: string | null
           name?: string
           og_image_url?: string | null
+          phone_country_code?: string | null
           phone_number?: string | null
           photo_url?: string | null
+          professional_registration_no?: string | null
           profile_image_alt?: string | null
           published?: boolean
           qualifications?: string[]
@@ -1082,6 +1090,7 @@ export type Database = {
           specialty?: string | null
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["verification_status"]
+          whatsapp_country_code?: string | null
           whatsapp_number?: string | null
         }
         Relationships: [
