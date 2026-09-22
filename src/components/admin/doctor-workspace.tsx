@@ -211,14 +211,14 @@ export function DoctorWorkspace() {
     const issues: Record<string, string> = {};
     const name = String(values.name ?? "").trim();
     const slug = slugify(String(values.slug ?? ""));
-    if (!name) issues.name = "Doctor name is required.";
-    if (!slug) issues.slug = "A URL slug is required.";
-    if (!values.department_id) issues.department_id = "Department is required.";
-    if (!String(values.designation ?? "").trim()) issues.designation = "Designation is required.";
+    if (!name) issues["name"] = "Doctor name is required.";
+    if (!slug) issues["slug"] = "A URL slug is required.";
+    if (!values.department_id) issues["department_id"] = "Department is required.";
+    if (!String(values.designation ?? "").trim()) issues["designation"] = "Designation is required.";
     if (String(values.short_introduction ?? "").length > 100)
-      issues.short_introduction = "Short introduction must be 100 characters or fewer.";
+      issues["short_introduction"] = "Short introduction must be 100 characters or fewer.";
     if (String(values.bio ?? "").length > 500)
-      issues.bio = "Biography must be 500 characters or fewer.";
+      issues["bio"] = "Biography must be 500 characters or fewer.";
     for (const key of ["phone_number", "whatsapp_number"] as const) {
       const number = String(values[key] ?? "").trim();
       if (number && !/^\d{6,15}$/.test(number))
@@ -241,7 +241,7 @@ export function DoctorWorkspace() {
           suffix += 1;
           candidate = `${slug}-${suffix}`;
         }
-        issues.slug = `This slug is already used. Try “${candidate}”.`;
+        issues["slug"] = `This slug is already used. Try “${candidate}”.`;
       }
     }
     setFieldErrors(issues);
@@ -677,8 +677,8 @@ function Field({
   kind: string;
   value: any;
   onChange: (value: string) => void;
-  error?: string;
-  help?: string;
+  error?: string | undefined;
+  help?: string | undefined;
   maxLength?: number;
   compact?: boolean;
 }) {
@@ -714,7 +714,7 @@ function Field({
     </div>
   );
 }
-function InlineFieldError({ message }: { message?: string }) {
+function InlineFieldError({ message }: { message?: string | undefined }) {
   return message ? <p className="mt-1 text-xs text-destructive">{message}</p> : null;
 }
 function ProfileGroup({ title, children, singleColumn = false }: { title: string; children: React.ReactNode; singleColumn?: boolean }) {
@@ -725,7 +725,7 @@ function ProfileGroup({ title, children, singleColumn = false }: { title: string
     </section>
   );
 }
-function PhoneField({ label, countryCode, number, onCountryCode, onNumber, error }: { label: string; countryCode: string; number: string; onCountryCode: (value: string) => void; onNumber: (value: string) => void; error?: string }) {
+function PhoneField({ label, countryCode, number, onCountryCode, onNumber, error }: { label: string; countryCode: string; number: string; onCountryCode: (value: string) => void; onNumber: (value: string) => void; error?: string | undefined }) {
   return (
     <div>
       <Label>{label}</Label>
@@ -792,6 +792,7 @@ function ImageEditor({
       const { error } = await supabase.storage.from("doctor-profile-images").upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
       const { data } = supabase.storage.from("doctor-profile-images").getPublicUrl(path);
+      if (!data.publicUrl) throw new Error("The uploaded image URL is unavailable.");
       onValue(data.publicUrl);
     } catch (cause) {
       setUploadError(userFacingDataError(cause));
