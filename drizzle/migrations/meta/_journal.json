@@ -57,6 +57,13 @@
       "when": 1790103592056,
       "tag": "0007_doctor_profile_identity_and_image_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790104736414,
+      "tag": "0008_secure_doctor_profile_image_formats",
+      "breakpoints": true
     }
   ]
 }

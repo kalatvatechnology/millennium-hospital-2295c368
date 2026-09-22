@@ -70,6 +70,7 @@ import { Route as AdminProfileRequestsRequestIdRouteImport } from './routes/[_]a
 import { Route as AdminSeoKeywordKeywordIdRouteImport } from './routes/[_]admin.seo-keyword.$keywordId'
 import { Route as AdminSeoTargetTargetIdRouteImport } from './routes/[_]admin.seo-target.$targetId'
 import { Route as AdminUsersUserIdRouteImport } from './routes/[_]admin.users.$userId'
+import { Route as ApiPublicDoctorProfileImageRouteImport } from './routes/api/public/doctor-profile-image'
 import { Route as ServicesHospitalSlugRouteImport } from './routes/services.hospital.$slug'
 import { Route as ServicesProfessionalSlugRouteImport } from './routes/services.professional.$slug'
 import { Route as AdminBlogPostIdSectionRouteImport } from './routes/[_]admin.blog.$postId.$section'
@@ -385,6 +386,12 @@ const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
   path: '/$userId',
   getParentRoute: () => AdminUsersRoute,
 } as any)
+const ApiPublicDoctorProfileImageRoute =
+  ApiPublicDoctorProfileImageRouteImport.update({
+    id: '/api/public/doctor-profile-image',
+    path: '/api/public/doctor-profile-image',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ServicesHospitalSlugRoute = ServicesHospitalSlugRouteImport.update({
   id: '/hospital/$slug',
   path: '/hospital/$slug',
@@ -473,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/_admin/seo-keyword/$keywordId': typeof AdminSeoKeywordKeywordIdRoute
   '/_admin/seo-target/$targetId': typeof AdminSeoTargetTargetIdRoute
   '/_admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/api/public/doctor-profile-image': typeof ApiPublicDoctorProfileImageRoute
   '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
   '/_admin/blog-comments/': typeof AdminBlogCommentsIndexRoute
@@ -532,6 +540,7 @@ export interface FileRoutesByTo {
   '/_admin/seo-keyword/$keywordId': typeof AdminSeoKeywordKeywordIdRoute
   '/_admin/seo-target/$targetId': typeof AdminSeoTargetTargetIdRoute
   '/_admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/api/public/doctor-profile-image': typeof ApiPublicDoctorProfileImageRoute
   '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
   '/_admin/blog-comments': typeof AdminBlogCommentsIndexRoute
@@ -601,6 +610,7 @@ export interface FileRoutesById {
   '/_admin/seo-keyword/$keywordId': typeof AdminSeoKeywordKeywordIdRoute
   '/_admin/seo-target/$targetId': typeof AdminSeoTargetTargetIdRoute
   '/_admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/api/public/doctor-profile-image': typeof ApiPublicDoctorProfileImageRoute
   '/services/hospital/$slug': typeof ServicesHospitalSlugRoute
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
   '/_admin/blog-comments/': typeof AdminBlogCommentsIndexRoute
@@ -671,6 +681,7 @@ export interface FileRouteTypes {
     | '/_admin/seo-keyword/$keywordId'
     | '/_admin/seo-target/$targetId'
     | '/_admin/users/$userId'
+    | '/api/public/doctor-profile-image'
     | '/services/hospital/$slug'
     | '/services/professional/$slug'
     | '/_admin/blog-comments/'
@@ -730,6 +741,7 @@ export interface FileRouteTypes {
     | '/_admin/seo-keyword/$keywordId'
     | '/_admin/seo-target/$targetId'
     | '/_admin/users/$userId'
+    | '/api/public/doctor-profile-image'
     | '/services/hospital/$slug'
     | '/services/professional/$slug'
     | '/_admin/blog-comments'
@@ -798,6 +810,7 @@ export interface FileRouteTypes {
     | '/_admin/seo-keyword/$keywordId'
     | '/_admin/seo-target/$targetId'
     | '/_admin/users/$userId'
+    | '/api/public/doctor-profile-image'
     | '/services/hospital/$slug'
     | '/services/professional/$slug'
     | '/_admin/blog-comments/'
@@ -823,6 +836,7 @@ export interface RootRouteChildren {
   ReviewsRoute: typeof ReviewsRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   TermsAndConditionsRoute: typeof TermsAndConditionsRoute
+  ApiPublicDoctorProfileImageRoute: typeof ApiPublicDoctorProfileImageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1254,6 +1268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersUserIdRouteImport
       parentRoute: typeof AdminUsersRoute
     }
+    '/api/public/doctor-profile-image': {
+      id: '/api/public/doctor-profile-image'
+      path: '/api/public/doctor-profile-image'
+      fullPath: '/api/public/doctor-profile-image'
+      preLoaderRoute: typeof ApiPublicDoctorProfileImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services/hospital/$slug': {
       id: '/services/hospital/$slug'
       path: '/hospital/$slug'
@@ -1514,6 +1535,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewsRoute: ReviewsRoute,
   ServicesRoute: ServicesRouteWithChildren,
   TermsAndConditionsRoute: TermsAndConditionsRoute,
+  ApiPublicDoctorProfileImageRoute: ApiPublicDoctorProfileImageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

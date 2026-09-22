@@ -57,6 +57,8 @@ const countryCodes = [
   ["+971", "United Arab Emirates (+971)"],
   ["+61", "Australia (+61)"],
 ] as const;
+const doctorImageBucket = "doctor-profile-images";
+const doctorImageEndpoint = "/api/public/doctor-profile-image";
 const slugify = (value: string) =>
   value
     .normalize("NFKD")
@@ -65,6 +67,21 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+const doctorImageUrl = (path: string) => `${doctorImageEndpoint}?path=${encodeURIComponent(path)}`;
+const doctorImagePath = (value: string): string | null => {
+  if (!value) return null;
+  try {
+    const parsed = new URL(value, "https://millennium.invalid");
+    if (parsed.pathname === doctorImageEndpoint) return parsed.searchParams.get("path");
+    const marker = `/storage/v1/object/public/${doctorImageBucket}/`;
+    const markerIndex = parsed.pathname.indexOf(marker);
+    return markerIndex >= 0
+      ? decodeURIComponent(parsed.pathname.slice(markerIndex + marker.length))
+      : null;
+  } catch {
+    return null;
+  }
+};
 
 type SocialRow = { id: string; platform: string; url: string; enabled: boolean };
 const blankDoctor = () => ({
@@ -110,6 +127,8 @@ export function DoctorWorkspace() {
   const canWrite = can("content.write");
   const canPublish = can("content.publish");
   const detailRef = useRef<DoctorProfileSectionsHandle>(null);
+  const uploadedImagePaths = useRef(new Set<string>());
+  const deletedImagePaths = useRef(new Set<string>());
   const query = useQuery({
     queryKey: ["admin-doctor", doctorId],
     enabled: !isNew,
@@ -160,6 +179,13 @@ export function DoctorWorkspace() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [slugIsAutomatic, setSlugIsAutomatic] = useState(isNew);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  useEffect(
+    () => () => {
+      const paths = [...uploadedImagePaths.current];
+      if (paths.length) void supabase.storage.from(doctorImageBucket).remove(paths);
+    },
+    [],
+  );
   useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
     if (!next) return;
@@ -287,15 +313,31 @@ export function DoctorWorkspace() {
           .select("id")
           .single();
         if (createError) throw createError;
+        const stalePaths = [...deletedImagePaths.current];
+        if (stalePaths.length) {
+          const { error: cleanupError } = await supabase.storage
+            .from(doctorImageBucket)
+            .remove(stalePaths);
+          if (cleanupError) throw cleanupError;
+        }
         return created.id as string;
       }
       await saveRecord(doctorType, doctorId, data);
+      const stalePaths = [...deletedImagePaths.current];
+      if (stalePaths.length) {
+        const { error: cleanupError } = await supabase.storage
+          .from(doctorImageBucket)
+          .remove(stalePaths);
+        if (cleanupError) throw cleanupError;
+      }
       return doctorId;
     },
     onSuccess: (savedId) => {
       setError(null);
       setFieldErrors({});
       setSavedMessage("Draft saved.");
+      uploadedImagePaths.current.clear();
+      deletedImagePaths.current.clear();
       setBaseline(clone(values));
       setSocialBaseline(clone(social));
       setDetailReset((current) => current + 1);
@@ -326,6 +368,17 @@ export function DoctorWorkspace() {
     onError: (cause: Error) => setError(userFacingDataError(cause)),
   });
   const cancel = () => {
+    const paths = [...uploadedImagePaths.current];
+    if (paths.length) {
+      void supabase.storage
+        .from(doctorImageBucket)
+        .remove(paths)
+        .then(({ error: cleanupError }) => {
+          if (cleanupError) setError(userFacingDataError(cleanupError));
+        });
+    }
+    uploadedImagePaths.current.clear();
+    deletedImagePaths.current.clear();
     setValues(clone(baseline));
     setSocial(clone(socialBaseline));
     setDetailReset((current) => current + 1);
@@ -581,13 +634,21 @@ export function DoctorWorkspace() {
                         onAlt={(value) => set("profile_image_alt", value)}
                         doctorName={values.name ?? ""}
                         designation={values.designation ?? ""}
+                        canUpload={canWrite}
+                        canModify={canWrite}
+                        onUploaded={(nextValue, path) => {
+                          const previousPath = doctorImagePath(values.photo_url ?? "");
+                          if (previousPath && previousPath !== path)
+                            deletedImagePaths.current.add(previousPath);
+                          uploadedImagePaths.current.add(path);
+                          set("photo_url", nextValue);
+                        }}
+                        onRemove={() => {
+                          const path = doctorImagePath(values.photo_url ?? "");
+                          if (path) deletedImagePaths.current.add(path);
+                          set("photo_url", "");
+                        }}
                       />
-                      {canWrite ? (
-                        <p className="text-sm text-muted-foreground">
-                          New uploads remain unavailable until public image delivery is approved.
-                          Select an existing image above or save the profile without one.
-                        </p>
-                      ) : null}
                     </ProfileGroup>
                   </div>
                 ) : null}
@@ -914,6 +975,9 @@ function ImageEditor({
   doctorName,
   designation,
   canUpload = false,
+  canModify = true,
+  onUploaded,
+  onRemove,
 }: {
   label: string;
   value: string;
@@ -925,6 +989,9 @@ function ImageEditor({
   doctorName?: string;
   designation?: string;
   canUpload?: boolean;
+  canModify?: boolean;
+  onUploaded?: (value: string, path: string) => void;
+  onRemove?: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -951,12 +1018,12 @@ function ImageEditor({
       const filename = `${slugify(doctorName ?? "") || "doctor"}.${extension}`;
       const path = `${crypto.randomUUID()}/${filename}`;
       const { error } = await supabase.storage
-        .from("doctor-profile-images")
+        .from(doctorImageBucket)
         .upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
-      const { data } = supabase.storage.from("doctor-profile-images").getPublicUrl(path);
-      if (!data.publicUrl) throw new Error("The uploaded image URL is unavailable.");
-      onValue(data.publicUrl);
+      const nextValue = doctorImageUrl(path);
+      if (onUploaded) onUploaded(nextValue, path);
+      else onValue(nextValue);
     } catch (cause) {
       setUploadError(userFacingDataError(cause));
     } finally {
@@ -1050,8 +1117,13 @@ function ImageEditor({
             Generated filename: {slugify(doctorName) || "doctor"}.webp
           </p>
         ) : null}
-        {value ? (
-          <Button type="button" variant="outline" className="w-fit" onClick={() => onValue("")}>
+        {value && canModify ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-fit"
+            onClick={() => (onRemove ? onRemove() : onValue(""))}
+          >
             <Trash2 className="size-4" /> Remove image
           </Button>
         ) : null}
