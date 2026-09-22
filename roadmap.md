@@ -47,3 +47,4 @@
 - [x] Replace doctor modal editing with a full-page, section-based CMS workspace
 - [x] Add staged doctor editing, statistics preview, social links, existing-media selection, and responsive section navigation
 - [x] Prepare transparent official logo derivatives and use the responsive brand system across public and staff branding
+- [x] Rebuild the responsive About Us page from the approved visual direction and verified hospital content
