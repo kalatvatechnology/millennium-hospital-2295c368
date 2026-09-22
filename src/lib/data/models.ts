@@ -5,6 +5,7 @@ export type Department = {
   id: string;
   name: string;
   slug: string;
+  professional_registration_no: string | null;
   description: string | null;
   display_order: number | null;
   status: ContentStatus;
@@ -27,6 +28,7 @@ export type Doctor = {
   quote: string | null;
   quote_attribution: string | null;
   phone_number: string | null;
+  phone_country_code: string | null;
   seo_title: string | null;
   seo_description: string | null;
   canonical_url: string | null;
@@ -36,6 +38,7 @@ export type Doctor = {
   languages: string[];
   location: string | null;
   whatsapp_number: string | null;
+  whatsapp_country_code: string | null;
   consultation_info: string | null;
   location_info: string | null;
   social_links: Record<string, string>;
