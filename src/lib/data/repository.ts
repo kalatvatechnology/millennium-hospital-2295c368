@@ -58,12 +58,12 @@ export async function getDepartment(slug: string) {
   if (!department) return null;
   if (!usesProductionContract) {
     const [doctorResult, serviceResult] = await Promise.all([
-      published(
-        db
-          .from("doctors")
-          .select("*, department:departments(id,name,slug)")
-          .eq("department_id", department["id"]),
-      ).order("display_order"),
+      db
+        .from("doctor_departments")
+        .select(
+          "doctors(*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug)))",
+        )
+        .eq("department_id", department["id"]),
       db
         .from("professional_service_departments")
         .select("professional_services(*)")
@@ -71,7 +71,11 @@ export async function getDepartment(slug: string) {
     ]);
     return {
       department: mapDepartment(department),
-      doctors: rows(doctorResult).map((row) => mapDoctor(row)),
+      doctors: rows(doctorResult)
+        .map((row) => row["doctors"])
+        .filter(Boolean)
+        .map((row) => mapDoctor(row))
+        .filter((doctor) => doctor.status === "published"),
       services: rows(serviceResult)
         .map((row) => row["professional_services"])
         .filter(Boolean)
@@ -98,7 +102,11 @@ export async function getDepartment(slug: string) {
 export async function listDoctors(): Promise<Doctor[]> {
   if (!usesProductionContract) {
     return rows(
-      await published(db.from("doctors").select("*, department:departments(id,name,slug)"))
+      await published(
+        db
+          .from("doctors")
+          .select("*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug))"),
+      )
         .order("display_order")
         .order("name"),
     ).map((row) => mapDoctor(row));
@@ -117,7 +125,7 @@ export async function listDoctors(): Promise<Doctor[]> {
 export async function getDoctor(slug: string, preview = false) {
   const selection = usesProductionContract
     ? "*, doctor_departments(departments(id,name,slug))"
-    : "*, department:departments(id,name,slug)";
+    : "*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug))";
   // Preview skips the publication filter only; row access is still enforced by
   // database policies, so signed-out visitors never receive unpublished rows.
   const base = db.from("doctors").select(selection).eq("slug", slug);

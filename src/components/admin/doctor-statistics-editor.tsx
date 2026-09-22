@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AdminError } from "@/components/admin/ui";
 import { userFacingDataError } from "@/lib/data/errors";
 
@@ -31,6 +38,7 @@ type Definition = {
   meaning: string;
   default_icon_url: string;
   active: boolean;
+  department_id?: string | null;
   isNew?: boolean;
 };
 type Assignment = {
@@ -49,12 +57,16 @@ export const DoctorStatisticsEditor = forwardRef<
   DoctorStatisticsEditorHandle,
   {
     doctorId: string;
+    departmentIds: string[];
     enabled: boolean;
     canWrite: boolean;
     onEnabledChange: (enabled: boolean) => void;
     onDirty?: () => void;
   }
->(function DoctorStatisticsEditor({ doctorId, enabled, canWrite, onEnabledChange, onDirty }, ref) {
+>(function DoctorStatisticsEditor(
+  { doctorId, departmentIds, enabled, canWrite, onEnabledChange, onDirty },
+  ref,
+) {
   const query = useQuery({
     queryKey: ["doctor-statistics-workspace", doctorId],
     queryFn: async () => {
@@ -85,6 +97,7 @@ export const DoctorStatisticsEditor = forwardRef<
       meaning: row.meaning ?? "",
       default_icon_url: row.default_icon_url ?? "",
       active: row.active,
+      department_id: row.department_id ?? null,
     }));
     const nextAssignments = (query.data?.assignments ?? []).map((row: any, index: number) => ({
       id: row.id,
@@ -137,6 +150,7 @@ export const DoctorStatisticsEditor = forwardRef<
           meaning: definition.meaning.trim() || null,
           default_icon_url: definition.default_icon_url || null,
           active: definition.active,
+          department_id: definition.department_id || null,
         };
         if (definition.isNew) {
           const { data, error: insertError } = await db
@@ -268,9 +282,12 @@ export const DoctorStatisticsEditor = forwardRef<
   const filtered = useMemo(
     () =>
       definitions.filter(
-        (item) => item.active && item.name.toLowerCase().includes(search.toLowerCase()),
+        (item) =>
+          item.active &&
+          (!item.department_id || departmentIds.includes(item.department_id)) &&
+          item.name.toLowerCase().includes(search.toLowerCase()),
       ),
-    [definitions, search],
+    [definitions, departmentIds, search],
   );
   const assign = (definitionId: string) => {
     if (assignments.some((row) => row.statistic_id === definitionId)) {
@@ -300,7 +317,15 @@ export const DoctorStatisticsEditor = forwardRef<
     const assignmentId = `new-${crypto.randomUUID()}`;
     setDefinitions((current) => [
       ...current,
-      { id: definitionId, name: "", meaning: "", default_icon_url: "", active: true, isNew: true },
+      {
+        id: definitionId,
+        name: "",
+        meaning: "",
+        default_icon_url: "",
+        active: true,
+        department_id: null,
+        isNew: true,
+      },
     ]);
     setAssignments((current) => [
       ...current,
@@ -468,6 +493,29 @@ export const DoctorStatisticsEditor = forwardRef<
                                 updateDefinition(definition.id, { meaning: event.target.value })
                               }
                             />
+                          </div>
+                          <div>
+                            <Label>Availability</Label>
+                            <Select
+                              value={definition.department_id ?? "generic"}
+                              onValueChange={(value) =>
+                                updateDefinition(definition.id, {
+                                  department_id: value === "generic" ? null : value,
+                                })
+                              }
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="generic">Generic — all departments</SelectItem>
+                                {departmentIds.map((departmentId) => (
+                                  <SelectItem key={departmentId} value={departmentId}>
+                                    Selected department
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </>
                       ) : null}

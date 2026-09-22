@@ -85,6 +85,13 @@
       "when": 1790112481162,
       "tag": "0011_separate_doctor_hero_background",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790117643960,
+      "tag": "0012_department_aware_doctor_profiles",
+      "breakpoints": true
     }
   ]
 }

@@ -49,6 +49,7 @@ export type Doctor = {
   display_order: number | null;
   status: ContentStatus;
   department: Pick<Department, "id" | "name" | "slug"> | null;
+  departments: Pick<Department, "id" | "name" | "slug">[];
 };
 
 export type DoctorStatistic = {

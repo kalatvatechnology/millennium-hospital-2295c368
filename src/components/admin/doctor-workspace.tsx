@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Plus, Save, Trash2, Upload } from "lucide-react";
@@ -32,6 +32,13 @@ import {
   DoctorStatisticsEditor,
   type DoctorStatisticsEditorHandle,
 } from "@/components/admin/doctor-statistics-editor";
+import {
+  DepartmentProfessionalEditor,
+  DepartmentServicesEditor,
+  DepartmentSpecializationsEditor,
+  type DepartmentRelationEditorHandle,
+  type ProfessionalEditorHandle,
+} from "@/components/admin/doctor-department-editors";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -137,6 +144,9 @@ export function DoctorWorkspace() {
   const canPublish = can("content.publish");
   const detailRef = useRef<DoctorProfileSectionsHandle>(null);
   const statisticsRef = useRef<DoctorStatisticsEditorHandle>(null);
+  const professionalRef = useRef<ProfessionalEditorHandle>(null);
+  const servicesRef = useRef<DepartmentRelationEditorHandle>(null);
+  const specializationsRef = useRef<DepartmentRelationEditorHandle>(null);
   const uploadedImagePaths = useRef(new Set<string>());
   const deletedImagePaths = useRef(new Set<string>());
   const query = useQuery({
@@ -154,6 +164,19 @@ export function DoctorWorkspace() {
       const { data, error } = await db.from("departments").select("id,name").order("name");
       if (error) throw error;
       return data ?? [];
+    },
+  });
+  const doctorDepartments = useQuery({
+    queryKey: ["doctor-workspace-department-links", doctorId],
+    enabled: !isNew,
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("doctor_departments")
+        .select("department_id")
+        .eq("doctor_id", doctorId)
+        .order("display_order");
+      if (error) throw error;
+      return (data ?? []).map((row: any) => row.department_id as string);
     },
   });
   const media = useQuery({
@@ -189,6 +212,7 @@ export function DoctorWorkspace() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [slugIsAutomatic, setSlugIsAutomatic] = useState(isNew);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>([]);
   useEffect(
     () => () => {
       const paths = [...uploadedImagePaths.current];
@@ -223,20 +247,33 @@ export function DoctorWorkspace() {
     setSocial(links);
     setSocialBaseline(clone(links));
   }, [isNew, query.data, socialQuery.data]);
+  useEffect(() => {
+    if (doctorDepartments.data) setSelectedDepartmentIds(doctorDepartments.data);
+  }, [doctorDepartments.data]);
+  const handleDepartmentsChange = useCallback((ids: string[]) => {
+    setSelectedDepartmentIds(ids);
+    setFieldErrors((current) => ({ ...current, department_id: "" }));
+  }, []);
   const title = isNew ? "New doctor" : values.name || "Doctor workspace";
   const detailTab =
     sectionKeys.has(section) && !["profile", "social-media", "seo", "publishing"].includes(section)
       ? (section as DoctorProfileTab)
       : null;
-  const payload = () => ({
+  const payload = () => {
+    const professional = professionalRef.current?.snapshot();
+    return {
     ...values,
-    qualifications:
-      typeof values.qualifications === "string"
+    department_id: professional?.departmentIds[0] ?? values.department_id ?? null,
+    designation: professional?.designation ?? values.designation,
+    qualifications: professional
+      ? professional.qualifications
+      : typeof values.qualifications === "string"
         ? values.qualifications
             .split(",")
             .map((item: string) => item.trim())
             .filter(Boolean)
         : values.qualifications,
+    specialty: professional?.specialty ?? values.specialty,
     social_links: Object.fromEntries(
       social
         .filter((item) => item.enabled && item.url.trim())
@@ -249,15 +286,18 @@ export function DoctorWorkspace() {
         ]),
     ),
     ...(canPublish ? {} : { published: baseline.published }),
-  });
+    };
+  };
   const validateProfile = async () => {
     const issues: Record<string, string> = {};
     const name = String(values.name ?? "").trim();
     const slug = slugify(String(values.slug ?? ""));
     if (!name) issues["name"] = "Doctor name is required.";
     if (!slug) issues["slug"] = "A URL slug is required.";
-    if (!values.department_id) issues["department_id"] = "Department is required.";
-    if (!String(values.designation ?? "").trim())
+    const professional = professionalRef.current?.snapshot();
+    if (!(professional?.departmentIds.length ?? values.department_id))
+      issues["department_id"] = "Department is required.";
+    if (!String(professional?.designation ?? values.designation ?? "").trim())
       issues["designation"] = "Designation is required.";
     if (String(values.short_introduction ?? "").length > 500)
       issues["short_introduction"] = "Short introduction must be 500 characters or fewer.";
@@ -296,7 +336,17 @@ export function DoctorWorkspace() {
       if (!doctorType) throw new Error("Doctor content configuration is unavailable");
       if (section === "profile") await validateProfile();
       if (section === "hero" && !isNew) await statisticsRef.current?.save();
-      if (detailTab && section !== "hero" && !isNew) {
+      if (section === "specializations" && !isNew) {
+        await specializationsRef.current?.save();
+      }
+      if (section === "services" && !isNew) {
+        await servicesRef.current?.save();
+      } else if (
+        detailTab &&
+        section !== "hero" &&
+        section !== "specializations" &&
+        !isNew
+      ) {
         await detailRef.current?.save();
         return doctorId;
       }
@@ -331,6 +381,7 @@ export function DoctorWorkspace() {
           .select("id")
           .single();
         if (createError) throw createError;
+        await professionalRef.current?.save(created.id as string);
         const stalePaths = [...deletedImagePaths.current];
         if (stalePaths.length) {
           const { error: cleanupError } = await supabase.storage
@@ -341,6 +392,7 @@ export function DoctorWorkspace() {
         return created.id as string;
       }
       await saveRecord(doctorType, doctorId, data);
+      if (section === "profile") await professionalRef.current?.save(doctorId);
       const stalePaths = [...deletedImagePaths.current];
       if (stalePaths.length) {
         const { error: cleanupError } = await supabase.storage
@@ -364,6 +416,8 @@ export function DoctorWorkspace() {
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-relation"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-workspace-department-links"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-department-professional"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", "doctors"] });
       if (isNew)
         void navigate({
@@ -400,6 +454,9 @@ export function DoctorWorkspace() {
     setValues(clone(baseline));
     setSocial(clone(socialBaseline));
     statisticsRef.current?.reset();
+    professionalRef.current?.reset();
+    servicesRef.current?.reset();
+    specializationsRef.current?.reset();
     setDetailReset((current) => current + 1);
     setError(null);
   };
@@ -548,56 +605,20 @@ export function DoctorWorkspace() {
                       />
                     </ProfileGroup>
                     <ProfileGroup title="Professional information">
-                      <div>
-                        <Label htmlFor="doctor-department">Department *</Label>
-                        <Select
-                          value={values.department_id || "none"}
-                          onValueChange={(value) => {
-                            set("department_id", value === "none" ? null : value);
-                            setFieldErrors((current) => ({ ...current, department_id: "" }));
-                          }}
-                        >
-                          <SelectTrigger id="doctor-department" className="mt-2">
-                            <SelectValue placeholder="Select a department" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No department selected</SelectItem>
-                            {(departments.data ?? []).map((item: any) => (
-                              <SelectItem key={item.id} value={item.id}>
-                                {item.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <InlineFieldError message={fieldErrors["department_id"]} />
-                      </div>
-                      <Field
-                        name="designation"
-                        label="Designation *"
-                        kind="text"
-                        value={values.designation}
-                        onChange={(value) => setProfileValue("designation", value)}
-                        error={fieldErrors["designation"]}
-                      />
-                      <Field
-                        name="qualifications"
-                        label="Higher Qualification"
-                        kind="text"
-                        value={
-                          Array.isArray(values.qualifications)
-                            ? values.qualifications.join(", ")
-                            : values.qualifications
+                      <DepartmentProfessionalEditor
+                        ref={professionalRef}
+                        doctorId={doctorId}
+                        departments={departments.data ?? []}
+                        legacyDesignation={values.designation ?? ""}
+                        legacyQualifications={
+                          Array.isArray(values.qualifications) ? values.qualifications : []
                         }
-                        onChange={(value) => setProfileValue("qualifications", value)}
+                        legacySpecialty={values.specialty ?? ""}
+                        canWrite={canWrite}
+                        onDepartmentsChange={handleDepartmentsChange}
                       />
-                      <Field
-                        name="specialty"
-                        label="Specialization"
-                        kind="text"
-                        value={values.specialty}
-                        onChange={(value) => setProfileValue("specialty", value)}
-                        help="Separate multiple specializations with commas."
-                      />
+                      <InlineFieldError message={fieldErrors["department_id"]} />
+                      <InlineFieldError message={fieldErrors["designation"]} />
                     </ProfileGroup>
                     <ProfileGroup title="Profile content">
                       <Field
@@ -778,6 +799,7 @@ export function DoctorWorkspace() {
                         key={`statistics-${detailReset}`}
                         ref={statisticsRef}
                         doctorId={doctorId}
+                        departmentIds={selectedDepartmentIds}
                         enabled={values.section_visibility?.statistics !== false}
                         canWrite={canWrite}
                         onEnabledChange={(checked) =>
@@ -791,7 +813,28 @@ export function DoctorWorkspace() {
                     ) : null}
                   </div>
                 ) : null}
-                {detailTab && section !== "hero" && !isNew ? (
+                {section === "specializations" && !isNew ? (
+                  <DepartmentSpecializationsEditor
+                    ref={specializationsRef}
+                    doctorId={doctorId}
+                    departmentIds={selectedDepartmentIds}
+                    canWrite={canWrite}
+                  />
+                ) : null}
+                {section === "services" && !isNew ? (
+                  <DepartmentServicesEditor
+                    ref={servicesRef}
+                    doctorId={doctorId}
+                    departmentIds={selectedDepartmentIds}
+                    departments={departments.data ?? []}
+                    canWrite={canWrite}
+                  />
+                ) : null}
+                {detailTab &&
+                section !== "hero" &&
+                section !== "specializations" &&
+                section !== "services" &&
+                !isNew ? (
                   <section className="grid gap-5">
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
                       <p className="text-sm text-muted-foreground">
