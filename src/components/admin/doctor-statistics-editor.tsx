@@ -160,6 +160,9 @@ export const DoctorStatisticsEditor = forwardRef<
         const path = managedPath(String(row.icon_override_url ?? ""));
         if (path) removedPaths.current.add(path);
       });
+      const removedDefinitionIds = new Set(
+        removed.map((row: any) => String(row.statistic_id ?? "")).filter(Boolean),
+      );
       if (removed.length) {
         const { error: deleteError } = await db
           .from("doctor_statistics")
@@ -189,6 +192,23 @@ export const DoctorStatisticsEditor = forwardRef<
           : db.from("doctor_statistics").update(payload).eq("id", row.id);
         const { error: writeError } = await command;
         if (writeError) throw writeError;
+      }
+      for (const definition of definitions) {
+        if (
+          !definition.isNew &&
+          removedDefinitionIds.has(definition.id) &&
+          !assignments.some((row) => row.statistic_id === definition.id)
+        ) {
+          const { count, error: countError } = await db
+            .from("doctor_statistics")
+            .select("id", { count: "exact", head: true })
+            .eq("statistic_id", definition.id);
+          if (countError) throw countError;
+          if ((count ?? 0) === 0) {
+            const path = managedPath(definition.default_icon_url);
+            if (path) removedPaths.current.add(path);
+          }
+        }
       }
       const retained = new Set(
         [
