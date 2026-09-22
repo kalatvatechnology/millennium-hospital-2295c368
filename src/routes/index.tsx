@@ -129,11 +129,11 @@ function HomePage() {
           alt=""
           aria-hidden="true"
           fetchPriority="high"
-          className="absolute inset-0 -z-20 size-full object-cover object-center opacity-20 sm:opacity-25 lg:object-[center_48%] lg:opacity-30"
+          className="absolute inset-0 -z-20 size-full object-cover object-center opacity-40 sm:opacity-40 lg:object-[center_48%] lg:opacity-45"
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-secondary via-secondary/90 to-secondary/55" />
-        <div className="absolute inset-x-0 top-0 -z-10 h-16 bg-gradient-to-b from-secondary to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-16 bg-gradient-to-t from-secondary to-transparent" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-secondary/95 via-secondary/70 to-secondary/25" />
+        <div className="absolute inset-x-0 top-0 -z-10 h-12 bg-gradient-to-b from-secondary/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-12 bg-gradient-to-t from-secondary/80 to-transparent" />
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
           <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div>
