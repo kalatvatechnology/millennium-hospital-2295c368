@@ -38,16 +38,22 @@ export function MillenniumLogo({
 
   if (variant === "responsive") {
     return (
-      <picture className={cn("block", className)}>
-        <source media="(max-width: 479px)" srcSet={markLogoAsset.url} />
+      <span className={cn("block", className)}>
+        <img
+          {...sharedProps}
+          src={markLogoAsset.url}
+          width={520}
+          height={560}
+          className="block size-full object-contain sm:hidden"
+        />
         <img
           {...sharedProps}
           src={fullLogoAsset.url}
           width={1920}
           height={582}
-          className="block size-full object-contain object-left"
+          className="hidden size-full object-contain object-left sm:block"
         />
-      </picture>
+      </span>
     );
   }
 
