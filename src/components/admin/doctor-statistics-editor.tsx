@@ -290,6 +290,12 @@ export const DoctorStatisticsEditor = forwardRef<
     setDefinitions((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
     markDirty();
   };
+  const removeManagedImage = (value: string, apply: () => void) => {
+    const path = managedPath(value);
+    if (path) removedPaths.current.add(path);
+    apply();
+    markDirty();
+  };
   const move = (index: number, delta: number) => {
     setAssignments((current) => {
       const target = index + delta;
@@ -441,7 +447,10 @@ export const DoctorStatisticsEditor = forwardRef<
                           );
                         }}
                         onRemove={() =>
-                          definition && updateDefinition(definition.id, { default_icon_url: "" })
+                          definition &&
+                          removeManagedImage(definition.default_icon_url, () =>
+                            updateDefinition(definition.id, { default_icon_url: "" }),
+                          )
                         }
                       />
                       <div>
@@ -466,7 +475,11 @@ export const DoctorStatisticsEditor = forwardRef<
                             "override",
                           )
                         }
-                        onRemove={() => updateAssignment(row.id, { icon_override_url: "" })}
+                        onRemove={() =>
+                          removeManagedImage(row.icon_override_url, () =>
+                            updateAssignment(row.id, { icon_override_url: "" }),
+                          )
+                        }
                       />
                       <Button
                         type="button"

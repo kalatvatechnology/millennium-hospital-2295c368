@@ -251,7 +251,14 @@ export async function getDoctor(slug: string, preview = false) {
             display_order: Number(item["display_order"] ?? 0),
           } satisfies DoctorStatistic;
         })
-        .filter((item) => item.value.trim() && item.label.trim()),
+        .filter((item, index) => {
+          const raw = rows(statisticResult)[index];
+          const definition = raw?.["doctor_statistic_definitions"] as
+            | { active?: unknown }
+            | null
+            | undefined;
+          return item.value.trim() && item.label.trim() && definition?.active !== false;
+        }),
       specializations: rows(specializationResult) as DoctorSpecialization[],
       experience: rows(experienceResult) as DoctorExperience[],
       education: rows(educationResult) as DoctorEducation[],
