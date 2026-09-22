@@ -77,6 +77,10 @@ export function mapDoctor(row: Row, department?: unknown): Doctor {
     short_introduction: text(row["short_introduction"]),
     hero_image_url: text(row["hero_image_url"]),
     hero_image_alt: text(row["hero_image_alt"]),
+    hero_image_position:
+      row["hero_image_position"] === "left" || row["hero_image_position"] === "right"
+        ? row["hero_image_position"]
+        : "center",
     profile_image_alt: text(row["profile_image_alt"]),
     quote: text(row["quote"]),
     quote_attribution: text(row["quote_attribution"]),

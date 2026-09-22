@@ -159,7 +159,9 @@ export async function getDoctor(slug: string, preview = false) {
         .order("display_order"),
       db
         .from("doctor_statistics")
-        .select("id,value,label,icon,display_order")
+        .select(
+          "id,value,label,icon,icon_override_url,display_order,doctor_statistic_definitions(name,meaning,default_icon_url,active)",
+        )
         .eq("doctor_id", doctor.id)
         .eq("enabled", true)
         .order("display_order"),
@@ -224,7 +226,37 @@ export async function getDoctor(slug: string, preview = false) {
         .filter(Boolean)
         .map(mapMedia)
         .filter((item) => item.status === "published"),
-      statistics: rows(statisticResult) as DoctorStatistic[],
+      statistics: rows(statisticResult)
+        .map((item) => {
+          const definition = item["doctor_statistic_definitions"] as {
+            name?: unknown;
+            meaning?: unknown;
+            default_icon_url?: unknown;
+            active?: unknown;
+          } | null;
+          return {
+            id: String(item["id"] ?? ""),
+            value: String(item["value"] ?? ""),
+            label:
+              typeof definition?.name === "string" ? definition.name : String(item["label"] ?? ""),
+            icon:
+              typeof item["icon_override_url"] === "string"
+                ? item["icon_override_url"]
+                : typeof definition?.default_icon_url === "string"
+                  ? definition.default_icon_url
+                  : typeof item["icon"] === "string"
+                    ? item["icon"]
+                    : null,
+            meaning: typeof definition?.meaning === "string" ? definition.meaning : null,
+            display_order: Number(item["display_order"] ?? 0),
+          } satisfies DoctorStatistic;
+        })
+        .filter((item, index) => {
+          const raw = rows(statisticResult)[index];
+          const definition = raw?.["doctor_statistic_definitions"] as
+            { active?: unknown } | null | undefined;
+          return item.value.trim() && item.label.trim() && definition?.active !== false;
+        }),
       specializations: rows(specializationResult) as DoctorSpecialization[],
       experience: rows(experienceResult) as DoctorExperience[],
       education: rows(educationResult) as DoctorEducation[],

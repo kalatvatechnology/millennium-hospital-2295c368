@@ -937,6 +937,36 @@ export type Database = {
           },
         ]
       }
+      doctor_statistic_definitions: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_icon_url: string | null
+          id: string
+          meaning: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_icon_url?: string | null
+          id?: string
+          meaning?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_icon_url?: string | null
+          id?: string
+          meaning?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       doctor_statistics: {
         Row: {
           created_at: string
@@ -944,8 +974,10 @@ export type Database = {
           doctor_id: string
           enabled: boolean
           icon: string | null
+          icon_override_url: string | null
           id: string
           label: string
+          statistic_id: string | null
           updated_at: string
           value: string
         }
@@ -955,8 +987,10 @@ export type Database = {
           doctor_id: string
           enabled?: boolean
           icon?: string | null
+          icon_override_url?: string | null
           id?: string
           label: string
+          statistic_id?: string | null
           updated_at?: string
           value: string
         }
@@ -966,8 +1000,10 @@ export type Database = {
           doctor_id?: string
           enabled?: boolean
           icon?: string | null
+          icon_override_url?: string | null
           id?: string
           label?: string
+          statistic_id?: string | null
           updated_at?: string
           value?: string
         }
@@ -977,6 +1013,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_statistics_statistic_id_fkey"
+            columns: ["statistic_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_statistic_definitions"
             referencedColumns: ["id"]
           },
         ]
@@ -992,6 +1035,7 @@ export type Database = {
           experience_years: number | null
           expertise: string[]
           hero_image_alt: string | null
+          hero_image_position: string
           hero_image_url: string | null
           id: string
           languages: string[]
@@ -1029,6 +1073,7 @@ export type Database = {
           experience_years?: number | null
           expertise?: string[]
           hero_image_alt?: string | null
+          hero_image_position?: string
           hero_image_url?: string | null
           id?: string
           languages?: string[]
@@ -1066,6 +1111,7 @@ export type Database = {
           experience_years?: number | null
           expertise?: string[]
           hero_image_alt?: string | null
+          hero_image_position?: string
           hero_image_url?: string | null
           id?: string
           languages?: string[]
