@@ -778,12 +778,35 @@ export function DoctorWorkspace() {
                   </div>
                 ) : null}
                 {detailTab && section !== "hero" && !isNew ? (
-                  <DoctorProfileSections
-                    key={`${detailTab}-${detailReset}`}
-                    ref={detailRef}
-                    doctorId={doctorId}
-                    activeTab={detailTab}
-                  />
+                  <section className="grid gap-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+                      <p className="text-sm text-muted-foreground">
+                        Enabled sections remain hidden publicly until they contain valid content.
+                      </p>
+                      <label className="flex items-center gap-3 text-sm font-semibold">
+                        <span>{values.section_visibility?.[section] !== false ? "ON" : "OFF"}</span>
+                        <Switch
+                          checked={values.section_visibility?.[section] !== false}
+                          disabled={!canWrite}
+                          aria-label={`${sections.find(([key]) => key === section)?.[1] ?? section} section visibility`}
+                          onCheckedChange={(checked) =>
+                            set("section_visibility", {
+                              ...(values.section_visibility ?? {}),
+                              [section]: checked,
+                            })
+                          }
+                        />
+                      </label>
+                    </div>
+                    {values.section_visibility?.[section] !== false ? (
+                      <DoctorProfileSections
+                        key={`${detailTab}-${detailReset}`}
+                        ref={detailRef}
+                        doctorId={doctorId}
+                        activeTab={detailTab}
+                      />
+                    ) : null}
+                  </section>
                 ) : null}
                 {section === "social-media" ? (
                   <SocialEditor rows={social} onChange={setSocial} />

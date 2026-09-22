@@ -109,7 +109,7 @@ function DoctorDetail() {
   const qualifications = doctor.qualifications.length > 0;
   const showStatistics =
     visible(doctor.section_visibility, "statistics") && data.statistics.length > 0;
-  const showQuote = visible(doctor.section_visibility, "quote") && Boolean(doctor.quote);
+  const showQuote = heroEnabled && Boolean(doctor.quote);
   const showAbout =
     Boolean(doctor.bio) ||
     qualifications ||
