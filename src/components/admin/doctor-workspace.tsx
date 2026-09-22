@@ -336,7 +336,9 @@ export function DoctorWorkspace() {
       if (!doctorType) throw new Error("Doctor content configuration is unavailable");
       if (section === "profile") await validateProfile();
       if (section === "hero" && !isNew) await statisticsRef.current?.save();
-      if (section === "hero" && !isNew) await specializationsRef.current?.save();
+      if (section === "specializations" && !isNew) {
+        await specializationsRef.current?.save();
+      }
       if (section === "services" && !isNew) {
         await servicesRef.current?.save();
       } else if (
@@ -805,14 +807,6 @@ export function DoctorWorkspace() {
                           })
                         }
                         onDirty={() => setSavedMessage(null)}
-                      />
-                    ) : null}
-                    {!isNew ? (
-                      <DepartmentSpecializationsEditor
-                        ref={specializationsRef}
-                        doctorId={doctorId}
-                        departmentIds={selectedDepartmentIds}
-                        canWrite={canWrite}
                       />
                     ) : null}
                   </div>

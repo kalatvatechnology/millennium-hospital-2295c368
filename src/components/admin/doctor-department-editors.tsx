@@ -274,7 +274,13 @@ export const DepartmentProfessionalEditor = forwardRef<
       const { data, error: createError } = await db.from(table).insert(payload).select("id").single();
       if (createError) throw createError;
       id = data.id;
-      await client.invalidateQueries({ queryKey: ["doctor-department-professional", doctorId] });
+      client.setQueryData(["doctor-department-professional", doctorId], (current: any) => ({
+        ...current,
+        [`${kind}s`]: [
+          ...(current?.[`${kind}s`] ?? []),
+          { id, department_id: departmentId, name: values.name.trim(), description: values.description?.trim() || null },
+        ],
+      }));
     }
     setDepartmentIds(previousDepartments);
     onDepartmentsChange(previousDepartments);
@@ -452,8 +458,25 @@ export const DepartmentServicesEditor = forwardRef<
     }
     const { error: linkError } = await db.from("professional_service_departments").upsert({ professional_service_id: id, department_id: dialogDepartment });
     if (linkError) throw linkError;
-    setSelected((current) => [...new Set([...current, id])]);
-    await client.invalidateQueries({ queryKey: ["doctor-department-services", doctorId] });
+    const nextSelected = [...new Set([...selected, id])];
+    client.setQueryData(["doctor-department-services", doctorId], (current: any) => ({
+      ...current,
+      services: existing
+        ? current?.services ?? []
+        : [
+            ...(current?.services ?? []),
+            { id, title: values.name.trim(), slug: slugify(values.name), published: false },
+          ],
+      departmentLinks: [
+        ...(current?.departmentLinks ?? []).filter(
+          (item: any) =>
+            item.professional_service_id !== id || item.department_id !== dialogDepartment,
+        ),
+        { professional_service_id: id, department_id: dialogDepartment },
+      ],
+      doctorLinks: nextSelected.map((professional_service_id) => ({ professional_service_id })),
+    }));
+    setSelected(nextSelected);
   };
   return (
     <section className="rounded-md border border-border p-4">

@@ -58,12 +58,12 @@ export async function getDepartment(slug: string) {
   if (!department) return null;
   if (!usesProductionContract) {
     const [doctorResult, serviceResult] = await Promise.all([
-      published(
-        db
-          .from("doctors")
-          .select("*, department:departments(id,name,slug)")
-          .eq("department_id", department["id"]),
-      ).order("display_order"),
+      db
+        .from("doctor_departments")
+        .select(
+          "doctors(*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug)))",
+        )
+        .eq("department_id", department["id"]),
       db
         .from("professional_service_departments")
         .select("professional_services(*)")
@@ -71,7 +71,11 @@ export async function getDepartment(slug: string) {
     ]);
     return {
       department: mapDepartment(department),
-      doctors: rows(doctorResult).map((row) => mapDoctor(row)),
+      doctors: rows(doctorResult)
+        .map((row) => row["doctors"])
+        .filter(Boolean)
+        .map((row) => mapDoctor(row))
+        .filter((doctor) => doctor.status === "published"),
       services: rows(serviceResult)
         .map((row) => row["professional_services"])
         .filter(Boolean)

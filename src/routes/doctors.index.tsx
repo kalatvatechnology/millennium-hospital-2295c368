@@ -249,7 +249,7 @@ function DoctorsPage() {
     () =>
       [
         ...new Set(
-          list.flatMap((doctor) => (doctor.department?.name ? [doctor.department.name] : [])),
+          list.flatMap((doctor) => doctor.departments.map((item) => item.name)),
         ),
       ].sort((a, b) => a.localeCompare(b)),
     [list],
@@ -269,7 +269,7 @@ function DoctorsPage() {
         doctor.name,
         doctor.designation,
         doctor.specialty,
-        doctor.department?.name,
+        ...doctor.departments.map((item) => item.name),
         doctor.location,
         doctor.location_info,
         ...doctor.qualifications,
@@ -281,7 +281,7 @@ function DoctorsPage() {
 
       return (
         (!term || searchable.includes(term)) &&
-        (department === "all" || doctor.department?.name === department) &&
+        (department === "all" || doctor.departments.some((item) => item.name === department)) &&
         (location === "all" || doctor.location === location)
       );
     });
