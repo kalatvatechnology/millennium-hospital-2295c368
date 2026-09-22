@@ -23,7 +23,7 @@
 - [x] Apply the Millennium navy/red design system across public and staff interfaces
 - [x] Add the patient-pathway homepage and responsive appointment actions
 - [x] Verify TypeScript, preview build, and desktop/mobile rendering without overflow
-- [ ] Verify managed image upload, replacement, deletion, and orphan cleanup policies
+- [x] Verify managed doctor image upload, replacement, deletion, public delivery, and orphan cleanup policies
 - [ ] Complete production-domain SEO checks: canonicals, sitemap, structured data, redirects, and links
 - [ ] Complete final authenticated browser checks for every staff role before launch
 - [x] Prepare a frontend-only production compatibility layer without connecting to or changing production
