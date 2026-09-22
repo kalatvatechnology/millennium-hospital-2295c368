@@ -100,7 +100,9 @@ export const DoctorStatisticsEditor = forwardRef<
     setAssignments(nextAssignments);
     setBaselineDefinitions(structuredClone(nextDefinitions));
     setBaselineAssignments(structuredClone(nextAssignments));
+    setError(null);
   }, [query.data]);
+
 
   const definitionFor = (row: Assignment) =>
     definitions.find((item) => item.id === row.statistic_id);

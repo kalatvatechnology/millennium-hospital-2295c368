@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const BUCKET = "doctor-profile-images";
-const allowedPath = /^[0-9a-f-]{36}\/[a-z0-9-]+\.(?:jpe?g|png|webp)$/i;
+const allowedPath = /^(?:[a-z0-9-]+\/)?[0-9a-f-]{36}\/[a-z0-9-]+\.(?:jpe?g|png|webp)$/i;
 const allowedContentTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export const Route = createFileRoute("/api/public/doctor-profile-image")({

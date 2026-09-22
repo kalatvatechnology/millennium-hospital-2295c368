@@ -197,6 +197,13 @@ export function DoctorWorkspace() {
     [],
   );
   useEffect(() => {
+    // A failure belongs to the section it happened in; never carry it into another section.
+    setError(null);
+    setFieldErrors({});
+    setSavedMessage(null);
+  }, [section, doctorId]);
+
+  useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
     if (!next) return;
     const prepared = clone(next);
@@ -1124,6 +1131,11 @@ function ImageEditor({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    // Only show an error for the current image operation; clear it once the image changes.
+    setUploadError(null);
+  }, [value]);
+
   const suggestedAlt = [doctorName, designation, doctorName ? "at The Millennium Hospital" : ""]
     .filter(Boolean)
     .join(", ")
