@@ -12,7 +12,7 @@ export function SiteHeader() {
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-background focus:px-4 focus:py-2">Skip to content</a>
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex min-w-0 shrink-0 items-center" aria-label={`${siteConfig.name} home`}>
-          <MillenniumLogo variant="responsive" priority className="w-52 sm:w-56 lg:w-60" />
+          <MillenniumLogo variant="responsive" priority className="w-44 sm:w-48 lg:w-52" />
         </Link>
         <nav aria-label="Primary navigation" className="hidden items-center gap-1 lg:flex">
           {primaryNavigation.map((item) => (
