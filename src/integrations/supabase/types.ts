@@ -1034,6 +1034,9 @@ export type Database = {
           display_order: number
           experience_years: number | null
           expertise: string[]
+          hero_background_image_alt: string | null
+          hero_background_image_url: string | null
+          hero_background_position: string
           hero_image_alt: string | null
           hero_image_position: string
           hero_image_url: string | null
@@ -1072,6 +1075,9 @@ export type Database = {
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
+          hero_background_image_alt?: string | null
+          hero_background_image_url?: string | null
+          hero_background_position?: string
           hero_image_alt?: string | null
           hero_image_position?: string
           hero_image_url?: string | null
@@ -1110,6 +1116,9 @@ export type Database = {
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
+          hero_background_image_alt?: string | null
+          hero_background_image_url?: string | null
+          hero_background_position?: string
           hero_image_alt?: string | null
           hero_image_position?: string
           hero_image_url?: string | null
