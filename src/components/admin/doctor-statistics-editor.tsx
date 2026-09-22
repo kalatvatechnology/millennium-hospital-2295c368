@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AdminError } from "@/components/admin/ui";
 import { userFacingDataError } from "@/lib/data/errors";
 
@@ -143,6 +150,7 @@ export const DoctorStatisticsEditor = forwardRef<
           meaning: definition.meaning.trim() || null,
           default_icon_url: definition.default_icon_url || null,
           active: definition.active,
+          department_id: definition.department_id || null,
         };
         if (definition.isNew) {
           const { data, error: insertError } = await db
@@ -309,7 +317,15 @@ export const DoctorStatisticsEditor = forwardRef<
     const assignmentId = `new-${crypto.randomUUID()}`;
     setDefinitions((current) => [
       ...current,
-      { id: definitionId, name: "", meaning: "", default_icon_url: "", active: true, isNew: true },
+      {
+        id: definitionId,
+        name: "",
+        meaning: "",
+        default_icon_url: "",
+        active: true,
+        department_id: null,
+        isNew: true,
+      },
     ]);
     setAssignments((current) => [
       ...current,
@@ -477,6 +493,29 @@ export const DoctorStatisticsEditor = forwardRef<
                                 updateDefinition(definition.id, { meaning: event.target.value })
                               }
                             />
+                          </div>
+                          <div>
+                            <Label>Availability</Label>
+                            <Select
+                              value={definition.department_id ?? "generic"}
+                              onValueChange={(value) =>
+                                updateDefinition(definition.id, {
+                                  department_id: value === "generic" ? null : value,
+                                })
+                              }
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="generic">Generic — all departments</SelectItem>
+                                {departmentIds.map((departmentId) => (
+                                  <SelectItem key={departmentId} value={departmentId}>
+                                    Selected department
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </>
                       ) : null}

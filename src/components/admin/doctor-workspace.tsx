@@ -265,7 +265,7 @@ export function DoctorWorkspace() {
     ...values,
     department_id: professional?.departmentIds[0] ?? values.department_id ?? null,
     designation: professional?.designation ?? values.designation,
-    qualifications: professional?.qualifications.length
+    qualifications: professional
       ? professional.qualifications
       : typeof values.qualifications === "string"
         ? values.qualifications

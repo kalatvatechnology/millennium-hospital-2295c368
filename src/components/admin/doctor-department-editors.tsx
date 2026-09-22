@@ -159,20 +159,33 @@ export const DepartmentProfessionalEditor = forwardRef<
     const primaryDesignation = designations.find(
       (item: any) => item.id === designationByDepartment[departmentIds[0] ?? ""],
     )?.name;
+    const knownQualificationNames = new Set(
+      qualifications.map((item: any) => item.name.trim().toLowerCase()),
+    );
+    const unmatchedLegacyQualifications = legacyQualifications.filter(
+      (name) => !knownQualificationNames.has(name.trim().toLowerCase()),
+    );
+    const selectedQualificationNames = qualificationIds
+      .map((id) => qualifications.find((item: any) => item.id === id)?.name)
+      .filter(Boolean);
+    const knownSpecializationNames = new Set(
+      specializations.map((item: any) => item.name.trim().toLowerCase()),
+    );
+    const unmatchedLegacySpecialties = legacySpecialty
+      .split(",")
+      .map((name) => name.trim())
+      .filter((name) => name && !knownSpecializationNames.has(name.toLowerCase()));
+    const selectedSpecializationNames = specializationIds
+      .map((id) => specializations.find((item: any) => item.id === id)?.name)
+      .filter(Boolean);
     return {
       departmentIds,
       designationByDepartment,
       qualificationIds,
       specializationIds,
       designation: primaryDesignation ?? legacyDesignation,
-      qualifications: qualificationIds
-        .map((id) => qualifications.find((item: any) => item.id === id)?.name)
-        .filter(Boolean),
-      specialty:
-        specializationIds
-          .map((id) => specializations.find((item: any) => item.id === id)?.name)
-          .filter(Boolean)
-          .join(", ") || legacySpecialty,
+      qualifications: [...unmatchedLegacyQualifications, ...selectedQualificationNames],
+      specialty: [...unmatchedLegacySpecialties, ...selectedSpecializationNames].join(", "),
     };
   };
   const save = async (savedDoctorId: string) => {
@@ -252,6 +265,10 @@ export const DepartmentProfessionalEditor = forwardRef<
       (item) => item.department_id === departmentId && item.name.trim().toLowerCase() === values.name.trim().toLowerCase(),
     );
     let id = existing?.id;
+    const previousDepartments = departmentIds;
+    const previousDesignations = designationByDepartment;
+    const previousQualifications = qualificationIds;
+    const previousSpecializations = specializationIds;
     if (!id) {
       const payload = { department_id: departmentId, name: values.name.trim(), ...(kind === "specialization" ? { description: values.description?.trim() || null } : {}) };
       const { data, error: createError } = await db.from(table).insert(payload).select("id").single();
@@ -259,10 +276,23 @@ export const DepartmentProfessionalEditor = forwardRef<
       id = data.id;
       await client.invalidateQueries({ queryKey: ["doctor-department-professional", doctorId] });
     }
-    if (kind === "designation")
-      setDesignationByDepartment((current) => ({ ...current, [departmentId]: id }));
-    if (kind === "qualification") setQualificationIds((current) => [...new Set([...current, id])]);
-    if (kind === "specialization") setSpecializationIds((current) => [...new Set([...current, id])]);
+    setDepartmentIds(previousDepartments);
+    onDepartmentsChange(previousDepartments);
+    setDesignationByDepartment(
+      kind === "designation"
+        ? { ...previousDesignations, [departmentId]: id }
+        : previousDesignations,
+    );
+    setQualificationIds(
+      kind === "qualification"
+        ? [...new Set([...previousQualifications, id])]
+        : previousQualifications,
+    );
+    setSpecializationIds(
+      kind === "specialization"
+        ? [...new Set([...previousSpecializations, id])]
+        : previousSpecializations,
+    );
   };
 
   if (query.isError) return <p className="text-sm text-destructive">{userFacingDataError(query.error)}</p>;
