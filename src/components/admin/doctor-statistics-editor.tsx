@@ -156,6 +156,10 @@ export const DoctorStatisticsEditor = forwardRef<
       const removed = original.filter(
         (row: any) => !assignments.some((item) => item.id === row.id),
       );
+      removed.forEach((row: any) => {
+        const path = managedPath(String(row.icon_override_url ?? ""));
+        if (path) removedPaths.current.add(path);
+      });
       if (removed.length) {
         const { error: deleteError } = await db
           .from("doctor_statistics")
@@ -186,10 +190,20 @@ export const DoctorStatisticsEditor = forwardRef<
         const { error: writeError } = await command;
         if (writeError) throw writeError;
       }
-      const stale = [...removedPaths.current].filter((path) => !uploadedPaths.current.has(path));
+      const retained = new Set(
+        [
+          ...definitions.map((item) => item.default_icon_url),
+          ...assignments.map((item) => item.icon_override_url),
+        ]
+          .map(managedPath)
+          .filter((path): path is string => Boolean(path)),
+      );
+      const stale = [...new Set([...removedPaths.current, ...uploadedPaths.current])].filter(
+        (path) => !retained.has(path),
+      );
       if (stale.length) {
         const { error: cleanupError } = await supabase.storage.from(bucket).remove(stale);
-        if (cleanupError) throw cleanupError;
+        if (cleanupError) setError("Changes were saved, but one superseded icon could not be removed.");
       }
       uploadedPaths.current.clear();
       removedPaths.current.clear();
