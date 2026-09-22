@@ -108,6 +108,9 @@ const blankDoctor = () => ({
   hero_image_url: "",
   hero_image_alt: "",
   hero_image_position: "center",
+  hero_background_image_url: "",
+  hero_background_image_alt: "",
+  hero_background_position: "center",
   quote: "",
   quote_attribution: "",
   social_links: {},
@@ -691,30 +694,34 @@ export function DoctorWorkspace() {
                       {values.section_visibility?.hero !== false ? (
                         <div className="mt-5 grid gap-6">
                           <ImageEditor
-                            label="Hero Image"
-                            description="Main doctor profile image displayed in the doctor profile hero/header area."
-                            value={values.hero_image_url ?? ""}
-                            alt={values.hero_image_alt ?? ""}
+                            label="Hero Background Image"
+                            description="Upload a department, hospital interior, or abstract healthcare image used as the visual background behind the doctor's profile information. This is not the doctor's portrait."
+                            value={values.hero_background_image_url ?? ""}
+                            alt={values.hero_background_image_alt ?? ""}
                             options={imageOptions}
-                            ratio="1600 × 900 px (16:9) for the best responsive result across desktop, tablet and mobile"
+                            ratio="1920 × 1080 px (16:9) for a responsive Hero background"
                             previewMode="hero"
-                            objectPosition={values.hero_image_position ?? "center"}
-                            onValue={(value) => set("hero_image_url", value)}
-                            onAlt={(value) => set("hero_image_alt", value)}
+                            objectPosition={values.hero_background_position ?? "center"}
+                            onValue={(value) => set("hero_background_image_url", value)}
+                            onAlt={(value) => set("hero_background_image_alt", value)}
                             doctorName={values.name ?? ""}
+                            designation={values.designation ?? ""}
+                            uploadDirectory="hero-backgrounds"
                             canUpload={canWrite}
                             canModify={canWrite}
                             onUploaded={(nextValue, path) => {
-                              const previousPath = doctorImagePath(values.hero_image_url ?? "");
+                              const previousPath = doctorImagePath(
+                                values.hero_background_image_url ?? "",
+                              );
                               if (previousPath && previousPath !== path)
                                 deletedImagePaths.current.add(previousPath);
                               uploadedImagePaths.current.add(path);
-                              set("hero_image_url", nextValue);
+                              set("hero_background_image_url", nextValue);
                             }}
                             onRemove={() => {
-                              const path = doctorImagePath(values.hero_image_url ?? "");
+                              const path = doctorImagePath(values.hero_background_image_url ?? "");
                               if (path) deletedImagePaths.current.add(path);
-                              set("hero_image_url", "");
+                              set("hero_background_image_url", "");
                             }}
                           />
                           <div>
@@ -722,7 +729,7 @@ export function DoctorWorkspace() {
                             <div
                               className="mt-2 flex flex-wrap gap-2"
                               role="group"
-                              aria-label="Hero image position"
+                              aria-label="Hero background focal position"
                             >
                               {(["left", "center", "right"] as const).map((position) => (
                                 <Button
@@ -730,11 +737,11 @@ export function DoctorWorkspace() {
                                   type="button"
                                   size="sm"
                                   variant={
-                                    (values.hero_image_position ?? "center") === position
+                                    (values.hero_background_position ?? "center") === position
                                       ? "default"
                                       : "outline"
                                   }
-                                  onClick={() => set("hero_image_position", position)}
+                                  onClick={() => set("hero_background_position", position)}
                                 >
                                   {position[0]?.toUpperCase()}
                                   {position.slice(1)}
@@ -1094,6 +1101,7 @@ function ImageEditor({
   description,
   previewMode,
   objectPosition = "center",
+  uploadDirectory,
 }: {
   label: string;
   value: string;
@@ -1111,6 +1119,7 @@ function ImageEditor({
   description?: string;
   previewMode?: "hero";
   objectPosition?: "left" | "center" | "right";
+  uploadDirectory?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -1135,7 +1144,7 @@ function ImageEditor({
       const extension =
         file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
       const filename = `${slugify(doctorName ?? "") || "doctor"}.${extension}`;
-      const path = `${crypto.randomUUID()}/${filename}`;
+      const path = `${uploadDirectory ? `${uploadDirectory}/` : ""}${crypto.randomUUID()}/${filename}`;
       const { error } = await supabase.storage
         .from(doctorImageBucket)
         .upload(path, file, { contentType: file.type, upsert: false });
@@ -1178,6 +1187,8 @@ function ImageEditor({
           value={value}
           alt={alt || `${label} preview`}
           objectPosition={objectPosition}
+          doctorName={doctorName ?? "Doctor name"}
+          designation={designation ?? "Specialty and qualifications"}
         />
       ) : value ? (
         <img
@@ -1275,10 +1286,14 @@ function HeroImagePreview({
   value,
   alt,
   objectPosition,
+  doctorName,
+  designation,
 }: {
   value: string;
   alt: string;
   objectPosition: "left" | "center" | "right";
+  doctorName: string;
+  designation: string;
 }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const widths = { desktop: "max-w-2xl", tablet: "max-w-md", mobile: "max-w-56" };
@@ -1300,13 +1315,18 @@ function HeroImagePreview({
         ))}
       </div>
       <div
-        className={`aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}
+        className={`relative aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}
       >
         <img
           src={value}
           alt={alt}
-          className={`size-full object-cover ${positions[objectPosition]}`}
+          className={`absolute inset-0 size-full object-cover ${positions[objectPosition]}`}
         />
+        <div className="absolute inset-0 bg-background/55" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 bg-background/85 p-4">
+          <p className="font-semibold text-foreground">{doctorName}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{designation}</p>
+        </div>
       </div>
     </div>
   );

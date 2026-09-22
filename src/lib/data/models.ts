@@ -25,6 +25,9 @@ export type Doctor = {
   hero_image_url: string | null;
   hero_image_alt: string | null;
   hero_image_position: "left" | "center" | "right";
+  hero_background_image_url: string | null;
+  hero_background_image_alt: string | null;
+  hero_background_position: "left" | "center" | "right";
   profile_image_alt: string | null;
   quote: string | null;
   quote_attribution: string | null;
