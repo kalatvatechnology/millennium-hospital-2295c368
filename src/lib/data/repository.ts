@@ -254,9 +254,7 @@ export async function getDoctor(slug: string, preview = false) {
         .filter((item, index) => {
           const raw = rows(statisticResult)[index];
           const definition = raw?.["doctor_statistic_definitions"] as
-            | { active?: unknown }
-            | null
-            | undefined;
+            { active?: unknown } | null | undefined;
           return item.value.trim() && item.label.trim() && definition?.active !== false;
         }),
       specializations: rows(specializationResult) as DoctorSpecialization[],
