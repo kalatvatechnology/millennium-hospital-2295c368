@@ -101,11 +101,15 @@ function DoctorDetail() {
   const phone = doctor.phone_number?.replace(/[^+\d]/g, "");
   const whatsapp = doctor.whatsapp_number?.replace(/\D/g, "");
   const heroEnabled = visible(doctor.section_visibility, "hero");
-  const portrait = heroEnabled && doctor.hero_image_url ? doctor.hero_image_url : doctor.photo_url;
-  const portraitAlt =
-    heroEnabled && doctor.hero_image_url
-      ? (doctor.hero_image_alt ?? `Portrait of ${doctor.name}`)
-      : (doctor.profile_image_alt ?? `Portrait of ${doctor.name}`);
+  const portrait = doctor.photo_url;
+  const portraitAlt = doctor.profile_image_alt ?? `Portrait of ${doctor.name}`;
+  const heroBackground = heroEnabled ? doctor.hero_background_image_url : null;
+  const heroBackgroundPosition =
+    doctor.hero_background_position === "left"
+      ? "object-left"
+      : doctor.hero_background_position === "right"
+        ? "object-right"
+        : "object-center";
   const qualifications = doctor.qualifications.length > 0;
   const showStatistics =
     visible(doctor.section_visibility, "statistics") && data.statistics.length > 0;
@@ -157,7 +161,18 @@ function DoctorDetail() {
         </div>
       ) : null}
 
-      <section className="border-b border-border bg-secondary">
+      <section className="relative isolate overflow-hidden border-b border-border bg-secondary">
+        {heroBackground ? (
+          <>
+            <img
+              src={heroBackground}
+              alt={doctor.hero_background_image_alt ?? ""}
+              className={`absolute inset-0 -z-20 size-full object-cover ${heroBackgroundPosition}`}
+              loading="eager"
+            />
+            <div className="absolute inset-0 -z-10 bg-background/75" aria-hidden="true" />
+          </>
+        ) : null}
         <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-14 lg:px-8 lg:pb-16">
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -186,13 +201,7 @@ function DoctorDetail() {
                   <img
                     src={portrait}
                     alt={portraitAlt}
-                    className={`size-full object-cover ${
-                      doctor.hero_image_position === "left"
-                        ? "object-left"
-                        : doctor.hero_image_position === "right"
-                          ? "object-right"
-                          : "object-center"
-                    }`}
+                    className="size-full object-cover object-center"
                     loading="eager"
                   />
                 ) : (
