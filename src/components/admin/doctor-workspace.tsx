@@ -667,21 +667,33 @@ function Field({
   kind,
   value,
   onChange,
+  error,
+  help,
+  maxLength,
+  compact,
 }: {
   name: string;
   label: string;
   kind: string;
   value: any;
   onChange: (value: string) => void;
+  error?: string;
+  help?: string;
+  maxLength?: number;
+  compact?: boolean;
 }) {
+  const length = String(value ?? "").length;
   return (
     <div className={kind === "textarea" ? "lg:col-span-2" : ""}>
       <Label htmlFor={`doctor-${name}`}>{label}</Label>
       {kind === "textarea" ? (
         <Textarea
           id={`doctor-${name}`}
-          className="mt-2 min-h-32"
+          className={compact ? "mt-2 min-h-20" : "mt-2 min-h-32"}
           value={value ?? ""}
+          maxLength={maxLength}
+          aria-invalid={Boolean(error)}
+          aria-describedby={`${name}-message`}
           onChange={(event) => onChange(event.target.value)}
         />
       ) : (
@@ -690,9 +702,44 @@ function Field({
           className="mt-2"
           type={kind === "number" ? "number" : "text"}
           value={value ?? ""}
+          aria-invalid={Boolean(error)}
+          aria-describedby={`${name}-message`}
           onChange={(event) => onChange(event.target.value)}
         />
       )}
+      <div id={`${name}-message`} className="mt-1 flex items-start justify-between gap-3 text-xs">
+        <span className={error ? "text-destructive" : "text-muted-foreground"}>{error || help}</span>
+        {maxLength ? <span className="shrink-0 text-muted-foreground">{length} / {maxLength}</span> : null}
+      </div>
+    </div>
+  );
+}
+function InlineFieldError({ message }: { message?: string }) {
+  return message ? <p className="mt-1 text-xs text-destructive">{message}</p> : null;
+}
+function ProfileGroup({ title, children, singleColumn = false }: { title: string; children: React.ReactNode; singleColumn?: boolean }) {
+  return (
+    <section className="rounded-md border border-border bg-background p-4 sm:p-5">
+      <h3 className="font-semibold text-foreground">{title}</h3>
+      <div className={`mt-4 grid gap-5 ${singleColumn ? "" : "lg:grid-cols-2"}`}>{children}</div>
+    </section>
+  );
+}
+function PhoneField({ label, countryCode, number, onCountryCode, onNumber, error }: { label: string; countryCode: string; number: string; onCountryCode: (value: string) => void; onNumber: (value: string) => void; error?: string }) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)]">
+        <Select value={countryCode || "none"} onValueChange={(value) => onCountryCode(value === "none" ? "" : value)}>
+          <SelectTrigger aria-label={`${label} country code`}><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select country code</SelectItem>
+            {countryCodes.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Input aria-label={`${label} number`} inputMode="numeric" autoComplete="tel-national" value={number} aria-invalid={Boolean(error)} onChange={(event) => onNumber(event.target.value)} placeholder="Contact number" />
+      </div>
+      <InlineFieldError message={error} />
     </div>
   );
 }
@@ -704,6 +751,9 @@ function ImageEditor({
   ratio,
   onValue,
   onAlt,
+  doctorName,
+  designation,
+  canUpload = false,
 }: {
   label: string;
   value: string;
@@ -712,62 +762,71 @@ function ImageEditor({
   ratio: string;
   onValue: (value: string) => void;
   onAlt?: (value: string) => void;
+  doctorName?: string;
+  designation?: string;
+  canUpload?: boolean;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestedAlt = [doctorName, designation, doctorName ? "at The Millennium Hospital" : ""]
+    .filter(Boolean)
+    .join(", ")
+    .replace(", at", " at");
+  const upload = async (file?: File) => {
+    if (!file) return;
+    setUploadError(null);
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setUploadError("Choose a JPG, JPEG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("The image must be 5 MB or smaller.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+      const filename = `${slugify(doctorName) || "doctor"}.${extension}`;
+      const path = `${crypto.randomUUID()}/${filename}`;
+      const { error } = await supabase.storage.from("doctor-profile-images").upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("doctor-profile-images").getPublicUrl(path);
+      onValue(data.publicUrl);
+    } catch (cause) {
+      setUploadError(userFacingDataError(cause));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
   return (
-    <section className="grid gap-4 rounded-md border border-border p-4 lg:col-span-2">
+    <section className="grid gap-4 lg:grid-cols-[12rem_minmax(0,1fr)]">
       <div>
         <h3 className="font-semibold">{label}</h3>
         <p className="text-sm text-muted-foreground">
-          Recommended aspect: {ratio}. Use JPG, PNG, or WebP. Upload is unavailable until approved
-          storage is configured.
+          Recommended aspect: {ratio}. JPG, JPEG, PNG, or WebP up to 5 MB.
         </p>
       </div>
       {value ? (
         <img
           src={value}
           alt={alt || `${label} preview`}
-          className="max-h-80 w-full rounded-md bg-secondary object-contain"
+          className="aspect-[4/5] w-full max-w-56 rounded-md bg-secondary object-cover"
         />
       ) : (
         <div className="grid min-h-36 place-items-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
           No image selected
         </div>
       )}
-      {options.length ? (
-        <div>
-          <Label>Select from Media & Content thumbnails</Label>
-          <Select
-            value={options.some((option) => option.value === value) ? value : ""}
-            onValueChange={onValue}
-          >
-            <SelectTrigger className="mt-2">
-              <SelectValue placeholder="Choose an existing image" />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      ) : null}
-      <div>
-        <Label>Image URL</Label>
-        <Input className="mt-2" value={value} onChange={(event) => onValue(event.target.value)} />
+      <div className="grid gap-4 lg:col-start-2">
+        {canUpload ? <><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => void upload(event.target.files?.[0])} /><Button type="button" variant="outline" className="w-fit" disabled={uploading} onClick={() => inputRef.current?.click()}><Upload className="size-4" /> {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}</Button></> : null}
+        <InlineFieldError message={uploadError ?? undefined} />
+        {options.length ? <div><Label>Select an existing image</Label><Select value={options.some((option) => option.value === value) ? value : ""} onValueChange={onValue}><SelectTrigger className="mt-2"><SelectValue placeholder="Choose from Media & Content" /></SelectTrigger><SelectContent>{options.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div> : null}
+        {onAlt ? <div><Label>Image ALT Text</Label><Input className="mt-2" value={alt} onChange={(event) => onAlt(event.target.value)} />{suggestedAlt ? <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>Suggestion: {suggestedAlt}</span><Button type="button" size="sm" variant="outline" onClick={() => onAlt(suggestedAlt)}>Use suggestion</Button></div> : null}</div> : null}
+        {doctorName ? <p className="text-xs text-muted-foreground">Generated filename: {slugify(doctorName) || "doctor"}.webp</p> : null}
+        {value ? <Button type="button" variant="outline" className="w-fit" onClick={() => onValue("")}><Trash2 className="size-4" /> Remove image</Button> : null}
       </div>
-      {onAlt ? (
-        <div>
-          <Label>Alternative text</Label>
-          <Input className="mt-2" value={alt} onChange={(event) => onAlt(event.target.value)} />
-        </div>
-      ) : null}
-      {value ? (
-        <Button type="button" variant="outline" className="w-fit" onClick={() => onValue("")}>
-          <Trash2 className="size-4" /> Remove reference
-        </Button>
-      ) : null}
     </section>
   );
 }
