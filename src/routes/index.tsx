@@ -4,9 +4,12 @@ import {
   ArrowRight,
   Building2,
   CalendarDays,
+  HeartPulse,
+  Layers,
   MapPin,
   Phone,
   Search,
+  ShieldCheck,
   Stethoscope,
   UserRound,
 } from "lucide-react";
@@ -56,36 +59,53 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function Grid({ children }: { children: ReactNode }) {
-  return <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
+function Grid({ children, cols = 3 }: { children: ReactNode; cols?: 2 | 3 }) {
+  return (
+    <div
+      className={`mt-5 grid gap-4 sm:grid-cols-2 ${cols === 3 ? "lg:grid-cols-3" : ""}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 const patientActions = [
   {
     title: "Find a doctor",
-    description: "Browse verified clinician profiles and specialties.",
+    description: "Verified clinician profiles",
     to: "/doctors" as const,
     icon: UserRound,
   },
   {
-    title: "Find a department",
-    description: "Explore the hospital's clinical departments.",
+    title: "Departments",
+    description: "Clinical specialties",
     to: "/departments" as const,
     icon: Building2,
   },
   {
-    title: "Explore services",
-    description: "Understand professional and hospital services.",
+    title: "Services",
+    description: "Professional & hospital care",
     to: "/services" as const,
     icon: Stethoscope,
   },
   {
-    title: "Request appointment",
-    description: "Send an enquiry for the hospital team to follow up.",
+    title: "Facilities",
+    description: "Prepare for your visit",
+    to: "/facilities" as const,
+    icon: Layers,
+  },
+  {
+    title: "Contact us",
+    description: "Enquiries & appointments",
     to: "/contact" as const,
     icon: CalendarDays,
-    accent: true,
   },
+];
+
+const trustPoints = [
+  { label: "Multi-speciality departments", icon: Building2 },
+  { label: "Verified clinician profiles", icon: ShieldCheck },
+  { label: "Patient-first information", icon: HeartPulse },
 ];
 
 function HomePage() {
@@ -101,28 +121,26 @@ function HomePage() {
 
   return (
     <PublicPage>
-      {/* 1. Hero */}
+      {/* 1. Hero — compact */}
       <section className="border-b border-border bg-secondary">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="grid items-end gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+          <div className="grid items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-md bg-background px-3 py-1.5 text-sm font-bold text-primary shadow-[var(--shadow-sm)]">
-                <span className="size-2 rounded-full bg-brand-accent" />
-                {siteConfig.tagline}
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
+                Compassion · Expertise · Care
               </p>
-              <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-tight text-foreground sm:text-6xl">
-                Care that listens.
+              <h1 className="mt-2 max-w-2xl text-3xl font-semibold leading-[1.15] text-foreground sm:text-4xl lg:text-5xl">
+                Your health,
                 <br />
-                <span className="text-primary">Expertise you can trust.</span>
+                <span className="text-primary">our commitment.</span>
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
                 {siteConfig.name} brings departments, specialists and support services together so
                 patients and families always know where to turn.
               </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
                 <Button
                   asChild
-                  size="lg"
                   className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/90"
                 >
                   <Link to="/contact">
@@ -130,28 +148,38 @@ function HomePage() {
                     Request appointment
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline">
+                <Button asChild variant="outline">
                   <Link to="/doctors">
                     <Search />
                     Find a doctor
                   </Link>
                 </Button>
               </div>
+              <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+                {trustPoints.map((point) => (
+                  <li
+                    key={point.label}
+                    className="flex items-center gap-2 text-xs font-semibold text-muted-foreground"
+                  >
+                    <point.icon className="size-4 text-primary" />
+                    {point.label}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="rounded-lg border border-primary/15 bg-background p-6 shadow-[var(--shadow-lg)] sm:p-8">
-              <p className="text-xs font-bold uppercase text-primary">Start here</p>
-              <h2 className="mt-3 text-2xl font-semibold">How can we help today?</h2>
-              <p className="mt-3 leading-7 text-muted-foreground">
-                Choose a care pathway to find the right information quickly.
+            <div className="rounded-lg border border-primary/15 bg-background p-4 shadow-[var(--shadow-md)] sm:p-5">
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">
+                Find the right care
               </p>
-              <div className="mt-6 grid gap-2">
-                {patientActions.slice(0, 3).map((action) => (
+              <p className="mt-1 text-sm text-muted-foreground">Quick links to help you.</p>
+              <div className="mt-3 grid gap-1.5">
+                {patientActions.slice(0, 4).map((action) => (
                   <Link
                     key={action.to}
                     to={action.to}
-                    className="flex min-h-12 items-center gap-3 rounded-md border border-border px-3 py-2.5 font-semibold text-foreground hover:border-primary/35 hover:bg-secondary"
+                    className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3 py-2 text-sm font-semibold text-foreground hover:border-primary/35 hover:bg-secondary"
                   >
-                    <action.icon className="size-5 text-primary" />
+                    <action.icon className="size-4 text-primary" />
                     <span>{action.title}</span>
                     <ArrowRight className="ml-auto size-4 text-muted-foreground" />
                   </Link>
@@ -162,44 +190,28 @@ function HomePage() {
         </div>
       </section>
 
-      <section className="bg-background">
-        <div className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+      {/* 2. Quick action strip */}
+      <section className="border-b border-border bg-background">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px overflow-hidden bg-border px-0 sm:grid-cols-3 lg:grid-cols-5">
           {patientActions.map((action) => (
             <Link
-              key={action.to}
+              key={`strip-${action.to}`}
               to={action.to}
-              className={`group rounded-lg border p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] ${action.accent ? "border-brand-accent bg-brand-accent text-brand-accent-foreground" : "border-border bg-card text-foreground hover:border-primary/30"}`}
+              className="group flex flex-col items-center gap-1 bg-background px-3 py-4 text-center hover:bg-secondary"
             >
-              <action.icon
-                className={`size-6 ${action.accent ? "text-brand-accent-foreground" : "text-primary"}`}
-              />
-              <h2 className="mt-5 text-lg font-semibold">{action.title}</h2>
-              <p
-                className={`mt-2 text-sm leading-6 ${action.accent ? "text-brand-accent-foreground/80" : "text-muted-foreground"}`}
-              >
-                {action.description}
-              </p>
-              <ArrowRight className="mt-4 size-4 transition-transform group-hover:translate-x-1" />
+              <action.icon className="size-5 text-primary" />
+              <span className="text-sm font-semibold text-foreground">{action.title}</span>
+              <span className="text-xs text-muted-foreground">{action.description}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 2. Hospital introduction */}
-      <ContentSection>
-        <SectionHeading
-          eyebrow="About the hospital"
-          title="A hospital organised around the people it serves"
-          description="Clear departments, verified clinician profiles and practical visit information, kept accurate by the hospital team."
-          link={{ label: "About us", to: "/about" }}
-        />
-      </ContentSection>
-
       {/* 3. Departments */}
       <ContentSection muted>
         <SectionHeading
-          eyebrow="Specialties"
-          title="Departments and specialties"
+          eyebrow="Our departments"
+          title="Comprehensive care under one roof"
           description="Explore the clinical areas of the hospital."
           link={{ label: "All departments", to: "/departments" }}
         />
@@ -223,68 +235,12 @@ function HomePage() {
         </Async>
       </ContentSection>
 
-      {/* 4. Professional services */}
+      {/* 4. Doctors */}
       <ContentSection>
         <SectionHeading
-          eyebrow="Specialist support"
-          title="Professional services"
-          description="Specialist clinical and professional support for individual care needs."
-          link={{ label: "All services", to: "/services" }}
-        />
-        <Async
-          query={professional}
-          isEmpty={(data) => data.length === 0}
-          empty={
-            <UnpublishedPanel
-              title="Professional services are being prepared"
-              description="No professional services have been published yet."
-            />
-          }
-        >
-          {(data) => (
-            <Grid>
-              {data.slice(0, 6).map((item) => (
-                <ProfessionalServiceCard key={item.id} service={item} />
-              ))}
-            </Grid>
-          )}
-        </Async>
-      </ContentSection>
-
-      {/* 5. Hospital services */}
-      <ContentSection muted>
-        <SectionHeading
-          eyebrow="Hospital care"
-          title="Hospital services"
-          description="Clinical, diagnostic and support services available across the hospital."
-          link={{ label: "All services", to: "/services" }}
-        />
-        <Async
-          query={hospital}
-          isEmpty={(data) => data.length === 0}
-          empty={
-            <UnpublishedPanel
-              title="Hospital services are being prepared"
-              description="No hospital services have been published yet."
-            />
-          }
-        >
-          {(data) => (
-            <Grid>
-              {data.slice(0, 6).map((item) => (
-                <HospitalServiceCard key={item.id} service={item} />
-              ))}
-            </Grid>
-          )}
-        </Async>
-      </ContentSection>
-
-      {/* 6. Doctors */}
-      <ContentSection>
-        <SectionHeading
-          eyebrow="Medical team"
-          title="Meet our doctors"
-          description="Verified clinician profiles with qualifications, specialties and availability."
+          eyebrow="Our doctors"
+          title="Meet our expert doctors"
+          description="Verified clinician profiles with qualifications and specialties."
           link={{ label: "All doctors", to: "/doctors" }}
         />
         <Async
@@ -298,17 +254,75 @@ function HomePage() {
           }
         >
           {(data) => (
-            <Grid>
-              {data.slice(0, 6).map((item) => (
+            <div className="mt-5 grid gap-4 grid-cols-2 lg:grid-cols-4">
+              {data.slice(0, 4).map((item) => (
                 <DoctorCard key={item.id} doctor={item} />
               ))}
-            </Grid>
+            </div>
           )}
         </Async>
       </ContentSection>
 
-      {/* 7. Facilities */}
+      {/* 5. Services — professional and hospital side by side */}
       <ContentSection muted>
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div>
+            <SectionHeading
+              eyebrow="Specialist support"
+              title="Professional services"
+              description="Specialist clinical and professional support for individual care needs."
+              link={{ label: "All services", to: "/services" }}
+            />
+            <Async
+              query={professional}
+              isEmpty={(data) => data.length === 0}
+              empty={
+                <UnpublishedPanel
+                  title="Professional services are being prepared"
+                  description="No professional services have been published yet."
+                />
+              }
+            >
+              {(data) => (
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {data.slice(0, 4).map((item) => (
+                    <ProfessionalServiceCard key={item.id} service={item} />
+                  ))}
+                </div>
+              )}
+            </Async>
+          </div>
+          <div>
+            <SectionHeading
+              eyebrow="Hospital care"
+              title="Hospital services"
+              description="Clinical, diagnostic and support services across the hospital."
+              link={{ label: "All services", to: "/services" }}
+            />
+            <Async
+              query={hospital}
+              isEmpty={(data) => data.length === 0}
+              empty={
+                <UnpublishedPanel
+                  title="Hospital services are being prepared"
+                  description="No hospital services have been published yet."
+                />
+              }
+            >
+              {(data) => (
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {data.slice(0, 4).map((item) => (
+                    <HospitalServiceCard key={item.id} service={item} />
+                  ))}
+                </div>
+              )}
+            </Async>
+          </div>
+        </div>
+      </ContentSection>
+
+      {/* 6. Facilities */}
+      <ContentSection>
         <SectionHeading
           eyebrow="Hospital environment"
           title="Facilities"
@@ -327,7 +341,7 @@ function HomePage() {
         >
           {(data) => (
             <Grid>
-              {data.slice(0, 6).map((item) => (
+              {data.slice(0, 3).map((item) => (
                 <FacilityCard key={item.id} facility={item} />
               ))}
             </Grid>
@@ -335,162 +349,168 @@ function HomePage() {
         </Async>
       </ContentSection>
 
-      {/* 8. Reviews */}
-      <ContentSection>
-        <SectionHeading
-          eyebrow="Patient voices"
-          title="Patient reviews"
-          description="Only reviewed and approved patient experiences appear here."
-          link={{ label: "All reviews", to: "/reviews" }}
-        />
-        <Async
-          query={reviews}
-          isEmpty={(data) => data.length === 0}
-          empty={
-            <UnpublishedPanel
-              title="No reviews are published yet"
-              description="Verified patient feedback will appear here once approved."
-            />
-          }
-        >
-          {(data) => {
-            const selected = [
-              ...data.filter((item) => !item.doctor),
-              ...data.filter((item) => item.doctor),
-            ].slice(0, 4);
-            return (
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
-                {selected.map((item) => (
-                  <ReviewCard key={item.id} review={item} />
-                ))}
-              </div>
-            );
-          }}
-        </Async>
-      </ContentSection>
-
-      {/* 9. FAQ */}
+      {/* 7. Media and reviews */}
       <ContentSection muted>
-        <SectionHeading
-          eyebrow="Help centre"
-          title="Frequently asked questions"
-          description="Practical answers for patients, families and visitors."
-          link={{ label: "All questions", to: "/faq" }}
-        />
-        <Async
-          query={faq}
-          isEmpty={(data) => data.faqs.length === 0}
-          empty={
-            <UnpublishedPanel
-              title="Answers are being prepared"
-              description="No questions have been published yet."
-            />
-          }
-        >
-          {(data) => (
-            <Accordion type="single" collapsible className="mt-8 max-w-3xl">
-              {data.faqs.slice(0, 6).map((item) => (
-                <AccordionItem key={item.id} value={item.id}>
-                  <AccordionTrigger>{item.question}</AccordionTrigger>
-                  <AccordionContent>{item.answer}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-        </Async>
-      </ContentSection>
-
-      {/* 10. Media and content */}
-      <ContentSection>
-        <SectionHeading
-          eyebrow="Media"
-          title="Videos, reels and podcasts"
-          description="Watch and listen to content published by the hospital team."
-          link={{ label: "All media", to: "/media" }}
-        />
-        <Async
-          query={media}
-          isEmpty={(data) => data.length === 0}
-          empty={
-            <UnpublishedPanel
-              title="Media is being prepared"
-              description="No media has been published yet."
-            />
-          }
-        >
-          {(data) => (
-            <div className="mt-8">
-              <MediaGrid items={data} />
-            </div>
-          )}
-        </Async>
-        <div className="mt-14">
-          <SectionHeading
-            eyebrow="Health resources"
-            title="Latest articles"
-            description="Health information reviewed before publication."
-            link={{ label: "All articles", to: "/blog" }}
-          />
-          <Async
-            query={posts}
-            isEmpty={(data) => data.length === 0}
-            empty={
-              <UnpublishedPanel
-                title="Articles are being prepared"
-                description="No articles have been published yet."
-              />
-            }
-          >
-            {(data) => (
-              <Grid>
-                {data.slice(0, 3).map((item) => (
-                  <ArticleCard key={item.id} post={item} />
-                ))}
-              </Grid>
-            )}
-          </Async>
-        </div>
-      </ContentSection>
-
-      {/* 11. Location and contact */}
-      <ContentSection muted>
-        <SectionHeading
-          eyebrow="Visit us"
-          title="Location and contact"
-          description="Verified contact details for the hospital."
-          link={{ label: "Contact page", to: "/contact" }}
-        />
-        <div className="mt-8 grid gap-6 sm:grid-cols-2">
-          <div className="border border-border bg-background p-6">
-            <MapPin className="text-primary" />
-            <p className="mt-5 font-semibold">Address</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {siteConfig.contact.address ?? "Not yet published"}
-            </p>
-          </div>
-          <div className="border border-border bg-background p-6">
-            <Phone className="text-primary" />
-            <p className="mt-5 font-semibold">Phone</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {siteConfig.contact.phone ?? "Not yet published"}
-            </p>
-          </div>
-        </div>
-      </ContentSection>
-
-      {/* 12. Final enquiry CTA */}
-      <ContentSection>
-        <div className="grid gap-10 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2">
           <div>
-            <h2 className="text-3xl font-semibold sm:text-4xl">
+            <SectionHeading
+              eyebrow="Media"
+              title="Videos, reels and podcasts"
+              description="Watch and listen to content published by the hospital team."
+              link={{ label: "All media", to: "/media" }}
+            />
+            <Async
+              query={media}
+              isEmpty={(data) => data.length === 0}
+              empty={
+                <UnpublishedPanel
+                  title="Media is being prepared"
+                  description="No media has been published yet."
+                />
+              }
+            >
+              {(data) => (
+                <div className="mt-5">
+                  <MediaGrid items={data.slice(0, 4)} />
+                </div>
+              )}
+            </Async>
+          </div>
+          <div>
+            <SectionHeading
+              eyebrow="Patient voices"
+              title="What our patients say"
+              description="Only reviewed and approved patient experiences appear here."
+              link={{ label: "All reviews", to: "/reviews" }}
+            />
+            <Async
+              query={reviews}
+              isEmpty={(data) => data.length === 0}
+              empty={
+                <UnpublishedPanel
+                  title="No reviews are published yet"
+                  description="Verified patient feedback will appear here once approved."
+                />
+              }
+            >
+              {(data) => {
+                const selected = [
+                  ...data.filter((item) => !item.doctor),
+                  ...data.filter((item) => item.doctor),
+                ].slice(0, 2);
+                return (
+                  <div className="mt-5 grid gap-4">
+                    {selected.map((item) => (
+                      <ReviewCard key={item.id} review={item} />
+                    ))}
+                  </div>
+                );
+              }}
+            </Async>
+          </div>
+        </div>
+      </ContentSection>
+
+      {/* 8. Health resources */}
+      <ContentSection>
+        <SectionHeading
+          eyebrow="Health resources"
+          title="Latest articles"
+          description="Health information reviewed before publication."
+          link={{ label: "All articles", to: "/blog" }}
+        />
+        <Async
+          query={posts}
+          isEmpty={(data) => data.length === 0}
+          empty={
+            <UnpublishedPanel
+              title="Articles are being prepared"
+              description="No articles have been published yet."
+            />
+          }
+        >
+          {(data) => (
+            <Grid>
+              {data.slice(0, 3).map((item) => (
+                <ArticleCard key={item.id} post={item} />
+              ))}
+            </Grid>
+          )}
+        </Async>
+      </ContentSection>
+
+      {/* 9. FAQ and visit details */}
+      <ContentSection muted>
+        <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
+          <div>
+            <SectionHeading
+              eyebrow="Help centre"
+              title="Frequently asked questions"
+              description="Practical answers for patients, families and visitors."
+              link={{ label: "All questions", to: "/faq" }}
+            />
+            <Async
+              query={faq}
+              isEmpty={(data) => data.faqs.length === 0}
+              empty={
+                <UnpublishedPanel
+                  title="Answers are being prepared"
+                  description="No questions have been published yet."
+                />
+              }
+            >
+              {(data) => (
+                <Accordion type="single" collapsible className="mt-4">
+                  {data.faqs.slice(0, 5).map((item) => (
+                    <AccordionItem key={item.id} value={item.id}>
+                      <AccordionTrigger className="text-left text-sm">
+                        {item.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm">{item.answer}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              )}
+            </Async>
+          </div>
+          <div className="grid content-start gap-3">
+            <div className="rounded-lg border border-border bg-background p-4">
+              <MapPin className="size-5 text-primary" />
+              <p className="mt-2 text-sm font-semibold">Address</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {siteConfig.contact.address ?? "Not yet published"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-background p-4">
+              <Phone className="size-5 text-primary" />
+              <p className="mt-2 text-sm font-semibold">Phone</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {siteConfig.contact.phone ?? "Not yet published"}
+              </p>
+            </div>
+            <Link
+              to="/contact"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              Contact the hospital <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </ContentSection>
+
+      {/* 10. Enquiry CTA */}
+      <ContentSection>
+        <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+          <div>
+            <h2 className="text-2xl font-semibold sm:text-3xl">
               Request an appointment or ask a question
             </h2>
-            <p className="mt-4 leading-7 text-muted-foreground">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Send your details and the hospital team will follow up on the number you share.
             </p>
             <Link
               to="/doctors"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
             >
               Browse doctors first <ArrowRight className="size-4" />
             </Link>
