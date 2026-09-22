@@ -50,7 +50,15 @@ const approaches = [
   { title: "Accessible Healthcare", icon: HeartPulse },
 ] as const;
 
-function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }) {
+function SectionTitle({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) {
   return (
     <div className="mx-auto max-w-3xl text-center">
       <div className="flex items-center justify-center gap-3">
@@ -58,7 +66,9 @@ function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title:
         <p className="text-xs font-bold uppercase tracking-wide text-primary">{eyebrow}</p>
       </div>
       <h2 className="mt-3 text-2xl font-semibold text-foreground sm:text-3xl">{title}</h2>
-      {description ? <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">{description}</p> : null}
+      {description ? (
+        <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">{description}</p>
+      ) : null}
     </div>
   );
 }
@@ -81,7 +91,9 @@ function AboutPage() {
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbPage>About Us</BreadcrumbPage></BreadcrumbItem>
+              <BreadcrumbItem>
+                <BreadcrumbPage>About Us</BreadcrumbPage>
+              </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
@@ -111,14 +123,18 @@ function AboutPage() {
                     <fact.icon className="mx-auto size-5 text-brand-accent" strokeWidth={1.8} />
                     <p className="mt-2 text-sm font-bold text-foreground">{fact.value}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">{fact.label}</p>
-                    {"note" in fact ? <p className="text-[11px] text-muted-foreground">({fact.note})</p> : null}
+                    {"note" in fact ? (
+                      <p className="text-[11px] text-muted-foreground">({fact.note})</p>
+                    ) : null}
                   </div>
                 ))}
               </div>
 
               <div className="mt-7 grid gap-3 sm:flex">
                 <Button asChild size="lg">
-                  <Link to="/services">Explore Our Services <ArrowRight /></Link>
+                  <Link to="/services">
+                    Explore Our Services <ArrowRight />
+                  </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
                   <Link to="/contact">Contact Us</Link>
@@ -133,12 +149,21 @@ function AboutPage() {
                 fetchPriority="high"
                 className="absolute inset-0 size-full object-cover object-[62%_center] sm:object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-secondary/45 via-transparent to-transparent lg:from-secondary lg:via-secondary/20 lg:to-transparent" aria-hidden="true" />
-              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-secondary/80 to-transparent" aria-hidden="true" />
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-secondary/45 via-transparent to-transparent lg:from-secondary lg:via-secondary/20 lg:to-transparent"
+                aria-hidden="true"
+              />
+              <div
+                className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-secondary/80 to-transparent"
+                aria-hidden="true"
+              />
             </div>
           </div>
         </div>
-        <div className="pointer-events-none absolute -bottom-px left-0 right-0 h-10 overflow-hidden" aria-hidden="true">
+        <div
+          className="pointer-events-none absolute -bottom-px left-0 right-0 h-10 overflow-hidden"
+          aria-hidden="true"
+        >
           <div className="absolute -bottom-8 -left-[5%] h-16 w-[110%] rounded-[50%_50%_0_0] bg-background" />
         </div>
       </section>
@@ -168,7 +193,10 @@ function AboutPage() {
               loading="lazy"
               className="size-full object-cover object-[55%_72%]"
             />
-            <div className="absolute inset-0 ring-1 ring-inset ring-primary/10" aria-hidden="true" />
+            <div
+              className="absolute inset-0 ring-1 ring-inset ring-primary/10"
+              aria-hidden="true"
+            />
           </div>
         </div>
       </section>
@@ -195,7 +223,15 @@ function AboutPage() {
             description="Explore departments currently published by the hospital team."
           />
           <div className="mt-8">
-            <Async query={departments} isEmpty={(data) => data.length === 0} empty={<p className="py-8 text-center text-sm text-muted-foreground">Specialities are being prepared for publication.</p>}>
+            <Async
+              query={departments}
+              isEmpty={(data) => data.length === 0}
+              empty={
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  Specialities are being prepared for publication.
+                </p>
+              }
+            >
               {(data) => (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {data.map((department) => (
@@ -205,7 +241,9 @@ function AboutPage() {
                       params={{ slug: department.slug }}
                       className="group flex min-h-20 items-center gap-3 rounded-md border border-border bg-card p-4 shadow-[var(--shadow-sm)] hover:border-primary/35 hover:shadow-[var(--shadow-md)]"
                     >
-                      <span className="grid size-9 shrink-0 place-items-center rounded-md bg-secondary text-primary"><HeartPulse className="size-4" /></span>
+                      <span className="grid size-9 shrink-0 place-items-center rounded-md bg-secondary text-primary">
+                        <HeartPulse className="size-4" />
+                      </span>
                       <span className="text-sm font-semibold">{department.name}</span>
                       <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground group-hover:text-primary" />
                     </Link>
@@ -225,10 +263,23 @@ function AboutPage() {
             description="Published hospital facilities and real images from the hospital team."
           />
           <div className="mt-8">
-            <Async query={facilities} isEmpty={(data) => data.length === 0} empty={<p className="py-8 text-center text-sm text-muted-foreground">Facility information is being prepared for publication.</p>}>
+            <Async
+              query={facilities}
+              isEmpty={(data) => data.length === 0}
+              empty={
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  Facility information is being prepared for publication.
+                </p>
+              }
+            >
               {(data) => {
                 const pictured = data.filter((facility) => facility.images.length > 0).slice(0, 5);
-                if (pictured.length === 0) return <p className="py-8 text-center text-sm text-muted-foreground">Approved hospital photographs are being prepared.</p>;
+                if (pictured.length === 0)
+                  return (
+                    <p className="py-8 text-center text-sm text-muted-foreground">
+                      Approved hospital photographs are being prepared.
+                    </p>
+                  );
                 return (
                   <div className="grid auto-rows-[180px] gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {pictured.map((facility, index) => (
@@ -238,9 +289,19 @@ function AboutPage() {
                         params={{ slug: facility.slug }}
                         className={`group relative overflow-hidden rounded-md ${index === 0 ? "sm:row-span-2 lg:col-span-2" : ""}`}
                       >
-                        <img src={facility.images[0]} alt={facility.name} loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/10 to-transparent" aria-hidden="true" />
-                        <h3 className="absolute inset-x-0 bottom-0 p-4 text-sm font-semibold text-primary-foreground">{facility.name}</h3>
+                        <img
+                          src={facility.images[0]}
+                          alt={facility.name}
+                          loading="lazy"
+                          className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        />
+                        <div
+                          className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/10 to-transparent"
+                          aria-hidden="true"
+                        />
+                        <h3 className="absolute inset-x-0 bottom-0 p-4 text-sm font-semibold text-primary-foreground">
+                          {facility.name}
+                        </h3>
                       </Link>
                     ))}
                   </div>
@@ -254,15 +315,52 @@ function AboutPage() {
       <section className="bg-background">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
           <div>
-            <div className="flex items-center gap-3"><span className="h-px w-9 bg-brand-accent" aria-hidden="true" /><p className="text-xs font-bold uppercase tracking-wide text-primary">Our Location</p></div>
+            <div className="flex items-center gap-3">
+              <span className="h-px w-9 bg-brand-accent" aria-hidden="true" />
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">Our Location</p>
+            </div>
             <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">Caring for Navi Mumbai</h2>
-            <p className="mt-3 max-w-xl leading-7 text-muted-foreground">The Millennium Hospital is located at NMS Icon in Ulwe, Navi Mumbai.</p>
+            <p className="mt-3 max-w-xl leading-7 text-muted-foreground">
+              The Millennium Hospital is located at NMS Icon in Ulwe, Navi Mumbai.
+            </p>
           </div>
           <address className="grid gap-px overflow-hidden rounded-md border border-border bg-border not-italic sm:grid-cols-2">
-            <div className="bg-background p-5"><MapPin className="size-5 text-brand-accent" /><p className="mt-3 text-sm font-semibold">Address</p><p className="mt-1 text-sm leading-6 text-muted-foreground">4, 5 NMS Icon<br />Sector 19, Ulwe<br />Navi Mumbai, Maharashtra 410206</p></div>
-            <div className="bg-background p-5"><Phone className="size-5 text-brand-accent" /><p className="mt-3 text-sm font-semibold">Phone</p><a href="tel:+919004070463" className="mt-1 inline-block text-sm text-primary hover:underline">90040 70463</a></div>
-            <div className="bg-background p-5"><Mail className="size-5 text-brand-accent" /><p className="mt-3 text-sm font-semibold">Email</p><a href="mailto:tmhulwe@gmail.com" className="mt-1 inline-block break-all text-sm text-primary hover:underline">tmhulwe@gmail.com</a></div>
-            <div className="bg-background p-5"><Clock3 className="size-5 text-brand-accent" /><p className="mt-3 text-sm font-semibold">Availability</p><p className="mt-1 text-sm text-muted-foreground">Mon To Sun: Open 24 Hrs</p></div>
+            <div className="bg-background p-5">
+              <MapPin className="size-5 text-brand-accent" />
+              <p className="mt-3 text-sm font-semibold">Address</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                4, 5 NMS Icon
+                <br />
+                Sector 19, Ulwe
+                <br />
+                Navi Mumbai, Maharashtra 410206
+              </p>
+            </div>
+            <div className="bg-background p-5">
+              <Phone className="size-5 text-brand-accent" />
+              <p className="mt-3 text-sm font-semibold">Phone</p>
+              <a
+                href="tel:+919004070463"
+                className="mt-1 inline-block text-sm text-primary hover:underline"
+              >
+                90040 70463
+              </a>
+            </div>
+            <div className="bg-background p-5">
+              <Mail className="size-5 text-brand-accent" />
+              <p className="mt-3 text-sm font-semibold">Email</p>
+              <a
+                href="mailto:tmhulwe@gmail.com"
+                className="mt-1 inline-block break-all text-sm text-primary hover:underline"
+              >
+                tmhulwe@gmail.com
+              </a>
+            </div>
+            <div className="bg-background p-5">
+              <Clock3 className="size-5 text-brand-accent" />
+              <p className="mt-3 text-sm font-semibold">Availability</p>
+              <p className="mt-1 text-sm text-muted-foreground">Mon To Sun: Open 24 Hrs</p>
+            </div>
           </address>
         </div>
       </section>
@@ -270,12 +368,27 @@ function AboutPage() {
       <section className="bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-semibold sm:text-3xl">Your Healthcare Journey Starts Here</h2>
-            <p className="mt-3 text-sm leading-6 text-primary-foreground/80 sm:text-base">Explore our doctors, departments and healthcare services, or contact Millennium Hospital for assistance.</p>
+            <h2 className="text-2xl font-semibold sm:text-3xl">
+              Your Healthcare Journey Starts Here
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-primary-foreground/80 sm:text-base">
+              Explore our doctors, departments and healthcare services, or contact Millennium
+              Hospital for assistance.
+            </p>
           </div>
           <div className="grid shrink-0 gap-3 sm:flex">
-            <Button asChild size="lg" className="bg-background text-primary hover:bg-background/90"><Link to="/doctors">View Our Doctors</Link></Button>
-            <Button asChild size="lg" className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/90"><Link to="/contact">Make an Enquiry <ArrowRight /></Link></Button>
+            <Button asChild size="lg" className="bg-background text-primary hover:bg-background/90">
+              <Link to="/doctors">View Our Doctors</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/90"
+            >
+              <Link to="/contact">
+                Make an Enquiry <ArrowRight />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
