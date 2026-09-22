@@ -50,6 +50,13 @@
       "when": 1790029569621,
       "tag": "0006_seo_intelligence_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790103592056,
+      "tag": "0007_doctor_profile_identity_and_image_storage",
+      "breakpoints": true
     }
   ]
 }
