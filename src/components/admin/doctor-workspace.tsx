@@ -59,6 +59,7 @@ const countryCodes = [
 ] as const;
 const doctorImageBucket = "doctor-profile-images";
 const doctorImageEndpoint = "/api/public/doctor-profile-image";
+const allowedDoctorImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const slugify = (value: string) =>
   value
     .normalize("NFKD")
@@ -1003,7 +1004,7 @@ function ImageEditor({
   const upload = async (file?: File) => {
     if (!file) return;
     setUploadError(null);
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    if (!allowedDoctorImageTypes.has(file.type)) {
       setUploadError("Choose a JPG, JPEG, PNG, or WebP image.");
       return;
     }
@@ -1027,7 +1028,8 @@ function ImageEditor({
         if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 250));
         const verification = await fetch(nextValue, { cache: "no-store" });
         const verifiedType = verification.headers.get("content-type")?.split(";", 1)[0];
-        verified = verification.ok && Boolean(verifiedType && allowedImageTypes.has(verifiedType));
+        verified =
+          verification.ok && Boolean(verifiedType && allowedDoctorImageTypes.has(verifiedType));
       }
       if (!verified) {
         await supabase.storage.from(doctorImageBucket).remove([path]);
