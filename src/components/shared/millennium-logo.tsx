@@ -53,38 +53,13 @@ export function MillenniumLogo({
 
   if (variant === "responsive") {
     return (
-      <span
-        className={cn("flex items-center", className)}
-        role={decorative ? undefined : "img"}
-        aria-label={decorative ? undefined : logoAlt}
-        aria-hidden={decorative || undefined}
-      >
-        <img
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable={false}
-          src={markLogoAsset.url}
-          width={493}
-          height={502}
-          className="block h-full w-auto shrink-0 sm:hidden"
-        />
-        <span className="ml-1.5 grid min-w-0 flex-1 gap-1 sm:hidden">
-          <img alt="" aria-hidden="true" decoding="async" draggable={false} src={wordmarkAsset.url} width={1366} height={128} className="block w-full" />
-          <img alt="" aria-hidden="true" decoding="async" draggable={false} src={taglineAsset.url} width={1236} height={76} className="block w-[90%]" />
-        </span>
-        <img
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          draggable={false}
-          fetchPriority={priority ? "high" : "auto"}
-          src={fullLogoAsset.url}
-          width={1837}
-          height={530}
-          className="hidden size-full object-contain object-left sm:block"
-        />
-      </span>
+      <img
+        {...sharedProps}
+        src={fullLogoAsset.url}
+        width={1837}
+        height={530}
+        className={cn("block h-auto max-w-full object-contain object-left", className)}
+      />
     );
   }
 
