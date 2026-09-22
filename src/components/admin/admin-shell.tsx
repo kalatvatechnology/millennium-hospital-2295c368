@@ -117,7 +117,7 @@ export function AdminShell({
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 shadow-[var(--shadow-sm)] backdrop-blur">
         <div className="mx-auto flex h-18 max-w-screen-2xl items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex shrink-0 items-center" aria-label="The Millennium Hospital home">
-            <MillenniumLogo variant="responsive" className="h-10 w-10 sm:h-auto sm:w-52" />
+            <MillenniumLogo variant="responsive" className="h-9 w-40 sm:h-auto sm:w-52" />
           </Link>
           <span className="hidden rounded-sm bg-secondary px-2 py-1 text-xs font-semibold text-primary sm:inline">
             Staff workspace
