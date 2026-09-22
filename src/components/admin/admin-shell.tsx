@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, Plus, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { Button } from "@/components/ui/button";
 import { LoadingState, EmptyState } from "@/components/shared/page";
 import { ROLE_LABELS, type Permission } from "@/lib/permissions";
 import { backendFeatures } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
+import { MillenniumLogo } from "@/components/shared/millennium-logo";
 
 type NavItem = { label: string; to: string; permission: Permission | Permission[] | null };
 
@@ -115,11 +116,8 @@ export function AdminShell({
     <div className="min-h-screen bg-admin">
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 shadow-[var(--shadow-sm)] backdrop-blur">
         <div className="mx-auto flex h-18 max-w-screen-2xl items-center gap-3 px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 font-heading font-semibold">
-            <span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Plus className="size-5" />
-            </span>
-            <span>The Millennium Hospital</span>
+          <Link to="/" className="flex shrink-0 items-center" aria-label="The Millennium Hospital home">
+            <MillenniumLogo variant="responsive" className="h-10 w-10 sm:h-auto sm:w-52" />
           </Link>
           <span className="hidden rounded-sm bg-secondary px-2 py-1 text-xs font-semibold text-primary sm:inline">
             Staff workspace

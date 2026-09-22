@@ -1,18 +1,18 @@
 import { Link } from "@tanstack/react-router";
-import { CalendarDays, Menu, Phone, Plus, X } from "lucide-react";
+import { CalendarDays, Menu, Phone, Search, X } from "lucide-react";
 import { useState } from "react";
 import { siteConfig, primaryNavigation } from "@/config/site";
 import { Button } from "@/components/ui/button";
+import { MillenniumLogo } from "@/components/shared/millennium-logo";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 shadow-[var(--shadow-sm)] backdrop-blur-md">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-background focus:px-4 focus:py-2">Skip to content</a>
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-3" aria-label={`${siteConfig.name} home`}>
-          <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground shadow-[var(--shadow-md)]"><Plus className="size-6" strokeWidth={2.5} /></span>
-          <span className="max-w-48 font-heading text-base font-bold leading-tight text-foreground sm:text-lg">The Millennium <span className="text-primary">Hospital</span></span>
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex min-w-0 shrink-0 items-center" aria-label={`${siteConfig.name} home`}>
+          <MillenniumLogo variant="responsive" priority className="h-12 w-12 sm:h-auto sm:w-56 lg:w-60" />
         </Link>
         <nav aria-label="Primary navigation" className="hidden items-center gap-1 lg:flex">
           {primaryNavigation.map((item) => (
@@ -23,7 +23,10 @@ export function SiteHeader() {
           {siteConfig.contact.phone ? <Button asChild variant="outline"><a href={`tel:${siteConfig.contact.phone}`}><Phone />Call</a></Button> : null}
           <Button asChild className="bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/90"><Link to="/contact"><CalendarDays />Request appointment</Link></Button>
         </div>
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close menu" : "Open menu"}>{open ? <X /> : <Menu />}</Button>
+        <div className="ml-auto flex items-center gap-1 lg:hidden">
+          <Button asChild variant="ghost" size="icon"><Link to="/doctors" aria-label="Search doctors"><Search /></Link></Button>
+          <Button variant="ghost" size="icon" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close menu" : "Open menu"}>{open ? <X /> : <Menu />}</Button>
+        </div>
       </div>
       {open ? (
         <nav id="mobile-navigation" aria-label="Mobile navigation" className="border-t border-border bg-background px-4 py-4 lg:hidden">
