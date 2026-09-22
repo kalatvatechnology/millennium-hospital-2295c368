@@ -214,7 +214,8 @@ export function DoctorWorkspace() {
     if (!name) issues["name"] = "Doctor name is required.";
     if (!slug) issues["slug"] = "A URL slug is required.";
     if (!values.department_id) issues["department_id"] = "Department is required.";
-    if (!String(values.designation ?? "").trim()) issues["designation"] = "Designation is required.";
+    if (!String(values.designation ?? "").trim())
+      issues["designation"] = "Designation is required.";
     if (String(values.short_introduction ?? "").length > 100)
       issues["short_introduction"] = "Short introduction must be 100 characters or fewer.";
     if (String(values.bio ?? "").length > 500)
@@ -441,56 +442,147 @@ export function DoctorWorkspace() {
                 {section === "profile" ? (
                   <div className="grid gap-5">
                     <ProfileGroup title="Professional identity">
-                      <Field name="professional_registration_no" label="Professional Registration No." kind="text" value={values.professional_registration_no} onChange={(value) => setProfileValue("professional_registration_no", value)} help="Enter the official professional licence or registration number. This is not the internal record ID." />
-                      <Field name="name" label="Doctor Name *" kind="text" value={values.name} onChange={(value) => setProfileValue("name", value)} error={fieldErrors["name"]} />
-                      <Field name="slug" label="URL Slug *" kind="text" value={values.slug} onChange={(value) => { setSlugIsAutomatic(false); setProfileValue("slug", slugify(value)); }} error={fieldErrors["slug"]} help={values.slug ? `/doctors/${values.slug}` : "Generated from the doctor name and editable before saving."} />
+                      <Field
+                        name="professional_registration_no"
+                        label="Professional Registration No."
+                        kind="text"
+                        value={values.professional_registration_no}
+                        onChange={(value) => setProfileValue("professional_registration_no", value)}
+                        help="Enter the official professional licence or registration number. This is not the internal record ID."
+                      />
+                      <Field
+                        name="name"
+                        label="Doctor Name *"
+                        kind="text"
+                        value={values.name}
+                        onChange={(value) => setProfileValue("name", value)}
+                        error={fieldErrors["name"]}
+                      />
+                      <Field
+                        name="slug"
+                        label="URL Slug *"
+                        kind="text"
+                        value={values.slug}
+                        onChange={(value) => {
+                          setSlugIsAutomatic(false);
+                          setProfileValue("slug", slugify(value));
+                        }}
+                        error={fieldErrors["slug"]}
+                        help={
+                          values.slug
+                            ? `/doctors/${values.slug}`
+                            : "Generated from the doctor name and editable before saving."
+                        }
+                      />
                     </ProfileGroup>
                     <ProfileGroup title="Professional information">
                       <div>
-                      <Label htmlFor="doctor-department">Department *</Label>
-                      <Select
-                        value={values.department_id || "none"}
-                        onValueChange={(value) => { set("department_id", value === "none" ? null : value); setFieldErrors((current) => ({ ...current, department_id: "" })); }}
-                      >
-                        <SelectTrigger id="doctor-department" className="mt-2">
-                          <SelectValue placeholder="Select a department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No department selected</SelectItem>
-                          {(departments.data ?? []).map((item: any) => (
-                            <SelectItem key={item.id} value={item.id}>
-                              {item.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <InlineFieldError message={fieldErrors["department_id"]} />
+                        <Label htmlFor="doctor-department">Department *</Label>
+                        <Select
+                          value={values.department_id || "none"}
+                          onValueChange={(value) => {
+                            set("department_id", value === "none" ? null : value);
+                            setFieldErrors((current) => ({ ...current, department_id: "" }));
+                          }}
+                        >
+                          <SelectTrigger id="doctor-department" className="mt-2">
+                            <SelectValue placeholder="Select a department" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No department selected</SelectItem>
+                            {(departments.data ?? []).map((item: any) => (
+                              <SelectItem key={item.id} value={item.id}>
+                                {item.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <InlineFieldError message={fieldErrors["department_id"]} />
                       </div>
-                      <Field name="designation" label="Designation *" kind="text" value={values.designation} onChange={(value) => setProfileValue("designation", value)} error={fieldErrors["designation"]} />
-                      <Field name="qualifications" label="Higher Qualification" kind="text" value={Array.isArray(values.qualifications) ? values.qualifications.join(", ") : values.qualifications} onChange={(value) => setProfileValue("qualifications", value)} />
-                      <Field name="specialty" label="Specialization" kind="text" value={values.specialty} onChange={(value) => setProfileValue("specialty", value)} help="Separate multiple specializations with commas." />
+                      <Field
+                        name="designation"
+                        label="Designation *"
+                        kind="text"
+                        value={values.designation}
+                        onChange={(value) => setProfileValue("designation", value)}
+                        error={fieldErrors["designation"]}
+                      />
+                      <Field
+                        name="qualifications"
+                        label="Higher Qualification"
+                        kind="text"
+                        value={
+                          Array.isArray(values.qualifications)
+                            ? values.qualifications.join(", ")
+                            : values.qualifications
+                        }
+                        onChange={(value) => setProfileValue("qualifications", value)}
+                      />
+                      <Field
+                        name="specialty"
+                        label="Specialization"
+                        kind="text"
+                        value={values.specialty}
+                        onChange={(value) => setProfileValue("specialty", value)}
+                        help="Separate multiple specializations with commas."
+                      />
                     </ProfileGroup>
                     <ProfileGroup title="Profile content">
-                      <Field name="short_introduction" label="Short Introduction" kind="textarea" value={values.short_introduction} onChange={(value) => setProfileValue("short_introduction", value)} maxLength={100} error={fieldErrors["short_introduction"]} compact />
-                      <Field name="bio" label="Biography" kind="textarea" value={values.bio} onChange={(value) => setProfileValue("bio", value)} maxLength={500} error={fieldErrors["bio"]} />
+                      <Field
+                        name="short_introduction"
+                        label="Short Introduction"
+                        kind="textarea"
+                        value={values.short_introduction}
+                        onChange={(value) => setProfileValue("short_introduction", value)}
+                        maxLength={100}
+                        error={fieldErrors["short_introduction"]}
+                        compact
+                      />
+                      <Field
+                        name="bio"
+                        label="Biography"
+                        kind="textarea"
+                        value={values.bio}
+                        onChange={(value) => setProfileValue("bio", value)}
+                        maxLength={500}
+                        error={fieldErrors["bio"]}
+                      />
                     </ProfileGroup>
                     <ProfileGroup title="Contact">
-                      <PhoneField label="Phone Number" countryCode={values.phone_country_code ?? ""} number={values.phone_number ?? ""} onCountryCode={(value) => set("phone_country_code", value)} onNumber={(value) => setProfileValue("phone_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors["phone_number"]} />
-                      <PhoneField label="WhatsApp Number" countryCode={values.whatsapp_country_code ?? ""} number={values.whatsapp_number ?? ""} onCountryCode={(value) => set("whatsapp_country_code", value)} onNumber={(value) => setProfileValue("whatsapp_number", value.replace(/\D/g, "").slice(0, 15))} error={fieldErrors["whatsapp_number"]} />
+                      <PhoneField
+                        label="Phone Number"
+                        countryCode={values.phone_country_code ?? ""}
+                        number={values.phone_number ?? ""}
+                        onCountryCode={(value) => set("phone_country_code", value)}
+                        onNumber={(value) =>
+                          setProfileValue("phone_number", value.replace(/\D/g, "").slice(0, 15))
+                        }
+                        error={fieldErrors["phone_number"]}
+                      />
+                      <PhoneField
+                        label="WhatsApp Number"
+                        countryCode={values.whatsapp_country_code ?? ""}
+                        number={values.whatsapp_number ?? ""}
+                        onCountryCode={(value) => set("whatsapp_country_code", value)}
+                        onNumber={(value) =>
+                          setProfileValue("whatsapp_number", value.replace(/\D/g, "").slice(0, 15))
+                        }
+                        error={fieldErrors["whatsapp_number"]}
+                      />
                     </ProfileGroup>
                     <ProfileGroup title="Profile image" singleColumn>
-                    <ImageEditor
-                      label="Profile image"
-                      value={values.photo_url ?? ""}
-                      alt={values.profile_image_alt ?? ""}
-                      options={imageOptions}
-                      ratio="4:5"
-                      onValue={(value) => set("photo_url", value)}
-                      onAlt={(value) => set("profile_image_alt", value)}
-                      doctorName={values.name ?? ""}
-                      designation={values.designation ?? ""}
-                      canUpload={canWrite}
-                    />
+                      <ImageEditor
+                        label="Profile image"
+                        value={values.photo_url ?? ""}
+                        alt={values.profile_image_alt ?? ""}
+                        options={imageOptions}
+                        ratio="4:5"
+                        onValue={(value) => set("photo_url", value)}
+                        onAlt={(value) => set("profile_image_alt", value)}
+                        doctorName={values.name ?? ""}
+                        designation={values.designation ?? ""}
+                        canUpload={canWrite}
+                      />
                     </ProfileGroup>
                   </div>
                 ) : null}
@@ -627,7 +719,11 @@ export function DoctorWorkspace() {
                 ) : null}
               </div>
               <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-border bg-admin/95 py-4 backdrop-blur">
-                {savedMessage ? <p className="mr-auto text-sm font-medium text-primary" role="status">{savedMessage}</p> : null}
+                {savedMessage ? (
+                  <p className="mr-auto text-sm font-medium text-primary" role="status">
+                    {savedMessage}
+                  </p>
+                ) : null}
                 <Button type="button" variant="outline" onClick={cancel}>
                   Cancel
                 </Button>
@@ -636,10 +732,24 @@ export function DoctorWorkspace() {
                   disabled={!canWrite || save.isPending}
                   onClick={() => save.mutate()}
                 >
-                  <Save className="size-4" /> {save.isPending ? "Saving…" : section === "profile" ? "Save Draft" : "Save"}
+                  <Save className="size-4" />{" "}
+                  {save.isPending ? "Saving…" : section === "profile" ? "Save Draft" : "Save"}
                 </Button>
                 {section === "profile" && !isNew ? (
-                  <Button type="button" variant="outline" disabled={!canWrite || save.isPending} onClick={() => save.mutate(undefined, { onSuccess: () => void navigate({ to: "/_admin/doctors/$doctorId/$section", params: { doctorId, section: "hero" } }) })}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!canWrite || save.isPending}
+                    onClick={() =>
+                      save.mutate(undefined, {
+                        onSuccess: () =>
+                          void navigate({
+                            to: "/_admin/doctors/$doctorId/$section",
+                            params: { doctorId, section: "hero" },
+                          }),
+                      })
+                    }
+                  >
                     Save &amp; Continue
                   </Button>
                 ) : null}
@@ -708,8 +818,14 @@ function Field({
         />
       )}
       <div id={`${name}-message`} className="mt-1 flex items-start justify-between gap-3 text-xs">
-        <span className={error ? "text-destructive" : "text-muted-foreground"}>{error || help}</span>
-        {maxLength ? <span className="shrink-0 text-muted-foreground">{length} / {maxLength}</span> : null}
+        <span className={error ? "text-destructive" : "text-muted-foreground"}>
+          {error || help}
+        </span>
+        {maxLength ? (
+          <span className="shrink-0 text-muted-foreground">
+            {length} / {maxLength}
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -717,7 +833,15 @@ function Field({
 function InlineFieldError({ message }: { message?: string | undefined }) {
   return message ? <p className="mt-1 text-xs text-destructive">{message}</p> : null;
 }
-function ProfileGroup({ title, children, singleColumn = false }: { title: string; children: React.ReactNode; singleColumn?: boolean }) {
+function ProfileGroup({
+  title,
+  children,
+  singleColumn = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  singleColumn?: boolean;
+}) {
   return (
     <section className="rounded-md border border-border bg-background p-4 sm:p-5">
       <h3 className="font-semibold text-foreground">{title}</h3>
@@ -725,19 +849,50 @@ function ProfileGroup({ title, children, singleColumn = false }: { title: string
     </section>
   );
 }
-function PhoneField({ label, countryCode, number, onCountryCode, onNumber, error }: { label: string; countryCode: string; number: string; onCountryCode: (value: string) => void; onNumber: (value: string) => void; error?: string | undefined }) {
+function PhoneField({
+  label,
+  countryCode,
+  number,
+  onCountryCode,
+  onNumber,
+  error,
+}: {
+  label: string;
+  countryCode: string;
+  number: string;
+  onCountryCode: (value: string) => void;
+  onNumber: (value: string) => void;
+  error?: string | undefined;
+}) {
   return (
     <div>
       <Label>{label}</Label>
       <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(10rem,0.8fr)_minmax(0,1.2fr)]">
-        <Select value={countryCode || "none"} onValueChange={(value) => onCountryCode(value === "none" ? "" : value)}>
-          <SelectTrigger aria-label={`${label} country code`}><SelectValue /></SelectTrigger>
+        <Select
+          value={countryCode || "none"}
+          onValueChange={(value) => onCountryCode(value === "none" ? "" : value)}
+        >
+          <SelectTrigger aria-label={`${label} country code`}>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Select country code</SelectItem>
-            {countryCodes.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}
+            {countryCodes.map(([value, text]) => (
+              <SelectItem key={value} value={value}>
+                {text}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <Input aria-label={`${label} number`} inputMode="numeric" autoComplete="tel-national" value={number} aria-invalid={Boolean(error)} onChange={(event) => onNumber(event.target.value)} placeholder="Contact number" />
+        <Input
+          aria-label={`${label} number`}
+          inputMode="numeric"
+          autoComplete="tel-national"
+          value={number}
+          aria-invalid={Boolean(error)}
+          onChange={(event) => onNumber(event.target.value)}
+          placeholder="Contact number"
+        />
       </div>
       <InlineFieldError message={error} />
     </div>
@@ -776,7 +931,7 @@ function ImageEditor({
   const upload = async (file?: File) => {
     if (!file) return;
     setUploadError(null);
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setUploadError("Choose a JPG, JPEG, PNG, or WebP image.");
       return;
     }
@@ -786,10 +941,13 @@ function ImageEditor({
     }
     setUploading(true);
     try {
-      const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+      const extension =
+        file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
       const filename = `${slugify(doctorName ?? "") || "doctor"}.${extension}`;
       const path = `${crypto.randomUUID()}/${filename}`;
-      const { error } = await supabase.storage.from("doctor-profile-images").upload(path, file, { contentType: file.type, upsert: false });
+      const { error } = await supabase.storage
+        .from("doctor-profile-images")
+        .upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
       const { data } = supabase.storage.from("doctor-profile-images").getPublicUrl(path);
       if (!data.publicUrl) throw new Error("The uploaded image URL is unavailable.");
@@ -821,12 +979,77 @@ function ImageEditor({
         </div>
       )}
       <div className="grid gap-4 lg:col-start-2">
-        {canUpload ? <><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => void upload(event.target.files?.[0])} /><Button type="button" variant="outline" className="w-fit" disabled={uploading} onClick={() => inputRef.current?.click()}><Upload className="size-4" /> {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}</Button></> : null}
+        {canUpload ? (
+          <>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(event) => void upload(event.target.files?.[0])}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="w-fit"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+            >
+              <Upload className="size-4" />{" "}
+              {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}
+            </Button>
+          </>
+        ) : null}
         <InlineFieldError message={uploadError ?? undefined} />
-        {options.length ? <div><Label>Select an existing image</Label><Select value={options.some((option) => option.value === value) ? value : ""} onValueChange={onValue}><SelectTrigger className="mt-2"><SelectValue placeholder="Choose from Media & Content" /></SelectTrigger><SelectContent>{options.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div> : null}
-        {onAlt ? <div><Label>Image ALT Text</Label><Input className="mt-2" value={alt} onChange={(event) => onAlt(event.target.value)} />{suggestedAlt ? <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>Suggestion: {suggestedAlt}</span><Button type="button" size="sm" variant="outline" onClick={() => onAlt(suggestedAlt)}>Use suggestion</Button></div> : null}</div> : null}
-        {doctorName ? <p className="text-xs text-muted-foreground">Generated filename: {slugify(doctorName) || "doctor"}.webp</p> : null}
-        {value ? <Button type="button" variant="outline" className="w-fit" onClick={() => onValue("")}><Trash2 className="size-4" /> Remove image</Button> : null}
+        {options.length ? (
+          <div>
+            <Label>Select an existing image</Label>
+            <Select
+              value={options.some((option) => option.value === value) ? value : ""}
+              onValueChange={onValue}
+            >
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Choose from Media & Content" />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
+        {onAlt ? (
+          <div>
+            <Label>Image ALT Text</Label>
+            <Input className="mt-2" value={alt} onChange={(event) => onAlt(event.target.value)} />
+            {suggestedAlt ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>Suggestion: {suggestedAlt}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onAlt(suggestedAlt)}
+                >
+                  Use suggestion
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {doctorName ? (
+          <p className="text-xs text-muted-foreground">
+            Generated filename: {slugify(doctorName) || "doctor"}.webp
+          </p>
+        ) : null}
+        {value ? (
+          <Button type="button" variant="outline" className="w-fit" onClick={() => onValue("")}>
+            <Trash2 className="size-4" /> Remove image
+          </Button>
+        ) : null}
       </div>
     </section>
   );
