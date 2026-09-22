@@ -581,8 +581,13 @@ export function DoctorWorkspace() {
                         onAlt={(value) => set("profile_image_alt", value)}
                         doctorName={values.name ?? ""}
                         designation={values.designation ?? ""}
-                        canUpload={canWrite}
                       />
+                      {canWrite ? (
+                        <p className="text-sm text-muted-foreground">
+                          New uploads remain unavailable until public image delivery is approved. Select an
+                          existing image above or save the profile without one.
+                        </p>
+                      ) : null}
                     </ProfileGroup>
                   </div>
                 ) : null}
