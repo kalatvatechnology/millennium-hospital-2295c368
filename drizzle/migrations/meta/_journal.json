@@ -71,6 +71,13 @@
       "when": 1790109069359,
       "tag": "0009_doctor_hero_reusable_statistics",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790109240555,
+      "tag": "0010_enforce_doctor_statistic_icon_upload_rules",
+      "breakpoints": true
     }
   ]
 }
