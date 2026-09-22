@@ -193,11 +193,11 @@ function HomePage() {
       {/* 2. Quick action strip */}
       <section className="border-b border-border bg-background">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px overflow-hidden bg-border px-0 sm:grid-cols-3 lg:grid-cols-5">
-          {patientActions.map((action) => (
+          {patientActions.map((action, index) => (
             <Link
               key={`strip-${action.to}`}
               to={action.to}
-              className="group flex flex-col items-center gap-1 bg-background px-3 py-4 text-center hover:bg-secondary"
+              className={`group flex flex-col items-center gap-1 bg-background px-3 py-4 text-center hover:bg-secondary ${index === patientActions.length - 1 ? "col-span-2 sm:col-span-1" : ""}`}
             >
               <action.icon className="size-5 text-primary" />
               <span className="text-sm font-semibold text-foreground">{action.title}</span>
