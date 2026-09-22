@@ -243,10 +243,10 @@ export function DoctorWorkspace() {
     if (!values.department_id) issues["department_id"] = "Department is required.";
     if (!String(values.designation ?? "").trim())
       issues["designation"] = "Designation is required.";
-    if (String(values.short_introduction ?? "").length > 100)
-      issues["short_introduction"] = "Short introduction must be 100 characters or fewer.";
-    if (String(values.bio ?? "").length > 500)
-      issues["bio"] = "Biography must be 500 characters or fewer.";
+    if (String(values.short_introduction ?? "").length > 500)
+      issues["short_introduction"] = "Short introduction must be 500 characters or fewer.";
+    if (String(values.bio ?? "").length > 1000)
+      issues["bio"] = "Biography must be 1,000 characters or fewer.";
     for (const key of ["phone_number", "whatsapp_number"] as const) {
       const number = String(values[key] ?? "").trim();
       if (number && !/^\d{6,15}$/.test(number))
@@ -588,7 +588,7 @@ export function DoctorWorkspace() {
                         kind="textarea"
                         value={values.short_introduction}
                         onChange={(value) => setProfileValue("short_introduction", value)}
-                        maxLength={100}
+                        maxLength={500}
                         error={fieldErrors["short_introduction"]}
                         compact
                       />
@@ -598,7 +598,7 @@ export function DoctorWorkspace() {
                         kind="textarea"
                         value={values.bio}
                         onChange={(value) => setProfileValue("bio", value)}
-                        maxLength={500}
+                        maxLength={1000}
                         error={fieldErrors["bio"]}
                       />
                     </ProfileGroup>
