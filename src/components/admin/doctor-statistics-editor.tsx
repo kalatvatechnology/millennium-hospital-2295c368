@@ -293,9 +293,12 @@ export const DoctorStatisticsEditor = forwardRef<
   const move = (index: number, delta: number) => {
     setAssignments((current) => {
       const target = index + delta;
-      if (!current[index] || !current[target]) return current;
+      const sourceRow = current[index];
+      const targetRow = current[target];
+      if (!sourceRow || !targetRow) return current;
       const next = [...current];
-      [next[index], next[target]] = [next[target], next[index]];
+      next[index] = targetRow;
+      next[target] = sourceRow;
       return next.map((row, display_order) => ({ ...row, display_order }));
     });
     markDirty();
@@ -428,15 +431,15 @@ export const DoctorStatisticsEditor = forwardRef<
                       <IconUpload
                         label="Default PNG Icon"
                         value={definition?.default_icon_url ?? ""}
-                        onUpload={(file) =>
-                          definition &&
-                          uploadIcon(
+                        onUpload={(file) => {
+                          if (!definition) return Promise.resolve();
+                          return uploadIcon(
                             file,
                             definition.default_icon_url,
                             (url) => updateDefinition(definition.id, { default_icon_url: url }),
                             "definition",
-                          )
-                        }
+                          );
+                        }}
                         onRemove={() =>
                           definition && updateDefinition(definition.id, { default_icon_url: "" })
                         }
