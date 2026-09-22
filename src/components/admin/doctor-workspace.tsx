@@ -1022,6 +1022,12 @@ function ImageEditor({
         .upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
       const nextValue = doctorImageUrl(path);
+      const verification = await fetch(nextValue, { cache: "no-store" });
+      const verifiedType = verification.headers.get("content-type")?.split(";", 1)[0];
+      if (!verification.ok || !verifiedType || !allowedImageTypes.has(verifiedType)) {
+        await supabase.storage.from(doctorImageBucket).remove([path]);
+        throw new Error("The uploaded image could not be verified. Your existing image is unchanged.");
+      }
       if (onUploaded) onUploaded(nextValue, path);
       else onValue(nextValue);
     } catch (cause) {
