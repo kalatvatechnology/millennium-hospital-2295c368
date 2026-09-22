@@ -1131,6 +1131,11 @@ function ImageEditor({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    // Only show an error for the current image operation; clear it once the image changes.
+    setUploadError(null);
+  }, [value]);
+
   const suggestedAlt = [doctorName, designation, doctorName ? "at The Millennium Hospital" : ""]
     .filter(Boolean)
     .join(", ")
