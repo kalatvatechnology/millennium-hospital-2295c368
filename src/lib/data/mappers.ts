@@ -63,6 +63,21 @@ function mapDepartmentSummary(value: unknown): Doctor["department"] {
 }
 
 export function mapDoctor(row: Row, department?: unknown): Doctor {
+  const relationshipValues = Array.isArray(row["doctor_departments"])
+    ? row["doctor_departments"]
+        .map((item) =>
+          item && typeof item === "object" && !Array.isArray(item)
+            ? mapDepartmentSummary((item as Row)["departments"])
+            : null,
+        )
+        .filter((item): item is NonNullable<Doctor["department"]> => Boolean(item))
+    : [];
+  const fallbackDepartment = mapDepartmentSummary(department ?? row["department"]);
+  const departments = relationshipValues.length
+    ? relationshipValues
+    : fallbackDepartment
+      ? [fallbackDepartment]
+      : [];
   return {
     id: required(row["id"], ""),
     name: required(row["full_name"] ?? row["name"], "Unnamed doctor"),
@@ -107,7 +122,8 @@ export function mapDoctor(row: Row, department?: unknown): Doctor {
     social_links: object(row["social_links"]),
     display_order: number(row["display_order"]),
     status: status(row),
-    department: mapDepartmentSummary(department ?? row["department"]),
+    department: departments[0] ?? null,
+    departments,
   };
 }
 

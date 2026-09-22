@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Plus, Save, Trash2, Upload } from "lucide-react";
@@ -166,6 +166,19 @@ export function DoctorWorkspace() {
       return data ?? [];
     },
   });
+  const doctorDepartments = useQuery({
+    queryKey: ["doctor-workspace-department-links", doctorId],
+    enabled: !isNew,
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("doctor_departments")
+        .select("department_id")
+        .eq("doctor_id", doctorId)
+        .order("display_order");
+      if (error) throw error;
+      return (data ?? []).map((row: any) => row.department_id as string);
+    },
+  });
   const media = useQuery({
     queryKey: ["doctor-workspace-image-options"],
     queryFn: async () => {
@@ -234,6 +247,13 @@ export function DoctorWorkspace() {
     setSocial(links);
     setSocialBaseline(clone(links));
   }, [isNew, query.data, socialQuery.data]);
+  useEffect(() => {
+    if (doctorDepartments.data) setSelectedDepartmentIds(doctorDepartments.data);
+  }, [doctorDepartments.data]);
+  const handleDepartmentsChange = useCallback((ids: string[]) => {
+    setSelectedDepartmentIds(ids);
+    setFieldErrors((current) => ({ ...current, department_id: "" }));
+  }, []);
   const title = isNew ? "New doctor" : values.name || "Doctor workspace";
   const detailTab =
     sectionKeys.has(section) && !["profile", "social-media", "seo", "publishing"].includes(section)
@@ -394,6 +414,7 @@ export function DoctorWorkspace() {
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-relation"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-workspace-department-links"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", "doctors"] });
       if (isNew)
         void navigate({
@@ -590,10 +611,7 @@ export function DoctorWorkspace() {
                         }
                         legacySpecialty={values.specialty ?? ""}
                         canWrite={canWrite}
-                        onDepartmentsChange={(ids) => {
-                          setSelectedDepartmentIds(ids);
-                          setFieldErrors((current) => ({ ...current, department_id: "" }));
-                        }}
+                        onDepartmentsChange={handleDepartmentsChange}
                       />
                       <InlineFieldError message={fieldErrors["department_id"]} />
                       <InlineFieldError message={fieldErrors["designation"]} />

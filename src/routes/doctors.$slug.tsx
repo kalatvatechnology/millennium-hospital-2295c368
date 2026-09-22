@@ -118,7 +118,7 @@ function DoctorDetail() {
     Boolean(doctor.bio) ||
     qualifications ||
     doctor.languages.length > 0 ||
-    Boolean(doctor.department) ||
+    doctor.departments.length > 0 ||
     Boolean(doctor.experience_years) ||
     (data.socialLinks?.length ?? 0) > 0 ||
     Object.keys(doctor.social_links).length > 0;
@@ -371,10 +371,14 @@ function DoctorDetail() {
                     </dd>
                   </div>
                 ) : null}
-                {doctor.department ? (
+                {doctor.departments.length ? (
                   <div>
-                    <dt className="font-semibold">Department</dt>
-                    <dd className="mt-1 text-muted-foreground">{doctor.department.name}</dd>
+                    <dt className="font-semibold">
+                      {doctor.departments.length === 1 ? "Department" : "Departments"}
+                    </dt>
+                    <dd className="mt-1 text-muted-foreground">
+                      {doctor.departments.map((item) => item.name).join(", ")}
+                    </dd>
                   </div>
                 ) : null}
                 {doctor.experience_years ? (

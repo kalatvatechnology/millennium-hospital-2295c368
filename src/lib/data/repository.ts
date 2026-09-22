@@ -98,7 +98,11 @@ export async function getDepartment(slug: string) {
 export async function listDoctors(): Promise<Doctor[]> {
   if (!usesProductionContract) {
     return rows(
-      await published(db.from("doctors").select("*, department:departments(id,name,slug)"))
+      await published(
+        db
+          .from("doctors")
+          .select("*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug))"),
+      )
         .order("display_order")
         .order("name"),
     ).map((row) => mapDoctor(row));
@@ -117,7 +121,7 @@ export async function listDoctors(): Promise<Doctor[]> {
 export async function getDoctor(slug: string, preview = false) {
   const selection = usesProductionContract
     ? "*, doctor_departments(departments(id,name,slug))"
-    : "*, department:departments(id,name,slug)";
+    : "*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug))";
   // Preview skips the publication filter only; row access is still enforced by
   // database policies, so signed-out visitors never receive unpublished rows.
   const base = db.from("doctors").select(selection).eq("slug", slug);
