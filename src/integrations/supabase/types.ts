@@ -486,6 +486,117 @@ export type Database = {
           },
         ]
       }
+      department_designations: {
+        Row: {
+          active: boolean
+          created_at: string
+          department_id: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          department_id: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          department_id?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_designations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_qualifications: {
+        Row: {
+          active: boolean
+          created_at: string
+          department_id: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          department_id: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          department_id?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_qualifications_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      department_specializations: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_icon_url: string | null
+          department_id: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_icon_url?: string | null
+          department_id: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_icon_url?: string | null
+          department_id?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_specializations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string
@@ -568,6 +679,82 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "doctor_achievements_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_departments: {
+        Row: {
+          department_id: string
+          display_order: number
+          doctor_id: string
+          is_primary: boolean
+        }
+        Insert: {
+          department_id: string
+          display_order?: number
+          doctor_id: string
+          is_primary?: boolean
+        }
+        Update: {
+          department_id?: string
+          display_order?: number
+          doctor_id?: string
+          is_primary?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_departments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_departments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_designations: {
+        Row: {
+          department_id: string
+          designation_id: string
+          doctor_id: string
+        }
+        Insert: {
+          department_id: string
+          designation_id: string
+          doctor_id: string
+        }
+        Update: {
+          department_id?: string
+          designation_id?: string
+          doctor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_designations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_designations_designation_id_fkey"
+            columns: ["designation_id"]
+            isOneToOne: false
+            referencedRelation: "department_designations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_designations_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
@@ -806,6 +993,49 @@ export type Database = {
           },
         ]
       }
+      doctor_qualifications: {
+        Row: {
+          department_id: string
+          display_order: number
+          doctor_id: string
+          qualification_id: string
+        }
+        Insert: {
+          department_id: string
+          display_order?: number
+          doctor_id: string
+          qualification_id: string
+        }
+        Update: {
+          department_id?: string
+          display_order?: number
+          doctor_id?: string
+          qualification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_qualifications_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_qualifications_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_qualifications_qualification_id_fkey"
+            columns: ["qualification_id"]
+            isOneToOne: false
+            referencedRelation: "department_qualifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_review_selections: {
         Row: {
           display_order: number
@@ -886,41 +1116,57 @@ export type Database = {
       doctor_specializations: {
         Row: {
           created_at: string
+          department_id: string | null
           description: string | null
           display_order: number
           doctor_id: string
           enabled: boolean
           icon: string | null
+          icon_override_url: string | null
           id: string
           professional_service_id: string | null
+          specialization_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          department_id?: string | null
           description?: string | null
           display_order?: number
           doctor_id: string
           enabled?: boolean
           icon?: string | null
+          icon_override_url?: string | null
           id?: string
           professional_service_id?: string | null
+          specialization_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          department_id?: string | null
           description?: string | null
           display_order?: number
           doctor_id?: string
           enabled?: boolean
           icon?: string | null
+          icon_override_url?: string | null
           id?: string
           professional_service_id?: string | null
+          specialization_id?: string | null
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "doctor_specializations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "doctor_specializations_doctor_id_fkey"
             columns: ["doctor_id"]
@@ -935,6 +1181,13 @@ export type Database = {
             referencedRelation: "professional_services"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "doctor_specializations_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "department_specializations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       doctor_statistic_definitions: {
@@ -942,6 +1195,7 @@ export type Database = {
           active: boolean
           created_at: string
           default_icon_url: string | null
+          department_id: string | null
           id: string
           meaning: string | null
           name: string
@@ -951,6 +1205,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           default_icon_url?: string | null
+          department_id?: string | null
           id?: string
           meaning?: string | null
           name: string
@@ -960,12 +1215,21 @@ export type Database = {
           active?: boolean
           created_at?: string
           default_icon_url?: string | null
+          department_id?: string | null
           id?: string
           meaning?: string | null
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "doctor_statistic_definitions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       doctor_statistics: {
         Row: {
