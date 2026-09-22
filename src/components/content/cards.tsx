@@ -20,9 +20,9 @@ export function DoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
           <UserRound className="size-12 text-muted-foreground" />
         )}
       </div>
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-4">
         <p className="text-xs font-semibold text-primary">{doctor.specialty ?? doctor.department?.name ?? "Specialty not published"}</p>
-        <h3 className="mt-2 text-xl font-semibold">{doctor.name}</h3>
+        <h3 className="mt-1.5 text-base font-semibold">{doctor.name}</h3>
         {doctor.qualifications.length ? (
           <p className="mt-1 text-sm text-muted-foreground">{doctor.qualifications.join(", ")}</p>
         ) : null}
@@ -33,7 +33,7 @@ export function DoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
         <Link
           to="/doctors/$slug"
           params={{ slug: doctor.slug }}
-          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
         >
           View profile <ArrowRight className="size-4" />
         </Link>
@@ -44,16 +44,16 @@ export function DoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 
 export function DepartmentCard({ department }: { department: Department }) {
   return (
-    <article className="group rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
-      <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary"><Layers /></span>
-      <h3 className="mt-6 text-xl font-semibold">{department.name}</h3>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+    <article className="group rounded-lg border border-border bg-card p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <span className="grid size-10 place-items-center rounded-lg bg-secondary text-primary"><Layers /></span>
+      <h3 className="mt-4 text-base font-semibold">{department.name}</h3>
+      <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
         {department.description ?? "Further department information has not yet been published."}
       </p>
       <Link
         to="/departments/$slug"
         params={{ slug: department.slug }}
-        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
       >
         View department <ArrowRight className="size-4" />
       </Link>
@@ -63,17 +63,17 @@ export function DepartmentCard({ department }: { department: Department }) {
 
 export function ProfessionalServiceCard({ service }: { service: ProfessionalService }) {
   return (
-    <article className="group rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
-      <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary"><Stethoscope /></span>
-      <p className="mt-6 text-xs font-semibold uppercase text-muted-foreground">Professional service</p>
-      <h3 className="mt-2 text-xl font-semibold">{service.title}</h3>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+    <article className="group rounded-lg border border-border bg-card p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <span className="grid size-10 place-items-center rounded-lg bg-secondary text-primary"><Stethoscope /></span>
+      <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">Professional service</p>
+      <h3 className="mt-1.5 text-base font-semibold">{service.title}</h3>
+      <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
         {service.summary ?? "Further information has not yet been published."}
       </p>
       <Link
         to="/services/professional/$slug"
         params={{ slug: service.slug }}
-        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
       >
         View service <ArrowRight className="size-4" />
       </Link>
@@ -83,17 +83,17 @@ export function ProfessionalServiceCard({ service }: { service: ProfessionalServ
 
 export function HospitalServiceCard({ service }: { service: HospitalService }) {
   return (
-    <article className="group rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
-      <span className="grid size-12 place-items-center rounded-lg bg-secondary text-primary"><Building2 /></span>
-      <p className="mt-6 text-xs font-semibold uppercase text-muted-foreground">Hospital service</p>
-      <h3 className="mt-2 text-xl font-semibold">{service.title}</h3>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+    <article className="group rounded-lg border border-border bg-card p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <span className="grid size-10 place-items-center rounded-lg bg-secondary text-primary"><Building2 /></span>
+      <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">Hospital service</p>
+      <h3 className="mt-1.5 text-base font-semibold">{service.title}</h3>
+      <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
         {service.summary ?? "Further information has not yet been published."}
       </p>
       <Link
         to="/services/hospital/$slug"
         params={{ slug: service.slug }}
-        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
       >
         View service <ArrowRight className="size-4" />
       </Link>
@@ -112,15 +112,15 @@ export function FacilityCard({ facility }: { facility: FacilityRow }) {
           <Building2 className="size-10 text-muted-foreground" />
         )}
       </div>
-      <div className="p-5">
-        <h3 className="text-xl font-semibold">{facility.name}</h3>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+      <div className="p-4">
+        <h3 className="text-base font-semibold">{facility.name}</h3>
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
           {facility.description ?? "Further information has not yet been published."}
         </p>
         <Link
           to="/facilities/$slug"
           params={{ slug: facility.slug }}
-          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+          className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
         >
           View facility <ArrowRight className="size-4" />
         </Link>
@@ -131,10 +131,10 @@ export function FacilityCard({ facility }: { facility: FacilityRow }) {
 
 export function ReviewCard({ review }: { review: ReviewRow & { doctor?: { name: string; slug: string } | null } }) {
   return (
-    <figure className="rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
+    <figure className="rounded-lg border border-border bg-card p-5 shadow-[var(--shadow-sm)]">
       <Quote className="text-primary" />
-      <blockquote className="mt-5 leading-7">“{review.content}”</blockquote>
-      <figcaption className="mt-5 text-sm text-muted-foreground">
+      <blockquote className="mt-3 text-sm leading-6">“{review.content}”</blockquote>
+      <figcaption className="mt-3 text-xs text-muted-foreground">
         {review.author_name}
         {review.doctor ? ` · about ${review.doctor.name}` : ""}
         {review.rating ? ` · ${review.rating}/5` : ""}
@@ -149,16 +149,16 @@ export function ArticleCard({
   post: BlogPost & { category?: { name: string; slug: string } | null; author?: { name: string; slug: string } | null };
 }) {
   return (
-    <article className="flex flex-col rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+    <article className="flex flex-col rounded-lg border border-border bg-card p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
       <CalendarDays className="text-primary" />
-      {post.category ? <p className="mt-6 text-xs font-semibold uppercase text-muted-foreground">{post.category.name}</p> : null}
-      <h3 className="mt-2 text-xl font-semibold">{post.title}</h3>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{post.excerpt ?? "Article summary not published."}</p>
+      {post.category ? <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">{post.category.name}</p> : null}
+      <h3 className="mt-1.5 text-base font-semibold">{post.title}</h3>
+      <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{post.excerpt ?? "Article summary not published."}</p>
       {post.author ? <p className="mt-3 text-xs text-muted-foreground">By {post.author.name}</p> : null}
       <Link
         to="/blog/$slug"
         params={{ slug: post.slug }}
-        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
       >
         Read article <ArrowRight className="size-4" />
       </Link>
