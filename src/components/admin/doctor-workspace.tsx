@@ -1259,6 +1259,7 @@ function HeroImagePreview({
 }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const widths = { desktop: "max-w-2xl", tablet: "max-w-md", mobile: "max-w-56" };
+  const positions = { left: "object-left", center: "object-center", right: "object-right" };
   return (
     <div className="grid gap-3 lg:col-span-2">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Hero preview device">
@@ -1278,7 +1279,11 @@ function HeroImagePreview({
       <div
         className={`aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}
       >
-        <img src={value} alt={alt} className={`size-full object-cover object-${objectPosition}`} />
+        <img
+          src={value}
+          alt={alt}
+          className={`size-full object-cover ${positions[objectPosition]}`}
+        />
       </div>
     </div>
   );
