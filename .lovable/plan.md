@@ -15,7 +15,7 @@ Improve only **CMS → Doctors → Doctor Workspace → Profile** into a compact
 
 ## Database and storage
 - Add only genuinely missing doctor columns: professional registration number, phone country code, and WhatsApp country code.
-- Add safe length checks for newly saved short introductions and biographies only after confirming existing records are compatible.
+- Enforce the new 100/500 character limits in this Profile workspace without adding database constraints, because existing legacy records exceed those limits and must remain undamaged.
 - Preserve the existing unique doctor slug constraint and all current doctor/department relationships.
 - Create one dedicated doctor-image storage bucket because no approved bucket currently exists. Restrict files to JPG/JPEG/PNG/WebP, enforce the existing content-management permission for uploads/replacements/removals, and allow public reads for profile imagery.
 - Keep image paths in the existing `photo_url` field; do not create a second media system or expose privileged credentials.
