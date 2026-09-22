@@ -75,7 +75,9 @@ const doctorImagePath = (value: string): string | null => {
     if (parsed.pathname === doctorImageEndpoint) return parsed.searchParams.get("path");
     const marker = `/storage/v1/object/public/${doctorImageBucket}/`;
     const markerIndex = parsed.pathname.indexOf(marker);
-    return markerIndex >= 0 ? decodeURIComponent(parsed.pathname.slice(markerIndex + marker.length)) : null;
+    return markerIndex >= 0
+      ? decodeURIComponent(parsed.pathname.slice(markerIndex + marker.length))
+      : null;
   } catch {
     return null;
   }
@@ -177,12 +179,10 @@ export function DoctorWorkspace() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [slugIsAutomatic, setSlugIsAutomatic] = useState(isNew);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
-  useEffect(
-    () => () => {
-      const paths = [...uploadedImagePaths.current];
-      if (paths.length) void supabase.storage.from(doctorImageBucket).remove(paths);
-    },
-  );
+  useEffect(() => () => {
+    const paths = [...uploadedImagePaths.current];
+    if (paths.length) void supabase.storage.from(doctorImageBucket).remove(paths);
+  });
   useEffect(() => {
     const next = isNew ? blankDoctor() : query.data;
     if (!next) return;
