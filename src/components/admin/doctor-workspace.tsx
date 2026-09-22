@@ -28,6 +28,10 @@ import { contentTypeByKey, deleteRecord, saveRecord } from "@/lib/admin-content"
 import { userFacingDataError } from "@/lib/data/errors";
 import { supabase } from "@/integrations/supabase/client";
 import { InlineDelete } from "@/components/admin/workspace";
+import {
+  DoctorStatisticsEditor,
+  type DoctorStatisticsEditorHandle,
+} from "@/components/admin/doctor-statistics-editor";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -103,6 +107,7 @@ const blankDoctor = () => ({
   profile_image_alt: "",
   hero_image_url: "",
   hero_image_alt: "",
+  hero_image_position: "center",
   quote: "",
   quote_attribution: "",
   social_links: {},
@@ -128,6 +133,7 @@ export function DoctorWorkspace() {
   const canWrite = can("content.write");
   const canPublish = can("content.publish");
   const detailRef = useRef<DoctorProfileSectionsHandle>(null);
+  const statisticsRef = useRef<DoctorStatisticsEditorHandle>(null);
   const uploadedImagePaths = useRef(new Set<string>());
   const deletedImagePaths = useRef(new Set<string>());
   const query = useQuery({
@@ -279,9 +285,10 @@ export function DoctorWorkspace() {
     mutationFn: async () => {
       if (!doctorType) throw new Error("Doctor content configuration is unavailable");
       if (section === "profile") await validateProfile();
-      if (detailTab && !isNew) {
+      if (section === "hero" && !isNew) await statisticsRef.current?.save();
+      if (detailTab && section !== "hero" && !isNew) {
         await detailRef.current?.save();
-        if (section !== "hero") return doctorId;
+        return doctorId;
       }
       if (section === "social-media" && !isNew) {
         const { error: removeError } = await db
@@ -382,6 +389,7 @@ export function DoctorWorkspace() {
     deletedImagePaths.current.clear();
     setValues(clone(baseline));
     setSocial(clone(socialBaseline));
+    statisticsRef.current?.reset();
     setDetailReset((current) => current + 1);
     setError(null);
   };
@@ -654,36 +662,85 @@ export function DoctorWorkspace() {
                   </div>
                 ) : null}
                 {section === "hero" ? (
-                  <div className="grid gap-6">
-                    <ImageEditor
-                      label="Hero image"
-                      value={values.hero_image_url ?? ""}
-                      alt={values.hero_image_alt ?? ""}
-                      options={imageOptions}
-                      ratio="Current profile header crop"
-                      onValue={(value) => set("hero_image_url", value)}
-                      onAlt={(value) => set("hero_image_alt", value)}
-                    />
-                    <Field
-                      name="quote"
-                      label="Doctor quote"
-                      kind="textarea"
-                      value={values.quote}
-                      onChange={(value) => set("quote", value)}
-                    />
-                    <Field
-                      name="quote_attribution"
-                      label="Quote attribution"
-                      kind="text"
-                      value={values.quote_attribution}
-                      onChange={(value) => set("quote_attribution", value)}
-                    />
+                  <div className="grid gap-8">
+                    <section aria-labelledby="hero-editor-heading">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <h3 id="hero-editor-heading" className="text-lg font-semibold">Hero</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">Main doctor profile header content.</p>
+                        </div>
+                        <label className="flex items-center gap-3 text-sm font-semibold">
+                          <span>{values.section_visibility?.hero !== false ? "ON" : "OFF"}</span>
+                          <Switch
+                            checked={values.section_visibility?.hero !== false}
+                            disabled={!canWrite}
+                            aria-label="Hero section visibility"
+                            onCheckedChange={(checked) =>
+                              set("section_visibility", {
+                                ...(values.section_visibility ?? {}),
+                                hero: checked,
+                              })
+                            }
+                          />
+                        </label>
+                      </div>
+                      {values.section_visibility?.hero !== false ? (
+                        <div className="mt-5 grid gap-6">
+                          <ImageEditor
+                            label="Hero Image"
+                            description="Main doctor profile image displayed in the doctor profile hero/header area."
+                            value={values.hero_image_url ?? ""}
+                            alt={values.hero_image_alt ?? ""}
+                            options={imageOptions}
+                            ratio="1600 × 900 px (16:9) for the best responsive result across desktop, tablet and mobile"
+                            previewMode="hero"
+                            objectPosition={values.hero_image_position ?? "center"}
+                            onValue={(value) => set("hero_image_url", value)}
+                            onAlt={(value) => set("hero_image_alt", value)}
+                            doctorName={values.name ?? ""}
+                            canUpload={canWrite}
+                            canModify={canWrite}
+                            onUploaded={(nextValue, path) => {
+                              const previousPath = doctorImagePath(values.hero_image_url ?? "");
+                              if (previousPath && previousPath !== path) deletedImagePaths.current.add(previousPath);
+                              uploadedImagePaths.current.add(path);
+                              set("hero_image_url", nextValue);
+                            }}
+                            onRemove={() => {
+                              const path = doctorImagePath(values.hero_image_url ?? "");
+                              if (path) deletedImagePaths.current.add(path);
+                              set("hero_image_url", "");
+                            }}
+                          />
+                          <div>
+                            <Label>Image Position / Focal Point</Label>
+                            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Hero image position">
+                              {(["left", "center", "right"] as const).map((position) => (
+                                <Button key={position} type="button" size="sm" variant={(values.hero_image_position ?? "center") === position ? "default" : "outline"} onClick={() => set("hero_image_position", position)}>
+                                  {position[0]?.toUpperCase()}{position.slice(1)}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          <Field name="quote" label="Doctor Quote" kind="textarea" value={values.quote} onChange={(value) => set("quote", value)} />
+                          <Field name="quote_attribution" label="Quote Attribution" kind="text" value={values.quote_attribution} onChange={(value) => set("quote_attribution", value)} />
+                        </div>
+                      ) : null}
+                    </section>
                     {!isNew ? (
-                      <DoctorProfileSections
-                        key={`hero-${detailReset}`}
-                        ref={detailRef}
+                      <DoctorStatisticsEditor
+                        key={`statistics-${detailReset}`}
+                        ref={statisticsRef}
                         doctorId={doctorId}
-                        activeTab="hero"
+                        enabled={values.section_visibility?.statistics !== false}
+                        canWrite={canWrite}
+                        onEnabledChange={(checked) =>
+                          set("section_visibility", {
+                            ...(values.section_visibility ?? {}),
+                            statistics: checked,
+                          })
+                        }
+                        onDirty={() => setSavedMessage(null)}
                       />
                     ) : null}
                   </div>
@@ -979,6 +1036,9 @@ function ImageEditor({
   canModify = true,
   onUploaded,
   onRemove,
+  description,
+  previewMode,
+  objectPosition = "center",
 }: {
   label: string;
   value: string;
@@ -993,6 +1053,9 @@ function ImageEditor({
   canModify?: boolean;
   onUploaded?: (value: string, path: string) => void;
   onRemove?: () => void;
+  description?: string;
+  previewMode?: "hero";
+  objectPosition?: "left" | "center" | "right";
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -1050,11 +1113,14 @@ function ImageEditor({
     <section className="grid gap-4 lg:grid-cols-[12rem_minmax(0,1fr)]">
       <div>
         <h3 className="font-semibold">{label}</h3>
+        {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
         <p className="text-sm text-muted-foreground">
           Recommended aspect: {ratio}. JPG, JPEG, PNG, or WebP up to 5 MB.
         </p>
       </div>
-      {value ? (
+      {value && previewMode === "hero" ? (
+        <HeroImagePreview value={value} alt={alt || `${label} preview`} objectPosition={objectPosition} />
+      ) : value ? (
         <img
           src={value}
           alt={alt || `${label} preview`}
@@ -1144,6 +1210,22 @@ function ImageEditor({
         ) : null}
       </div>
     </section>
+  );
+}
+function HeroImagePreview({ value, alt, objectPosition }: { value: string; alt: string; objectPosition: "left" | "center" | "right" }) {
+  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const widths = { desktop: "max-w-2xl", tablet: "max-w-md", mobile: "max-w-56" };
+  return (
+    <div className="grid gap-3 lg:col-span-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Hero preview device">
+        {(["desktop", "tablet", "mobile"] as const).map((item) => (
+          <Button key={item} type="button" size="sm" variant={device === item ? "default" : "outline"} onClick={() => setDevice(item)}>{item[0]?.toUpperCase()}{item.slice(1)}</Button>
+        ))}
+      </div>
+      <div className={`aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}>
+        <img src={value} alt={alt} className={`size-full object-cover object-${objectPosition}`} />
+      </div>
+    </div>
   );
 }
 function SocialEditor({
