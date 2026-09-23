@@ -56,3 +56,4 @@
 
 - [x] Implement department-aware Doctor Profile CMS relationships, selectors, creation flows, and compatibility checks
 - [x] Verify the repaired shared relationship trigger and add-new qualification selection flow
+- [ ] Repair and verify unpublished doctor Preview after normalized relationships
