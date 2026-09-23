@@ -2,7 +2,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Plus, Save, Trash2, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Monitor,
+  Plus,
+  Save,
+  Smartphone,
+  Tablet,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { AdminError } from "@/components/admin/ui";
 import {
@@ -695,10 +705,13 @@ export function DoctorWorkspace() {
                   </div>
                 ) : null}
                 {section === "hero" ? (
-                  <div className="grid gap-8">
-                    <section aria-labelledby="hero-editor-heading">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
+                  <div className="grid gap-5">
+                    <section
+                      className="rounded-md border border-border bg-background p-4 sm:p-5"
+                      aria-labelledby="hero-editor-heading"
+                    >
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+                        <div className="min-w-0">
                           <h3 id="hero-editor-heading" className="text-lg font-semibold">
                             Hero
                           </h3>
@@ -706,7 +719,7 @@ export function DoctorWorkspace() {
                             Main doctor profile header content.
                           </p>
                         </div>
-                        <label className="flex items-center gap-3 text-sm font-semibold">
+                        <label className="flex shrink-0 items-center gap-3 text-sm font-semibold">
                           <span>{values.section_visibility?.hero !== false ? "ON" : "OFF"}</span>
                           <Switch
                             checked={values.section_visibility?.hero !== false}
@@ -722,7 +735,7 @@ export function DoctorWorkspace() {
                         </label>
                       </div>
                       {values.section_visibility?.hero !== false ? (
-                        <div className="mt-5 grid gap-6">
+                        <div className="mt-5">
                           <ImageEditor
                             label="Hero Background Image"
                             description="Upload a department, hospital interior, or abstract healthcare image used as the visual background behind the doctor's profile information. This is not the doctor's portrait."
@@ -732,6 +745,9 @@ export function DoctorWorkspace() {
                             ratio="1920 × 1080 px (16:9) for a responsive Hero background"
                             previewMode="hero"
                             objectPosition={values.hero_background_position ?? "center"}
+                            onObjectPosition={(position) =>
+                              set("hero_background_position", position)
+                            }
                             onValue={(value) => set("hero_background_image_url", value)}
                             onAlt={(value) => set("hero_background_image_alt", value)}
                             doctorName={values.name ?? ""}
@@ -754,47 +770,42 @@ export function DoctorWorkspace() {
                               set("hero_background_image_url", "");
                             }}
                           />
-                          <div>
-                            <Label>Image Position / Focal Point</Label>
-                            <div
-                              className="mt-2 flex flex-wrap gap-2"
-                              role="group"
-                              aria-label="Hero background focal position"
-                            >
-                              {(["left", "center", "right"] as const).map((position) => (
-                                <Button
-                                  key={position}
-                                  type="button"
-                                  size="sm"
-                                  variant={
-                                    (values.hero_background_position ?? "center") === position
-                                      ? "default"
-                                      : "outline"
-                                  }
-                                  onClick={() => set("hero_background_position", position)}
-                                >
-                                  {position[0]?.toUpperCase()}
-                                  {position.slice(1)}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                          <Field
-                            name="quote"
-                            label="Doctor Quote"
-                            kind="textarea"
-                            value={values.quote}
-                            onChange={(value) => set("quote", value)}
-                          />
-                          <Field
-                            name="quote_attribution"
-                            label="Quote Attribution"
-                            kind="text"
-                            value={values.quote_attribution}
-                            onChange={(value) => set("quote_attribution", value)}
-                          />
                         </div>
-                      ) : null}
+                      ) : (
+                        <p className="mt-4 rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                          Hero content is saved but hidden from the doctor profile.
+                        </p>
+                      )}
+                    </section>
+                    <section
+                      className="rounded-md border border-border bg-background p-4 sm:p-5"
+                      aria-labelledby="doctor-quote-heading"
+                    >
+                      <div>
+                        <h3 id="doctor-quote-heading" className="text-lg font-semibold">
+                          Doctor Quote
+                        </h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          A short statement displayed with the doctor’s profile header.
+                        </p>
+                      </div>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(14rem,0.7fr)]">
+                        <Field
+                          name="quote"
+                          label="Quote"
+                          kind="textarea"
+                          value={values.quote}
+                          onChange={(value) => set("quote", value)}
+                          compact
+                        />
+                        <Field
+                          name="quote_attribution"
+                          label="Quote Attribution"
+                          kind="text"
+                          value={values.quote_attribution}
+                          onChange={(value) => set("quote_attribution", value)}
+                        />
+                      </div>
                     </section>
                     {!isNew ? (
                       <DoctorStatisticsEditor
@@ -1153,6 +1164,7 @@ function ImageEditor({
   description,
   previewMode,
   objectPosition = "center",
+  onObjectPosition,
   uploadDirectory,
 }: {
   label: string;
@@ -1171,6 +1183,7 @@ function ImageEditor({
   description?: string;
   previewMode?: "hero";
   objectPosition?: "left" | "center" | "right";
+  onObjectPosition?: (position: "left" | "center" | "right") => void;
   uploadDirectory?: string;
 }) {
   const [uploading, setUploading] = useState(false);
@@ -1231,15 +1244,21 @@ function ImageEditor({
     }
   };
   return (
-    <section className="grid gap-4 lg:grid-cols-[12rem_minmax(0,1fr)]">
-      <div>
+    <section
+      className={`grid gap-5 ${
+        previewMode === "hero"
+          ? "lg:grid-cols-[minmax(16rem,0.8fr)_minmax(22rem,1.4fr)]"
+          : "lg:grid-cols-[12rem_minmax(0,1fr)]"
+      }`}
+    >
+      <div className="min-w-0">
         <h3 className="font-semibold">{label}</h3>
         {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
         <p className="text-sm text-muted-foreground">
           Recommended aspect: {ratio}. JPG, JPEG, PNG, or WebP up to 5 MB.
         </p>
       </div>
-      {value && previewMode === "hero" ? (
+      {previewMode === "hero" ? (
         <HeroImagePreview
           value={value}
           alt={alt || `${label} preview`}
@@ -1258,7 +1277,35 @@ function ImageEditor({
           No image selected
         </div>
       )}
-      <div className="grid gap-4 lg:col-start-2">
+      <div
+        className={`grid min-w-0 gap-4 ${
+          previewMode === "hero" ? "lg:col-start-1" : "lg:col-start-2"
+        }`}
+      >
+        {previewMode === "hero" && onObjectPosition ? (
+          <div>
+            <Label>Image Position</Label>
+            <div
+              className="mt-2 inline-grid grid-cols-3 rounded-md border border-border bg-muted p-1"
+              role="group"
+              aria-label="Hero background focal position"
+            >
+              {(["left", "center", "right"] as const).map((position) => (
+                <Button
+                  key={position}
+                  type="button"
+                  size="sm"
+                  variant={objectPosition === position ? "default" : "ghost"}
+                  className="min-w-16"
+                  onClick={() => onObjectPosition(position)}
+                >
+                  {position[0]?.toUpperCase()}
+                  {position.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {canUpload ? (
           <>
             <input
@@ -1353,38 +1400,64 @@ function HeroImagePreview({
   designation: string;
 }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const widths = { desktop: "max-w-2xl", tablet: "max-w-md", mobile: "max-w-56" };
+  const widths = { desktop: "w-full", tablet: "w-4/5", mobile: "w-1/2 min-w-40" };
   const positions = { left: "object-left", center: "object-center", right: "object-right" };
+  const devices = {
+    desktop: { label: "Desktop", icon: Monitor },
+    tablet: { label: "Tablet", icon: Tablet },
+    mobile: { label: "Mobile", icon: Smartphone },
+  } as const;
   return (
-    <div className="grid gap-3 lg:col-span-2">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Hero preview device">
+    <div className="grid min-w-0 gap-3 lg:col-start-2 lg:row-span-3 lg:row-start-1">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">Hero preview</p>
+        <div
+          className="inline-grid grid-cols-3 rounded-md border border-border bg-muted p-1"
+          role="group"
+          aria-label="Hero preview device"
+        >
         {(["desktop", "tablet", "mobile"] as const).map((item) => (
-          <Button
-            key={item}
-            type="button"
-            size="sm"
-            variant={device === item ? "default" : "outline"}
-            onClick={() => setDevice(item)}
-          >
-            {item[0]?.toUpperCase()}
-            {item.slice(1)}
-          </Button>
+            <Button
+              key={item}
+              type="button"
+              size="icon"
+              className="size-9 min-h-9"
+              variant={device === item ? "default" : "ghost"}
+              aria-label={`${devices[item].label} preview`}
+              title={`${devices[item].label} preview`}
+              onClick={() => setDevice(item)}
+            >
+              {(() => {
+                const Icon = devices[item].icon;
+                return <Icon className="size-4" />;
+              })()}
+            </Button>
         ))}
-      </div>
-      <div
-        className={`relative aspect-video w-full overflow-hidden rounded-md border border-border bg-secondary ${widths[device]}`}
-      >
-        <img
-          src={value}
-          alt={alt}
-          className={`absolute inset-0 size-full object-cover ${positions[objectPosition]}`}
-        />
-        <div className="absolute inset-0 bg-background/55" aria-hidden="true" />
-        <div className="absolute inset-x-0 bottom-0 bg-background/85 p-4">
-          <p className="font-semibold text-foreground">{doctorName}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{designation}</p>
         </div>
       </div>
+      <div className="grid min-h-56 place-items-center rounded-md border border-border bg-muted p-3 sm:min-h-64">
+        <div
+          className={`relative aspect-video max-w-full overflow-hidden rounded-md border border-border bg-secondary shadow-[var(--shadow-sm)] transition-[width] ${widths[device]}`}
+        >
+          {value ? (
+            <img
+              src={value}
+              alt={alt}
+              className={`absolute inset-0 size-full object-cover ${positions[objectPosition]}`}
+            />
+          ) : (
+            <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
+              No background image selected
+            </div>
+          )}
+          <div className="absolute inset-0 bg-background/55" aria-hidden="true" />
+          <div className="absolute inset-x-0 bottom-0 bg-background/85 p-3 sm:p-4">
+            <p className="truncate font-semibold text-foreground">{doctorName}</p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">{designation}</p>
+          </div>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">This is how the hero background will appear.</p>
     </div>
   );
 }

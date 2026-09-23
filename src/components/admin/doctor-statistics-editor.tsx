@@ -373,9 +373,12 @@ export const DoctorStatisticsEditor = forwardRef<
   };
 
   return (
-    <section className="border-t border-border pt-6" aria-labelledby="statistics-heading">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+    <section
+      className="rounded-md border border-border bg-background p-4 sm:p-5"
+      aria-labelledby="statistics-heading"
+    >
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:items-center">
+        <div className="min-w-0">
           <h3 id="statistics-heading" className="text-lg font-semibold">
             Statistics
           </h3>
@@ -383,29 +386,36 @@ export const DoctorStatisticsEditor = forwardRef<
             Reusable profile highlights with doctor-specific values.
           </p>
         </div>
-        <label className="flex items-center gap-3 text-sm font-semibold">
-          <span>{enabled ? "ON" : "OFF"}</span>
-          <Switch
-            checked={enabled}
-            disabled={!canWrite}
-            aria-label="Statistics section visibility"
-            onCheckedChange={(checked) => {
-              onEnabledChange(checked);
-              markDirty();
-            }}
-          />
-        </label>
-      </div>
-      {!enabled ? null : (
-        <div className="mt-5">
+        <div className="grid justify-items-end gap-2 sm:flex sm:items-center">
           <Button
             type="button"
-            variant="outline"
-            disabled={!canWrite}
+            size="sm"
+            disabled={!canWrite || !enabled}
             onClick={() => setMode(mode === "closed" ? "existing" : "closed")}
           >
-            <Plus className="size-4" /> Add Statistic
+            <Plus className="size-4" /> <span className="hidden sm:inline">Add Statistic</span>
+            <span className="sm:hidden">Add</span>
           </Button>
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <span>{enabled ? "ON" : "OFF"}</span>
+            <Switch
+              checked={enabled}
+              disabled={!canWrite}
+              aria-label="Statistics section visibility"
+              onCheckedChange={(checked) => {
+                onEnabledChange(checked);
+                markDirty();
+              }}
+            />
+          </label>
+        </div>
+      </div>
+      {!enabled ? (
+        <p className="mt-4 rounded-md bg-muted p-3 text-sm text-muted-foreground">
+          Statistics are saved but hidden from the doctor profile.
+        </p>
+      ) : (
+        <div className="mt-4">
           {mode !== "closed" ? (
             <div className="mt-4 grid gap-4 rounded-md border border-border p-4">
               <div className="flex gap-2" role="group" aria-label="Add statistic method">
@@ -460,7 +470,7 @@ export const DoctorStatisticsEditor = forwardRef<
             </div>
           ) : null}
           <AdminError message={error} />
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+           <div className="mt-4 grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
             {assignments.map((row, index) => {
               const definition = definitionFor(row);
               const icon = row.icon_override_url || definition?.default_icon_url || row.icon;
@@ -468,7 +478,7 @@ export const DoctorStatisticsEditor = forwardRef<
               return (
                 <article
                   key={row.id}
-                  className="min-w-0 rounded-md border border-border bg-background p-4"
+                  className="flex min-h-56 min-w-0 flex-col rounded-md border border-border bg-card p-4 shadow-[var(--shadow-sm)]"
                 >
                   {isEditing ? (
                     <div className="grid gap-4">
@@ -577,7 +587,7 @@ export const DoctorStatisticsEditor = forwardRef<
                       </Button>
                     </div>
                   ) : (
-                    <div className="grid min-h-40 place-items-center text-center">
+                    <div className="grid flex-1 place-items-center gap-3 py-3 text-center">
                       {icon ? (
                         <img src={icon} alt="" className="size-12 object-contain" />
                       ) : (
@@ -587,7 +597,7 @@ export const DoctorStatisticsEditor = forwardRef<
                         />
                       )}
                       <div>
-                        <strong className="block text-2xl text-primary">
+                         <strong className="block text-3xl font-semibold text-primary">
                           {row.value || "Value"}
                         </strong>
                         <span className="mt-1 block text-sm font-medium">
@@ -596,7 +606,7 @@ export const DoctorStatisticsEditor = forwardRef<
                       </div>
                     </div>
                   )}
-                  <div className="mt-3 flex items-center gap-1 border-t border-border pt-3">
+                   <div className="mt-3 flex items-center gap-1 border-t border-border pt-3">
                     <Switch
                       checked={row.enabled}
                       aria-label={`${definition?.name ?? row.label} enabled`}
@@ -610,6 +620,7 @@ export const DoctorStatisticsEditor = forwardRef<
                       size="icon"
                       variant="ghost"
                       aria-label="Move statistic up"
+                       title="Move up"
                       disabled={index === 0}
                       onClick={() => move(index, -1)}
                     >
@@ -620,6 +631,7 @@ export const DoctorStatisticsEditor = forwardRef<
                       size="icon"
                       variant="ghost"
                       aria-label="Move statistic down"
+                       title="Move down"
                       disabled={index === assignments.length - 1}
                       onClick={() => move(index, 1)}
                     >
@@ -630,6 +642,7 @@ export const DoctorStatisticsEditor = forwardRef<
                       size="icon"
                       variant="ghost"
                       aria-label="Edit statistic assignment"
+                       title="Edit statistic"
                       onClick={() => setEditing(isEditing ? null : row.id)}
                     >
                       <Pencil className="size-4" />
@@ -638,7 +651,9 @@ export const DoctorStatisticsEditor = forwardRef<
                       type="button"
                       size="icon"
                       variant="ghost"
+                       className="text-destructive hover:text-destructive"
                       aria-label="Remove statistic assignment"
+                       title="Delete statistic"
                       onClick={() => {
                         setAssignments((current) => current.filter((item) => item.id !== row.id));
                         markDirty();
@@ -651,10 +666,16 @@ export const DoctorStatisticsEditor = forwardRef<
               );
             })}
           </div>
-          {!assignments.length ? (
-            <p className="mt-5 text-sm text-muted-foreground">
-              No statistics assigned to this doctor.
-            </p>
+          {!assignments.length && mode === "closed" ? (
+            <div className="mt-4 grid justify-items-center rounded-md border border-dashed border-border bg-muted/40 px-4 py-8 text-center">
+              <p className="font-semibold">No statistics added yet.</p>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                Add professional statistics that highlight this doctor’s experience and work.
+              </p>
+              <Button type="button" size="sm" className="mt-4" onClick={() => setMode("existing")}>
+                <Plus className="size-4" /> Add Statistic
+              </Button>
+            </div>
           ) : null}
         </div>
       )}
