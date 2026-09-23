@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { contentTypeByKey, listRecords } from "@/lib/admin-content";
+import { doctorSpecialty } from "@/lib/data/mappers";
 
 const type = contentTypeByKey("doctors");
 const PAGE_SIZE = 20;
@@ -36,8 +37,9 @@ export function DoctorList() {
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return (records.data ?? []).filter((row) => {
+      const specialty = doctorSpecialty(row);
       const haystack =
-        `${row["name"] ?? row["full_name"] ?? ""} ${row["specialty"] ?? row["specialization"] ?? ""}`.toLowerCase();
+        `${row["name"] ?? row["full_name"] ?? ""} ${specialty ?? ""}`.toLowerCase();
       if (term && !haystack.includes(term)) return false;
       return status === "all" || statusOf(row) === status;
     });
@@ -53,7 +55,7 @@ export function DoctorList() {
         <div>
           <p className="font-medium">{row["name"] ?? row["full_name"] ?? "Untitled"}</p>
           <p className="text-sm text-muted-foreground">
-            {row["specialty"] ?? row["specialization"] ?? "—"}
+            {doctorSpecialty(row) ?? "—"}
           </p>
         </div>
       ),

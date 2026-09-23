@@ -58,4 +58,4 @@
 - [x] Verify the repaired shared relationship trigger and add-new qualification selection flow
 - [x] Repair and verify unpublished doctor Preview after normalized relationships
 
-- [ ] Repair doctor specialization synchronization across workspace, listings, preview, and public profiles
+- [x] Repair doctor specialization synchronization across workspace, listings, preview, and public profiles

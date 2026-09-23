@@ -61,7 +61,7 @@ export async function getDepartment(slug: string) {
       db
         .from("doctor_departments")
         .select(
-          "doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)))",
+          "doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name)))",
         )
         .eq("department_id", department["id"]),
       db
@@ -105,7 +105,7 @@ export async function listDoctors(): Promise<Doctor[]> {
       await published(
         db
           .from("doctors")
-          .select("*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))"),
+          .select("*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name))"),
       )
         .order("display_order")
         .order("name"),
@@ -130,8 +130,8 @@ export async function listDoctors(): Promise<Doctor[]> {
 
 export async function getDoctor(slug: string, preview = false) {
   const selection = usesProductionContract
-    ? "*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))"
-    : "*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))";
+    ? "*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name))"
+    : "*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name))";
   // Preview skips the publication filter only; row access is still enforced by
   // database policies, so signed-out visitors never receive unpublished rows.
   const base = db.from("doctors").select(selection).eq("slug", slug);
@@ -181,8 +181,9 @@ export async function getDoctor(slug: string, preview = false) {
         .order("display_order"),
       db
         .from("doctor_specializations")
-        .select("id,title,description,icon,professional_service_id,display_order")
+        .select("id,title,description,icon,professional_service_id,enabled,display_order,department_specializations(name)")
         .eq("doctor_id", doctor.id)
+        .not("specialization_id", "is", null)
         .eq("enabled", true)
         .order("display_order"),
       db
@@ -230,7 +231,7 @@ export async function getDoctor(slug: string, preview = false) {
       .eq("doctor_id", doctor.id)
       .order("display_order");
     return {
-      doctor,
+      doctor: mapDoctor(row, links[0]?.departments, rows(specializationResult)),
       serviceItems: rows(serviceItemResult).map((item) => ({
         serviceId: String(item["professional_service_id"] ?? ""),
         id: String(item["individual_service_id"] ?? ""),
@@ -283,7 +284,10 @@ export async function getDoctor(slug: string, preview = false) {
             { active?: unknown } | null | undefined;
           return item.value.trim() && item.label.trim() && definition?.active !== false;
         }),
-      specializations: rows(specializationResult) as DoctorSpecialization[],
+      specializations: rows(specializationResult).map((item) => ({
+        ...item,
+        title: String(item["department_specializations"]?.name ?? item["title"] ?? ""),
+      })) as DoctorSpecialization[],
       experience: rows(experienceResult) as DoctorExperience[],
       education: rows(educationResult) as DoctorEducation[],
       achievements: rows(achievementResult) as DoctorAchievement[],
@@ -371,7 +375,7 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
         .eq("professional_service_id", mapped.id),
       db
         .from("professional_service_doctors")
-        .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug))")
+        .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_specializations(enabled,display_order,department_specializations(name)))")
         .eq("professional_service_id", mapped.id),
     ]);
     return {
@@ -393,7 +397,7 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
     db
       .from("doctor_services")
       .select(
-        "doctors(*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)))",
+        "doctors(*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name)))",
       )
       .eq("service_id", mapped.id),
   ]);
@@ -432,7 +436,7 @@ export async function getFacility(slug: string) {
   const [doctors, departments, professional, hospital] = await Promise.all([
     db
       .from("facility_doctors")
-      .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug))")
+      .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_specializations(enabled,display_order,department_specializations(name)))")
       .eq("facility_id", facility["id"]),
     db.from("facility_departments").select("departments(*)").eq("facility_id", facility["id"]),
     db

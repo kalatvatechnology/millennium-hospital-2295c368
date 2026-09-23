@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { classifyDataError } from "./errors";
 import { siteConfig } from "@/config/site";
 import { extractWebsiteKeywords, normalizeKeyword, stripHtml } from "@/lib/seo/keywords";
+import { doctorSpecialty } from "./mappers";
 import type {
   SeoDataSource,
   SeoEntity,
@@ -70,7 +71,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       db
         .from("doctors")
         .select(
-          "id, name, slug, specialty, designation, qualifications, short_introduction, bio, seo_title, seo_description, canonical_url, photo_url, profile_image_alt, hero_image_url, hero_image_alt, published",
+          "id, name, slug, designation, qualifications, short_introduction, bio, seo_title, seo_description, canonical_url, photo_url, profile_image_alt, hero_image_url, hero_image_alt, published, doctor_specializations(enabled,display_order,department_specializations(name))",
         ),
       db
         .from("locations")
@@ -160,6 +161,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
   }
 
   for (const row of rows(doctors)) {
+    const specialty = doctorSpecialty(row);
     const qualifications = Array.isArray(row["qualifications"])
       ? (row["qualifications"] as unknown[]).filter((v): v is string => typeof v === "string")
       : [];
@@ -183,7 +185,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       internalLinks: 0,
       fields: [
         ...field("Doctor name", "name", row["name"]),
-        ...field("Specialty", "specialty", row["specialty"]),
+        ...field("Specialty", "specialty", specialty),
         ...field("Designation", "designation", row["designation"]),
         ...field("Qualifications", "qualifications", qualifications.join(", ")),
         ...field("Introduction", "short_introduction", row["short_introduction"]),

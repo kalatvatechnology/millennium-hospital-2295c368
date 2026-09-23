@@ -81,7 +81,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     departments: Department[];
     legacyDesignation: string;
     legacyQualifications: string[];
-    legacySpecialty: string;
     canWrite: boolean;
     onDepartmentsChange: (ids: string[]) => void;
   }
@@ -91,7 +90,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     departments,
     legacyDesignation,
     legacyQualifications,
-    legacySpecialty,
     canWrite,
     onDepartmentsChange,
   },
@@ -144,7 +142,11 @@ export const DepartmentProfessionalEditor = forwardRef<
       Object.fromEntries(query.data.designationLinks.map((row: any) => [row.department_id, row.designation_id])),
     );
     setQualificationIds(query.data.qualificationLinks.map((row: any) => row.qualification_id));
-    setSpecializationIds(query.data.specializationLinks.map((row: any) => row.specialization_id));
+    setSpecializationIds(
+      query.data.specializationLinks
+        .filter((row: any) => ids.includes(row.department_id))
+        .map((row: any) => row.specialization_id),
+    );
     onDepartmentsChange(ids);
     setError(null);
   };
@@ -156,6 +158,12 @@ export const DepartmentProfessionalEditor = forwardRef<
 
   const updateDepartments = (ids: string[]) => {
     setDepartmentIds(ids);
+    const allowedSpecializationIds = new Set(
+      (query.data?.specializations ?? [])
+        .filter((item: any) => ids.includes(item.department_id))
+        .map((item: any) => item.id),
+    );
+    setSpecializationIds((current) => current.filter((id) => allowedSpecializationIds.has(id)));
     onDepartmentsChange(ids);
   };
   const snapshot = (): ProfessionalSnapshot => {
@@ -174,13 +182,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     const selectedQualificationNames = qualificationIds
       .map((id) => qualifications.find((item: any) => item.id === id)?.name)
       .filter(Boolean);
-    const knownSpecializationNames = new Set(
-      specializations.map((item: any) => item.name.trim().toLowerCase()),
-    );
-    const unmatchedLegacySpecialties = legacySpecialty
-      .split(",")
-      .map((name) => name.trim())
-      .filter((name) => name && !knownSpecializationNames.has(name.toLowerCase()));
     const selectedSpecializationNames = specializationIds
       .map((id) => specializations.find((item: any) => item.id === id)?.name)
       .filter(Boolean);
@@ -191,7 +192,7 @@ export const DepartmentProfessionalEditor = forwardRef<
       specializationIds,
       designation: primaryDesignation ?? legacyDesignation,
       qualifications: [...unmatchedLegacyQualifications, ...selectedQualificationNames],
-      specialty: [...unmatchedLegacySpecialties, ...selectedSpecializationNames].join(", "),
+      specialty: selectedSpecializationNames.join(", "),
     };
   };
   const save = async (savedDoctorId: string) => {
@@ -395,9 +396,9 @@ export const DepartmentProfessionalEditor = forwardRef<
           </section>
         );
       })}
-      {(legacyDesignation || legacyQualifications.length || legacySpecialty) && !query.isPending ? (
+      {(legacyDesignation || legacyQualifications.length) && !query.isPending ? (
         <p className="text-xs text-muted-foreground">
-          Existing unmatched values remain preserved: {[legacyDesignation, ...legacyQualifications, legacySpecialty].filter(Boolean).join(" · ")}
+          Existing unmatched designation and qualification values remain preserved: {[legacyDesignation, ...legacyQualifications].filter(Boolean).join(" · ")}
         </p>
       ) : null}
       <p className="text-sm text-destructive" role="alert">{error}</p>
@@ -761,6 +762,7 @@ export const DepartmentSpecializationsEditor = forwardRef<
         .from("doctor_specializations")
         .select("id,title,description,icon,icon_override_url,enabled,display_order,department_id,specialization_id,department_specializations(name,description,default_icon_url)")
         .eq("doctor_id", doctorId)
+        .not("specialization_id", "is", null)
         .order("display_order");
       if (error) throw error;
       return data ?? [];

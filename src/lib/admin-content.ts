@@ -426,7 +426,11 @@ export async function listRecords(type: ContentType) {
   if (type.available === false) return [];
   const { data, error } = await (supabase as any)
     .from(type.table)
-    .select("*")
+    .select(
+      type.key === "doctors"
+        ? "*, doctor_specializations(enabled,display_order,department_specializations(name))"
+        : "*",
+    )
     .order(type.orderBy)
     .limit(1000);
   if (error) throw classifyDataError(error);
