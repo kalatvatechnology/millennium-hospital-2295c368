@@ -55,3 +55,4 @@
 - [x] Separate the Doctor Hero background from the portrait while preserving legacy Hero image data
 
 - [ ] Implement department-aware Doctor Profile CMS relationships, selectors, creation flows, and compatibility checks
+- [ ] Verify the repaired shared relationship trigger and add-new qualification selection flow
