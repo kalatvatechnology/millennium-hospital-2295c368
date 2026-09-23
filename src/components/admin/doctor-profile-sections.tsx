@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { AdminError } from "@/components/admin/ui";
 import { userFacingDataError } from "@/lib/data/errors";
+import { useAdminSession } from "@/hooks/use-admin-session";
 
 const db = supabase as any;
 type Row = {
