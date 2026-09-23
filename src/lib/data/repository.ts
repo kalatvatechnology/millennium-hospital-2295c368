@@ -226,7 +226,7 @@ export async function getDoctor(slug: string, preview = false) {
     ]);
     const serviceItemResult = await db
       .from("doctor_service_items")
-      .select("professional_service_id,individual_service_id,display_order,individual_services(title)")
+      .select("professional_service_id,individual_service_id,display_order,individual_services!doctor_service_items_individual_service_id_fkey(title)")
       .eq("doctor_id", doctor.id)
       .order("display_order");
     return {
