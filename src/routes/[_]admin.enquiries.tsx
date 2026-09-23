@@ -23,6 +23,11 @@ import {
 } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
 import { listStaffEnquiries, updateEnquiryStatus } from "@/lib/data/staff-repository";
+import {
+  isDoctorOriginSource,
+  resolveEnquiryWhatsappTarget,
+  whatsappUrl,
+} from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/_admin/enquiries")({
   head: () => ({
@@ -171,18 +176,25 @@ function AdminEnquiries() {
       ) : (
         <div className="mt-6 grid gap-4">
           {rows.map((row) => {
-            const target = row.doctor?.whatsappNumber ?? null;
-            const text = encodeURIComponent(
-              [
-                "Enquiry from the hospital website",
-                `Patient: ${row.patientName}`,
-                `Contact: ${row.contactNumber}`,
-                row.doctor ? `Doctor: ${row.doctor.name}` : null,
-                row.message ? `Message: ${row.message}` : null,
-              ]
-                .filter(Boolean)
-                .join("\n"),
+            const doctorOrigin = isDoctorOriginSource(row.source);
+            const target = resolveEnquiryWhatsappTarget(
+              row.source,
+              row.doctor
+                ? {
+                    whatsapp_number: row.doctor.whatsappNumber,
+                    whatsapp_country_code: row.doctor.whatsappCountryCode,
+                  }
+                : null,
             );
+            const text = [
+              "Enquiry from the hospital website",
+              `Patient: ${row.patientName}`,
+              `Contact: ${row.contactNumber}`,
+              row.doctor ? `Doctor: ${row.doctor.name}` : null,
+              row.message ? `Message: ${row.message}` : null,
+            ]
+              .filter(Boolean)
+              .join("\n");
             return (
               <article key={row.id} className="border border-border bg-background p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -212,12 +224,11 @@ function AdminEnquiries() {
                     </Select>
                     {target ? (
                       <Button asChild variant="outline" size="sm">
-                        <a
-                          href={`https://wa.me/${target.replace(/\D/g, "")}?text=${text}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <MessageCircle className="size-4" /> Forward
+                        <a href={whatsappUrl(target, text)} target="_blank" rel="noreferrer">
+                          <MessageCircle className="size-4" />{" "}
+                          {doctorOrigin && row.doctor?.whatsappNumber
+                            ? "Forward to doctor"
+                            : "Forward to hospital"}
                         </a>
                       </Button>
                     ) : null}

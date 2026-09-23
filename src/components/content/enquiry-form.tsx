@@ -5,6 +5,7 @@ import { enquiryOptionsQuery } from "@/lib/queries";
 import { submitEnquiry } from "@/lib/data/repository";
 import { userFacingDataError } from "@/lib/data/errors";
 import { siteConfig } from "@/config/site";
+import { resolveEnquiryWhatsappTarget, whatsappUrl } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +86,7 @@ export function EnquiryForm({
       return setError(userFacingDataError(submitError));
     }
 
-    const target = doctor?.whatsapp_number ?? siteConfig.contact.whatsapp;
+    const target = resolveEnquiryWhatsappTarget(source, doctor);
     const lines = [
       `New enquiry from the ${siteConfig.name} website`,
       `Patient: ${patientName.trim()}`,
@@ -98,12 +99,10 @@ export function EnquiryForm({
       preferredAt ? `Preferred time: ${preferredAt.replace("T", " ")}` : null,
       message.trim() ? `Message: ${message.trim()}` : null,
     ].filter(Boolean);
-    const whatsappUrl = target
-      ? `https://wa.me/${target.replace(/\D/g, "")}?text=${encodeURIComponent(lines.join("\n"))}`
-      : null;
+    const url = target ? whatsappUrl(target, lines.join("\n")) : null;
 
     setSubmitting(false);
-    setSent({ whatsappUrl });
+    setSent({ whatsappUrl: url });
   };
 
   if (sent) {
