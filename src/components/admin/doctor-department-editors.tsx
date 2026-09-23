@@ -168,20 +168,10 @@ export const DepartmentProfessionalEditor = forwardRef<
   };
   const snapshot = (): ProfessionalSnapshot => {
     const designations = query.data?.designations ?? [];
-    const qualifications = query.data?.qualifications ?? [];
     const specializations = query.data?.specializations ?? [];
     const primaryDesignation = designations.find(
       (item: any) => item.id === designationByDepartment[departmentIds[0] ?? ""],
     )?.name;
-    const knownQualificationNames = new Set(
-      qualifications.map((item: any) => item.name.trim().toLowerCase()),
-    );
-    const unmatchedLegacyQualifications = legacyQualifications.filter(
-      (name) => !knownQualificationNames.has(name.trim().toLowerCase()),
-    );
-    const selectedQualificationNames = qualificationIds
-      .map((id) => qualifications.find((item: any) => item.id === id)?.name)
-      .filter(Boolean);
     const selectedSpecializationNames = specializationIds
       .map((id) => specializations.find((item: any) => item.id === id)?.name)
       .filter(Boolean);
@@ -191,7 +181,7 @@ export const DepartmentProfessionalEditor = forwardRef<
       qualificationIds,
       specializationIds,
       designation: primaryDesignation ?? legacyDesignation,
-      qualifications: [...unmatchedLegacyQualifications, ...selectedQualificationNames],
+      qualifications: legacyQualifications,
       specialty: selectedSpecializationNames.join(", "),
     };
   };
@@ -350,7 +340,6 @@ export const DepartmentProfessionalEditor = forwardRef<
       {departmentIds.map((departmentId) => {
         const department = departments.find((item) => item.id === departmentId);
         const designations = (query.data?.designations ?? []).filter((item: any) => item.department_id === departmentId);
-        const qualifications = (query.data?.qualifications ?? []).filter((item: any) => item.department_id === departmentId);
         const specializations = (query.data?.specializations ?? []).filter((item: any) => item.department_id === departmentId);
         return (
           <section key={departmentId} className="grid gap-5 border-t border-border pt-5">
@@ -369,18 +358,6 @@ export const DepartmentProfessionalEditor = forwardRef<
                 <AddButton label="Add New Designation" onClick={() => setDialog({ kind: "designation", departmentId })} />
               </div>
               <div>
-                <Label>Qualifications</Label>
-                <SearchableMultiSelect
-                  label={`${department?.name ?? "Department"} qualifications`}
-                  options={qualifications}
-                  selected={qualificationIds.filter((id) => qualifications.some((item: any) => item.id === id))}
-                  onChange={(ids) => setQualificationIds((current) => [...current.filter((id) => !qualifications.some((item: any) => item.id === id)), ...ids])}
-                  placeholder="Select qualifications"
-                  disabled={!canWrite}
-                />
-                <AddButton label="Add New Qualification" onClick={() => setDialog({ kind: "qualification", departmentId })} />
-              </div>
-              <div className="lg:col-span-2">
                 <Label>Specializations</Label>
                 <SearchableMultiSelect
                   label={`${department?.name ?? "Department"} specializations`}
@@ -396,11 +373,14 @@ export const DepartmentProfessionalEditor = forwardRef<
           </section>
         );
       })}
-      {(legacyDesignation || legacyQualifications.length) && !query.isPending ? (
+      {legacyDesignation && !query.isPending ? (
         <p className="text-xs text-muted-foreground">
-          Existing unmatched designation and qualification values remain preserved: {[legacyDesignation, ...legacyQualifications].filter(Boolean).join(" · ")}
+          Existing designation value remains preserved: {legacyDesignation}
         </p>
       ) : null}
+      <p className="text-xs text-muted-foreground">
+        Qualifications are managed in the Education section.
+      </p>
       <p className="text-sm text-destructive" role="alert">{error}</p>
       <AddOptionDialog
         open={Boolean(dialog)}
