@@ -1420,7 +1420,8 @@ function HeroImagePreview({
             <Button
               key={item}
               type="button"
-              size="icon-sm"
+              size="icon"
+              className="size-9 min-h-9"
               variant={device === item ? "default" : "ghost"}
               aria-label={`${devices[item].label} preview`}
               title={`${devices[item].label} preview`}
