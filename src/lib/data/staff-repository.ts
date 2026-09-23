@@ -196,7 +196,7 @@ export async function listStaffEnquiries(): Promise<StaffEnquiry[]> {
   const table = usesProductionContract ? "appointment_enquiries" : "enquiries";
   const selection = usesProductionContract
     ? "*, doctor:doctors!appointment_enquiries_preferred_doctor_id_fkey(full_name,whatsapp), department:departments!appointment_enquiries_preferred_department_id_fkey(name), service:services!appointment_enquiries_preferred_service_id_fkey(title)"
-    : "*, doctor:doctors(name,whatsapp_number), department:departments(name), professional_service:professional_services(title), hospital_service:hospital_services(title)";
+    : "*, doctor:doctors(name,whatsapp_number,whatsapp_country_code), department:departments(name), professional_service:professional_services(title), hospital_service:hospital_services(title)";
   return getRows(
     await db.from(table).select(selection).order("created_at", { ascending: false }),
   ).map((row) => {
@@ -216,10 +216,12 @@ export async function listStaffEnquiries(): Promise<StaffEnquiry[]> {
       preferredAt: text(row["preferred_at"]),
       status: String(row["status"]),
       message: text(row["message"]),
+      source: text(row["source"]),
       doctor: doctor
         ? {
             name: String(doctor["full_name"] ?? doctor["name"]),
             whatsappNumber: text(doctor["whatsapp"] ?? doctor["whatsapp_number"]),
+            whatsappCountryCode: text(doctor["whatsapp_country_code"]),
           }
         : null,
       department: department ? { name: String(department["name"]) } : null,

@@ -633,7 +633,9 @@ export async function getEnquiryOptions() {
     };
   }
   const [doctors, departments, professional, hospital] = await Promise.all([
-    published(db.from("doctors").select("id,name,slug,whatsapp_number")).order("name"),
+    published(db.from("doctors").select("id,name,slug,whatsapp_number,whatsapp_country_code")).order(
+      "name",
+    ),
     published(db.from("departments").select("id,name")).order("name"),
     published(db.from("professional_services").select("id,title")).order("title"),
     published(db.from("hospital_services").select("id,title")).order("title"),
@@ -644,6 +646,7 @@ export async function getEnquiryOptions() {
       name: String(row["name"]),
       slug: String(row["slug"]),
       whatsapp_number: row["whatsapp_number"] ?? null,
+      whatsapp_country_code: row["whatsapp_country_code"] ?? null,
     })),
     departments: rows(departments).map((row) => ({
       id: String(row["id"]),
