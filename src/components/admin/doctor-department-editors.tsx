@@ -350,7 +350,6 @@ export const DepartmentProfessionalEditor = forwardRef<
       {departmentIds.map((departmentId) => {
         const department = departments.find((item) => item.id === departmentId);
         const designations = (query.data?.designations ?? []).filter((item: any) => item.department_id === departmentId);
-        const qualifications = (query.data?.qualifications ?? []).filter((item: any) => item.department_id === departmentId);
         const specializations = (query.data?.specializations ?? []).filter((item: any) => item.department_id === departmentId);
         return (
           <section key={departmentId} className="grid gap-5 border-t border-border pt-5">
@@ -384,11 +383,14 @@ export const DepartmentProfessionalEditor = forwardRef<
           </section>
         );
       })}
-      {(legacyDesignation || legacyQualifications.length) && !query.isPending ? (
+      {legacyDesignation && !query.isPending ? (
         <p className="text-xs text-muted-foreground">
-          Existing unmatched designation and qualification values remain preserved: {[legacyDesignation, ...legacyQualifications].filter(Boolean).join(" · ")}
+          Existing designation value remains preserved: {legacyDesignation}
         </p>
       ) : null}
+      <p className="text-xs text-muted-foreground">
+        Qualifications are managed in the Education section.
+      </p>
       <p className="text-sm text-destructive" role="alert">{error}</p>
       <AddOptionDialog
         open={Boolean(dialog)}
