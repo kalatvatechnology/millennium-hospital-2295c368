@@ -144,7 +144,11 @@ export const DepartmentProfessionalEditor = forwardRef<
       Object.fromEntries(query.data.designationLinks.map((row: any) => [row.department_id, row.designation_id])),
     );
     setQualificationIds(query.data.qualificationLinks.map((row: any) => row.qualification_id));
-    setSpecializationIds(query.data.specializationLinks.map((row: any) => row.specialization_id));
+    setSpecializationIds(
+      query.data.specializationLinks
+        .filter((row: any) => ids.includes(row.department_id))
+        .map((row: any) => row.specialization_id),
+    );
     onDepartmentsChange(ids);
     setError(null);
   };
@@ -174,13 +178,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     const selectedQualificationNames = qualificationIds
       .map((id) => qualifications.find((item: any) => item.id === id)?.name)
       .filter(Boolean);
-    const knownSpecializationNames = new Set(
-      specializations.map((item: any) => item.name.trim().toLowerCase()),
-    );
-    const unmatchedLegacySpecialties = legacySpecialty
-      .split(",")
-      .map((name) => name.trim())
-      .filter((name) => name && !knownSpecializationNames.has(name.toLowerCase()));
     const selectedSpecializationNames = specializationIds
       .map((id) => specializations.find((item: any) => item.id === id)?.name)
       .filter(Boolean);
@@ -191,7 +188,7 @@ export const DepartmentProfessionalEditor = forwardRef<
       specializationIds,
       designation: primaryDesignation ?? legacyDesignation,
       qualifications: [...unmatchedLegacyQualifications, ...selectedQualificationNames],
-      specialty: [...unmatchedLegacySpecialties, ...selectedSpecializationNames].join(", "),
+      specialty: selectedSpecializationNames.join(", "),
     };
   };
   const save = async (savedDoctorId: string) => {
@@ -395,9 +392,9 @@ export const DepartmentProfessionalEditor = forwardRef<
           </section>
         );
       })}
-      {(legacyDesignation || legacyQualifications.length || legacySpecialty) && !query.isPending ? (
+      {(legacyDesignation || legacyQualifications.length) && !query.isPending ? (
         <p className="text-xs text-muted-foreground">
-          Existing unmatched values remain preserved: {[legacyDesignation, ...legacyQualifications, legacySpecialty].filter(Boolean).join(" · ")}
+          Existing unmatched designation and qualification values remain preserved: {[legacyDesignation, ...legacyQualifications].filter(Boolean).join(" · ")}
         </p>
       ) : null}
       <p className="text-sm text-destructive" role="alert">{error}</p>

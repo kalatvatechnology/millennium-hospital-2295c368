@@ -62,7 +62,31 @@ function mapDepartmentSummary(value: unknown): Doctor["department"] {
   return id && name && slug ? { id, name, slug } : null;
 }
 
-export function mapDoctor(row: Row, department?: unknown): Doctor {
+export function doctorSpecialty(row: Row, specializationRows?: unknown): string | null {
+  const source = Array.isArray(specializationRows)
+    ? specializationRows
+    : Array.isArray(row["doctor_specializations"])
+      ? row["doctor_specializations"]
+      : [];
+  const names = source
+    .filter((item) => item && typeof item === "object" && !Array.isArray(item))
+    .filter((item) => (item as Row)["enabled"] !== false)
+    .sort(
+      (left, right) =>
+        (number((left as Row)["display_order"]) ?? 0) -
+        (number((right as Row)["display_order"]) ?? 0),
+    )
+    .map((item) => {
+      const specialization = (item as Row)["department_specializations"];
+      return specialization && typeof specialization === "object" && !Array.isArray(specialization)
+        ? text((specialization as Row)["name"])
+        : null;
+    })
+    .filter((name): name is string => Boolean(name));
+  return names.length ? [...new Set(names)].join(", ") : null;
+}
+
+export function mapDoctor(row: Row, department?: unknown, specializationRows?: unknown): Doctor {
   const relationshipValues = Array.isArray(row["doctor_departments"])
     ? row["doctor_departments"]
         .map((item) =>
@@ -86,7 +110,7 @@ export function mapDoctor(row: Row, department?: unknown): Doctor {
     photo_url: text(row["photo_url"] ?? row["image_url"]),
     qualifications: list(row["qualifications"]),
     designation: text(row["designation"]),
-    specialty: text(row["specialization"] ?? row["specialty"]),
+    specialty: doctorSpecialty(row, specializationRows),
     experience_years: number(row["experience_years"]),
     bio: text(row["bio"]),
     short_introduction: text(row["short_introduction"]),
