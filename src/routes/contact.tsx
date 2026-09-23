@@ -5,6 +5,7 @@ import { ContentSection, PageIntro } from "@/components/shared/page";
 import { EnquiryForm } from "@/components/content/enquiry-form";
 import { createPageMeta } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
+import { hospitalWhatsappDigits } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({ meta: createPageMeta("Contact", "Find verified contact and location information for The Millennium Hospital and send an enquiry.") }),

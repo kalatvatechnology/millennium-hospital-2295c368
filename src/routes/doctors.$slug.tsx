@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { resolveEnquiryWhatsappTarget } from "@/lib/whatsapp";
 import {
   Award,
   BookOpen,

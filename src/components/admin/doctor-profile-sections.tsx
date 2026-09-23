@@ -766,7 +766,7 @@ function RelationshipGroup({
         ) : (
           <p className="text-sm text-muted-foreground">No records available.</p>
         )}
-      </div>
+      </fieldset>
     </section>
   );
 }

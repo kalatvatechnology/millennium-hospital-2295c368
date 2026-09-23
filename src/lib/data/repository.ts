@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/integrations/supabase/client";
 import { backendFeatures, usesProductionContract } from "./backend";
+import { siteConfig } from "@/config/site";
 import { classifyDataError, DataAccessError } from "./errors";
 import {
   mapDepartment,
