@@ -98,6 +98,7 @@ export function DoctorLocationsEditor({
     if (readOnly || !query.data) return;
     const original = query.data.links;
     for (const old of original) {
+      if (old.location_id === HOSPITAL_ID) continue; // main hospital link is never removed
       if (links.some((row) => row.location_id === old.location_id)) continue;
       const { error } = await db
         .from("doctor_locations")
@@ -282,54 +283,48 @@ export function DoctorLocationsEditor({
                       <p className="font-semibold leading-snug">{o?.name ?? "Unknown location"}</p>
                       {area(o) ? <p className="text-sm text-muted-foreground">{area(o)}</p> : null}
                       {isHospital ? (
-                        <p className="mt-1 text-xs font-medium text-primary">
-                          Main hospital · always shown first
-                        </p>
+                        <>
+                          <p className="mt-1 text-xs font-medium text-primary">
+                            Main hospital · always shown first
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            The main hospital is required for every doctor and cannot be removed.
+                          </p>
+                        </>
                       ) : null}
                     </div>
                   </div>
-                  {!readOnly ? (
+                  {!readOnly && !isHospital ? (
                     <div className="flex items-center gap-1">
-                      {!isHospital ? (
-                        <>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Move ${o?.name ?? "location"} up`}
-                            disabled={index === 0 || links[index - 1]?.location_id === HOSPITAL_ID}
-                            onClick={() => move(row.location_id, -1)}
-                          >
-                            <ChevronUp className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Move ${o?.name ?? "location"} down`}
-                            disabled={index === links.length - 1}
-                            onClick={() => move(row.location_id, 1)}
-                          >
-                            <ChevronDown className="size-4" />
-                          </Button>
-                        </>
-                      ) : null}
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Move ${o?.name ?? "location"} up`}
+                        disabled={index === 0 || links[index - 1]?.location_id === HOSPITAL_ID}
+                        onClick={() => move(row.location_id, -1)}
+                      >
+                        <ChevronUp className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Move ${o?.name ?? "location"} down`}
+                        disabled={index === links.length - 1}
+                        onClick={() => move(row.location_id, 1)}
+                      >
+                        <ChevronDown className="size-4" />
+                      </Button>
                       <Button
                         type="button"
                         variant="ghost"
                         className="text-destructive"
-                        onClick={() => {
-                          if (
-                            isHospital &&
-                            !window.confirm(
-                              "Remove the main hospital from this doctor? The location itself is not deleted.",
-                            )
-                          )
-                            return;
+                        onClick={() =>
                           setLinks((current) =>
                             current.filter((item) => item.location_id !== row.location_id),
-                          );
-                        }}
+                          )
+                        }
                       >
                         <Trash2 className="size-4" /> Remove
                       </Button>
