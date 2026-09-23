@@ -168,7 +168,6 @@ export const DepartmentProfessionalEditor = forwardRef<
   };
   const snapshot = (): ProfessionalSnapshot => {
     const designations = query.data?.designations ?? [];
-    const qualifications = query.data?.qualifications ?? [];
     const specializations = query.data?.specializations ?? [];
     const primaryDesignation = designations.find(
       (item: any) => item.id === designationByDepartment[departmentIds[0] ?? ""],
@@ -182,7 +181,7 @@ export const DepartmentProfessionalEditor = forwardRef<
       qualificationIds,
       specializationIds,
       designation: primaryDesignation ?? legacyDesignation,
-      qualifications: [...unmatchedLegacyQualifications, ...selectedQualificationNames],
+      qualifications: legacyQualifications,
       specialty: selectedSpecializationNames.join(", "),
     };
   };
