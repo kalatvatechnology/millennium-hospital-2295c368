@@ -369,18 +369,6 @@ export const DepartmentProfessionalEditor = forwardRef<
                 <AddButton label="Add New Designation" onClick={() => setDialog({ kind: "designation", departmentId })} />
               </div>
               <div>
-                <Label>Qualifications</Label>
-                <SearchableMultiSelect
-                  label={`${department?.name ?? "Department"} qualifications`}
-                  options={qualifications}
-                  selected={qualificationIds.filter((id) => qualifications.some((item: any) => item.id === id))}
-                  onChange={(ids) => setQualificationIds((current) => [...current.filter((id) => !qualifications.some((item: any) => item.id === id)), ...ids])}
-                  placeholder="Select qualifications"
-                  disabled={!canWrite}
-                />
-                <AddButton label="Add New Qualification" onClick={() => setDialog({ kind: "qualification", departmentId })} />
-              </div>
-              <div className="lg:col-span-2">
                 <Label>Specializations</Label>
                 <SearchableMultiSelect
                   label={`${department?.name ?? "Department"} specializations`}
