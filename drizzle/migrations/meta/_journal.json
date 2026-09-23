@@ -99,6 +99,20 @@
       "when": 1790145962428,
       "tag": "0013_fix_department_relationship_trigger_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790162188955,
+      "tag": "0014_dental_care_service_catalogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790162763913,
+      "tag": "0015_doctor_service_items_individual_service_fk",
+      "breakpoints": true
     }
   ]
 }

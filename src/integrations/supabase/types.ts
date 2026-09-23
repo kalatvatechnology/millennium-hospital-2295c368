@@ -1072,6 +1072,52 @@ export type Database = {
           },
         ]
       }
+      doctor_service_items: {
+        Row: {
+          display_order: number
+          doctor_id: string
+          individual_service_id: string
+          professional_service_id: string
+        }
+        Insert: {
+          display_order?: number
+          doctor_id: string
+          individual_service_id: string
+          professional_service_id: string
+        }
+        Update: {
+          display_order?: number
+          doctor_id?: string
+          individual_service_id?: string
+          professional_service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_service_items_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_service_items_individual_service_id_fkey"
+            columns: ["individual_service_id"]
+            isOneToOne: false
+            referencedRelation: "individual_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_service_items_professional_service_id_individual_se_fkey"
+            columns: ["professional_service_id", "individual_service_id"]
+            isOneToOne: false
+            referencedRelation: "professional_service_items"
+            referencedColumns: [
+              "professional_service_id",
+              "individual_service_id",
+            ]
+          },
+        ]
+      }
       doctor_social_links: {
         Row: {
           created_at: string
@@ -1809,6 +1855,36 @@ export type Database = {
         }
         Relationships: []
       }
+      individual_services: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
           address_line: string | null
@@ -2161,6 +2237,39 @@ export type Database = {
           },
           {
             foreignKeyName: "professional_service_doctors_professional_service_id_fkey"
+            columns: ["professional_service_id"]
+            isOneToOne: false
+            referencedRelation: "professional_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professional_service_items: {
+        Row: {
+          display_order: number
+          individual_service_id: string
+          professional_service_id: string
+        }
+        Insert: {
+          display_order?: number
+          individual_service_id: string
+          professional_service_id: string
+        }
+        Update: {
+          display_order?: number
+          individual_service_id?: string
+          professional_service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_service_items_individual_service_id_fkey"
+            columns: ["individual_service_id"]
+            isOneToOne: false
+            referencedRelation: "individual_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_service_items_professional_service_id_fkey"
             columns: ["professional_service_id"]
             isOneToOne: false
             referencedRelation: "professional_services"
@@ -2653,6 +2762,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      slugify_label: { Args: { value: string }; Returns: string }
     }
     Enums: {
       app_role:

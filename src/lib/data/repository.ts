@@ -224,13 +224,25 @@ export async function getDoctor(slug: string, preview = false) {
         .eq("enabled", true)
         .order("display_order"),
     ]);
+    const serviceItemResult = await db
+      .from("doctor_service_items")
+      .select("professional_service_id,individual_service_id,display_order,individual_services!doctor_service_items_individual_service_id_fkey(title)")
+      .eq("doctor_id", doctor.id)
+      .order("display_order");
     return {
       doctor,
+      serviceItems: rows(serviceItemResult).map((item) => ({
+        serviceId: String(item["professional_service_id"] ?? ""),
+        id: String(item["individual_service_id"] ?? ""),
+        title: String(
+          (item["individual_services"] as { title?: unknown } | null)?.title ?? "",
+        ),
+      })),
       services: rows(serviceResult)
         .map((item) => item["professional_services"])
         .filter(Boolean)
         .map(mapService)
-        .filter((item) => item.status === "published"),
+        .filter((item) => preview || item.status === "published"),
       reviews: rows(reviewResult)
         .map((item) => item["reviews"])
         .filter((item) => item?.show_publicly === true)
@@ -302,6 +314,7 @@ export async function getDoctor(slug: string, preview = false) {
   ]);
   return {
     doctor,
+    serviceItems: [] as { serviceId: string; id: string; title: string }[],
     services: rows(serviceResult)
       .map((item) => item["services"])
       .filter(Boolean)
