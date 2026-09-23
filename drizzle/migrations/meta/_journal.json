@@ -162,6 +162,13 @@
       "when": 1790201155247,
       "tag": "0022_location_map_embed_url",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790202445137,
+      "tag": "0023_doctor_digital_card_theme",
+      "breakpoints": true
     }
   ]
 }
