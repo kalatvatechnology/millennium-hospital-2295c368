@@ -424,6 +424,8 @@ export const DepartmentProfessionalEditor = forwardRef<
 
 export type DepartmentRelationEditorHandle = { save: () => Promise<void>; reset: () => void };
 
+type ServiceCard = { mainId: string; itemIds: string[] };
+
 export const DepartmentServicesEditor = forwardRef<
   DepartmentRelationEditorHandle,
   { doctorId: string; departmentIds: string[]; departments: Department[]; canWrite: boolean }
@@ -432,92 +434,300 @@ export const DepartmentServicesEditor = forwardRef<
   const query = useQuery({
     queryKey: ["doctor-department-services", doctorId],
     queryFn: async () => {
-      const [services, departmentLinks, doctorLinks] = await Promise.all([
+      const [services, departmentLinks, items, doctorLinks, doctorItems] = await Promise.all([
         db.from("professional_services").select("id,title,slug,published").order("title"),
         db.from("professional_service_departments").select("professional_service_id,department_id"),
+        db
+          .from("professional_service_items")
+          .select("professional_service_id,individual_service_id,display_order,individual_services(id,title)")
+          .order("display_order"),
         db.from("professional_service_doctors").select("professional_service_id").eq("doctor_id", doctorId),
+        db
+          .from("doctor_service_items")
+          .select("professional_service_id,individual_service_id,display_order")
+          .eq("doctor_id", doctorId)
+          .order("display_order"),
       ]);
-      const failure = [services, departmentLinks, doctorLinks].find((result) => result.error)?.error;
+      const failure = [services, departmentLinks, items, doctorLinks, doctorItems].find((result) => result.error)?.error;
       if (failure) throw failure;
-      return { services: services.data ?? [], departmentLinks: departmentLinks.data ?? [], doctorLinks: doctorLinks.data ?? [] };
+      return {
+        services: services.data ?? [],
+        departmentLinks: departmentLinks.data ?? [],
+        items: items.data ?? [],
+        doctorLinks: doctorLinks.data ?? [],
+        doctorItems: doctorItems.data ?? [],
+      };
     },
   });
-  const [selected, setSelected] = useState<string[]>([]);
-  const [baseline, setBaseline] = useState<string[]>([]);
+  const [cards, setCards] = useState<ServiceCard[]>([]);
+  const [baseline, setBaseline] = useState<ServiceCard[]>([]);
+  const [draft, setDraft] = useState<{ index: number | null; mainId: string; itemIds: string[] } | null>(null);
   const [dialogDepartment, setDialogDepartment] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    const ids = (query.data?.doctorLinks ?? []).map((row: any) => row.professional_service_id);
-    setSelected(ids);
-    setBaseline(ids);
+    const mainIds: string[] = (query.data?.doctorLinks ?? []).map((row: any) => row.professional_service_id);
+    const next: ServiceCard[] = mainIds.map((mainId) => ({
+      mainId,
+      itemIds: (query.data?.doctorItems ?? [])
+        .filter((row: any) => row.professional_service_id === mainId)
+        .map((row: any) => row.individual_service_id),
+    }));
+    setCards(next);
+    setBaseline(next);
     setError(null);
   }, [query.data]);
+
   const save = async () => {
-    const { error: removeError } = await db.from("professional_service_doctors").delete().eq("doctor_id", doctorId);
-    if (removeError) throw removeError;
-    if (selected.length) {
-      const { error: insertError } = await db.from("professional_service_doctors").insert(selected.map((professional_service_id) => ({ doctor_id: doctorId, professional_service_id })));
-      if (insertError) throw insertError;
+    const { error: removeItems } = await db.from("doctor_service_items").delete().eq("doctor_id", doctorId);
+    if (removeItems) throw removeItems;
+    const { error: removeMains } = await db.from("professional_service_doctors").delete().eq("doctor_id", doctorId);
+    if (removeMains) throw removeMains;
+    if (cards.length) {
+      const { error: insertMains } = await db
+        .from("professional_service_doctors")
+        .insert(cards.map((card) => ({ doctor_id: doctorId, professional_service_id: card.mainId })));
+      if (insertMains) throw insertMains;
+      const rows = cards.flatMap((card) =>
+        card.itemIds.map((individual_service_id, display_order) => ({
+          doctor_id: doctorId,
+          professional_service_id: card.mainId,
+          individual_service_id,
+          display_order,
+        })),
+      );
+      if (rows.length) {
+        const { error: insertItems } = await db.from("doctor_service_items").insert(rows);
+        if (insertItems) throw insertItems;
+      }
     }
   };
-  useImperativeHandle(ref, () => ({ save, reset: () => setSelected(baseline) }));
-  const allowed = useMemo(() => {
+  useImperativeHandle(ref, () => ({
+    save,
+    reset: () => {
+      setCards(baseline);
+      setDraft(null);
+      setError(null);
+    },
+  }));
+
+  const allowedMains = useMemo(() => {
     const linkedIds = new Set(
       (query.data?.departmentLinks ?? [])
         .filter((row: any) => departmentIds.includes(row.department_id))
         .map((row: any) => row.professional_service_id),
     );
     return (query.data?.services ?? [])
-      .filter((item: any) => linkedIds.has(item.id) || selected.includes(item.id))
+      .filter((item: any) => linkedIds.has(item.id) || cards.some((card) => card.mainId === item.id))
       .map((item: any) => ({ id: item.id, name: item.title }));
-  }, [departmentIds, query.data, selected]);
+  }, [departmentIds, query.data, cards]);
+  const mainTitle = (id: string) =>
+    (query.data?.services ?? []).find((item: any) => item.id === id)?.title ?? "Professional service";
+  const itemsFor = (mainId: string) =>
+    (query.data?.items ?? [])
+      .filter((row: any) => row.professional_service_id === mainId)
+      .map((row: any) => ({
+        id: row.individual_service_id,
+        name: row.individual_services?.title ?? "Service",
+      }));
+
   const create = async (values: { name: string }) => {
     if (!dialogDepartment) return;
-    const existing = (query.data?.services ?? []).find((item: any) => item.title.trim().toLowerCase() === values.name.trim().toLowerCase());
+    const existing = (query.data?.services ?? []).find(
+      (item: any) => item.title.trim().toLowerCase() === values.name.trim().toLowerCase(),
+    );
     let id = existing?.id;
     if (!id) {
       const baseSlug = slugify(values.name);
       let slug = baseSlug;
       let suffix = 2;
       while ((query.data?.services ?? []).some((item: any) => item.slug === slug)) slug = `${baseSlug}-${suffix++}`;
-      const { data, error: createError } = await db.from("professional_services").insert({ title: values.name.trim(), slug, published: false }).select("id").single();
+      const { data, error: createError } = await db
+        .from("professional_services")
+        .insert({ title: values.name.trim(), slug, published: false })
+        .select("id")
+        .single();
       if (createError) throw createError;
       id = data.id;
     }
-    const { error: linkError } = await db.from("professional_service_departments").upsert({ professional_service_id: id, department_id: dialogDepartment });
+    const { error: linkError } = await db
+      .from("professional_service_departments")
+      .upsert({ professional_service_id: id, department_id: dialogDepartment });
     if (linkError) throw linkError;
-    const nextSelected = [...new Set([...selected, id])];
     client.setQueryData(["doctor-department-services", doctorId], (current: any) => ({
       ...current,
       services: existing
-        ? current?.services ?? []
-        : [
-            ...(current?.services ?? []),
-            { id, title: values.name.trim(), slug: slugify(values.name), published: false },
-          ],
+        ? (current?.services ?? [])
+        : [...(current?.services ?? []), { id, title: values.name.trim(), slug: slugify(values.name), published: false }],
       departmentLinks: [
         ...(current?.departmentLinks ?? []).filter(
-          (item: any) =>
-            item.professional_service_id !== id || item.department_id !== dialogDepartment,
+          (item: any) => item.professional_service_id !== id || item.department_id !== dialogDepartment,
         ),
         { professional_service_id: id, department_id: dialogDepartment },
       ],
-      doctorLinks: nextSelected.map((professional_service_id) => ({ professional_service_id })),
     }));
-    setSelected(nextSelected);
+    setDraft({ index: null, mainId: id as string, itemIds: [] });
   };
+
+  const usedMainIds = cards.map((card) => card.mainId);
+  const draftOptions = allowedMains.filter(
+    (option: Option) =>
+      !usedMainIds.includes(option.id) ||
+      (draft?.index !== null && cards[draft?.index ?? -1]?.mainId === option.id),
+  );
+
   return (
     <section className="rounded-md border border-border p-4">
       <h3 className="font-semibold">Professional services</h3>
-      <p className="mt-2 text-sm text-muted-foreground">Choose services linked to the doctor’s selected departments.</p>
-      <SearchableMultiSelect label="Professional services" options={allowed} selected={selected} onChange={setSelected} placeholder="Select professional services" disabled={!canWrite || !departmentIds.length} />
-      <div className="mt-3 flex flex-wrap gap-2">
+      <p className="mt-2 text-sm text-muted-foreground">
+        Choose a main professional service from the doctor’s departments, then tick the individual services the doctor
+        provides.
+      </p>
+      {!departmentIds.length ? (
+        <p className="mt-3 text-sm text-muted-foreground">Select departments in Professional Information first.</p>
+      ) : null}
+
+      {cards.length ? (
+        <div className="mt-4 grid gap-3">
+          {cards.map((card, index) => (
+            <article key={card.mainId} className="rounded-md border border-border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <h4 className="font-semibold">{mainTitle(card.mainId)}</h4>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={!canWrite}
+                    onClick={() => setDraft({ index, mainId: card.mainId, itemIds: card.itemIds })}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={!canWrite}
+                    onClick={() => {
+                      setCards((current) => current.filter((_, position) => position !== index));
+                      setDraft(null);
+                    }}
+                  >
+                    <Trash2 className="size-4" /> Remove
+                  </Button>
+                </div>
+              </div>
+              {card.itemIds.length ? (
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {card.itemIds.map((itemId) => (
+                    <li key={itemId} className="rounded-md bg-secondary px-2 py-1 text-xs font-medium">
+                      {itemsFor(card.mainId).find((item: Option) => item.id === itemId)?.name ?? "Service"}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">No individual services selected yet.</p>
+              )}
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {draft ? (
+        <div className="mt-4 rounded-md border border-dashed border-border p-4">
+          <Label>Main professional service</Label>
+          <SearchableSingleSelect
+            label="Main professional service"
+            options={draftOptions}
+            value={draft.mainId}
+            onChange={(value) => setDraft((current) => (current ? { ...current, mainId: value, itemIds: [] } : current))}
+            placeholder="Select a main professional service"
+            disabled={!canWrite}
+          />
+          {draft.mainId ? (
+            <fieldset className="mt-4">
+              <legend className="text-sm font-medium">Individual services</legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {itemsFor(draft.mainId).map((item: Option) => {
+                  const checked = draft.itemIds.includes(item.id);
+                  return (
+                    <label key={item.id} className="flex items-start gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        className="mt-1 size-4"
+                        checked={checked}
+                        disabled={!canWrite}
+                        onChange={() =>
+                          setDraft((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  itemIds: checked
+                                    ? current.itemIds.filter((id) => id !== item.id)
+                                    : [...current.itemIds, item.id],
+                                }
+                              : current,
+                          )
+                        }
+                      />
+                      <span>{item.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {!itemsFor(draft.mainId).length ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  This main service has no individual services yet.
+                </p>
+              ) : null}
+            </fieldset>
+          ) : null}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={!canWrite || !draft.mainId}
+              onClick={() => {
+                setCards((current) => {
+                  const next = [...current];
+                  const entry = { mainId: draft.mainId, itemIds: draft.itemIds };
+                  if (draft.index !== null) next[draft.index] = entry;
+                  else if (!next.some((card) => card.mainId === entry.mainId)) next.push(entry);
+                  return next;
+                });
+                setDraft(null);
+              }}
+            >
+              Done
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setDraft(null)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <AddButton
+          label={cards.length ? "Add Another Professional Service" : "Add Professional Service"}
+          onClick={() => setDraft({ index: null, mainId: "", itemIds: [] })}
+        />
+      )}
+
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
         {departmentIds.map((id) => (
-          <AddButton key={id} label={`Add New for ${departments.find((item) => item.id === id)?.name ?? "Department"}`} onClick={() => setDialogDepartment(id)} />
+          <AddButton
+            key={id}
+            label={`Add Professional Service for ${departments.find((item) => item.id === id)?.name ?? "Department"}`}
+            onClick={() => setDialogDepartment(id)}
+          />
         ))}
       </div>
-      {!departmentIds.length ? <p className="mt-3 text-sm text-muted-foreground">Select departments in Professional Information first.</p> : null}
-      {query.isError || error ? <p className="mt-3 text-sm text-destructive">{error ?? userFacingDataError(query.error)}</p> : null}
+      <p className="text-xs text-muted-foreground">
+        Only add a new main professional service when it does not already exist in the list above.
+      </p>
+
+      {query.isError || error ? (
+        <p className="mt-3 text-sm text-destructive">{error ?? userFacingDataError(query.error)}</p>
+      ) : null}
       <AddOptionDialog
         open={Boolean(dialogDepartment)}
         kind="service"

@@ -467,9 +467,26 @@ function DoctorDetail() {
             title="Professional services"
           />
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {data.services.map((service) => (
-              <ProfessionalServiceCard key={service.id} service={service} />
-            ))}
+            {data.services.map((service) => {
+              const items = data.serviceItems.filter((item) => item.serviceId === service.id);
+              return (
+                <div key={service.id} className="grid gap-3">
+                  <ProfessionalServiceCard service={service} />
+                  {items.length ? (
+                    <ul className="flex flex-wrap gap-2">
+                      {items.map((item) => (
+                        <li
+                          key={item.id}
+                          className="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
+                        >
+                          {item.title}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </ContentSection>
       ) : null}
