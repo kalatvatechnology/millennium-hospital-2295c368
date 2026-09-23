@@ -200,6 +200,7 @@ export type EnquiryOption = {
   name: string;
   slug?: string;
   whatsapp_number?: string | null;
+  whatsapp_country_code?: string | null;
 };
 
 export type StaffProfile = {
@@ -223,7 +224,12 @@ export type StaffEnquiry = {
   preferredAt: string | null;
   status: string;
   message: string | null;
-  doctor: { name: string; whatsappNumber: string | null } | null;
+  source: string | null;
+  doctor: {
+    name: string;
+    whatsappNumber: string | null;
+    whatsappCountryCode: string | null;
+  } | null;
   department: { name: string } | null;
   service: { title: string } | null;
 };
