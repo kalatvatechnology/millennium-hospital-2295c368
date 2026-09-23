@@ -9,6 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { siteConfig } from "@/config/site";
+import {
+  ConsultationScheduleEditor,
+  normalizeSchedule,
+  scheduleSummary,
+  type ScheduleDay,
+} from "./consultation-schedule-editor";
 
 const db = supabase as any;
 const HOSPITAL_ID = siteConfig.contact.primaryLocationId;
@@ -16,6 +22,7 @@ const CONTROLS = [
   "enabled",
   "display_order",
   "consultation_availability",
+  "consultation_schedule",
   "public_name",
   "map_url",
 ] as const;
@@ -34,6 +41,8 @@ type Link = {
   enabled: boolean;
   display_order: number;
   consultation_availability: string | null;
+  consultation_schedule: ScheduleDay[];
+  legacy_text?: string | null;
   public_name: string | null;
   map_url: string | null;
 };
@@ -87,6 +96,8 @@ export function DoctorLocationsEditor({
       setLinks(
         hospitalFirst(query.data?.links ?? []).map((row, index) => ({
           ...row,
+          consultation_schedule: normalizeSchedule(row.consultation_schedule),
+          legacy_text: row.consultation_schedule ? null : row.consultation_availability,
           enabled: row.enabled !== false,
           display_order: index,
         })),
@@ -113,7 +124,9 @@ export function DoctorLocationsEditor({
         location_id: row.location_id,
         enabled: row.enabled,
         display_order: index,
-        consultation_availability: row.consultation_availability,
+        consultation_schedule: row.consultation_schedule,
+        consultation_availability:
+          scheduleSummary(row.consultation_schedule) ?? (row.legacy_text || null),
         public_name: row.public_name,
         map_url: row.map_url,
       };
@@ -167,6 +180,7 @@ export function DoctorLocationsEditor({
             enabled: true,
             display_order: current.length + i,
             consultation_availability: "",
+            consultation_schedule: normalizeSchedule(null),
             public_name: "",
             map_url: "",
           })),
@@ -346,15 +360,11 @@ export function DoctorLocationsEditor({
                       Doctor-specific settings
                     </p>
                     <div className="sm:col-span-2">
-                      <Label htmlFor={`${id}-availability`}>Consultation availability</Label>
-                      <Input
-                        id={`${id}-availability`}
-                        className="mt-1"
-                        placeholder="Mon–Sat | 10:00 AM – 2:00 PM"
-                        value={row.consultation_availability ?? ""}
-                        onChange={(e) =>
-                          update(row.location_id, { consultation_availability: e.target.value })
-                        }
+                      <ConsultationScheduleEditor
+                        id={id}
+                        value={row.consultation_schedule}
+                        legacyText={row.legacy_text}
+                        onChange={(next) => update(row.location_id, { consultation_schedule: next })}
                       />
                     </div>
                     <div>
