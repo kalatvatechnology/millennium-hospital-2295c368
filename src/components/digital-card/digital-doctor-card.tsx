@@ -289,7 +289,7 @@ export function DigitalDoctorCard({ card, theme }: { card: DigitalCardData; them
           {secondary.length ? (
             <div className={cn("grid gap-2", secondary.length === 3 ? "grid-cols-3" : secondary.length === 2 ? "grid-cols-2" : "grid-cols-1")}>
               {secondary.map((a) => (
-                <Action key={a.key} href={a.href} icon={a.icon} className={v.secondary} label={a.label} external={a.external}>
+                <Action key={a.key} href={a.href} icon={a.icon} className={v.secondary} label={a.label} external={Boolean(a.external)}>
                   {a.text}
                 </Action>
               ))}
