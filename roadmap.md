@@ -61,3 +61,4 @@
 - [x] Repair doctor specialization synchronization across workspace, listings, preview, and public profiles
 - [x] Refine the Doctor Workspace Hero & Statistics interface without changing data or behavior
 - [x] Restore existing specialization icons in Staff Preview and public doctor profiles without data or permission changes
+- [x] Refine the shared specialization card with an unboxed icon-and-heading row across Preview and public profiles
