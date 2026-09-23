@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Award,
   BookOpen,
@@ -440,6 +440,7 @@ function DoctorDetail() {
                 key={item.id}
                 className="rounded-xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]"
               >
+                 <SpecializationIcon src={item.icon} />
                 <h3 className="text-lg font-semibold">{item.title}</h3>
                 {item.description ? (
                   <p className="mt-3 leading-7 text-muted-foreground">{item.description}</p>
@@ -689,6 +690,26 @@ function DoctorDetail() {
         </div>
       </div>
     </PublicPage>
+  );
+}
+
+function SpecializationIcon({ src }: { src: string | null }) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <div className="mb-4 grid size-12 place-items-center overflow-hidden rounded-md border border-border bg-secondary">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt=""
+          className="size-full object-contain p-1.5"
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <Stethoscope className="size-6 text-muted-foreground" aria-hidden="true" />
+      )}
+    </div>
   );
 }
 

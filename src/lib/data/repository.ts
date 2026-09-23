@@ -181,7 +181,7 @@ export async function getDoctor(slug: string, preview = false) {
         .order("display_order"),
       db
         .from("doctor_specializations")
-        .select("id,title,description,icon,professional_service_id,enabled,display_order,department_specializations(name)")
+        .select("id,title,description,icon,icon_override_url,professional_service_id,enabled,display_order,department_specializations(name,description,default_icon_url)")
         .eq("doctor_id", doctor.id)
         .not("specialization_id", "is", null)
         .eq("enabled", true)
@@ -284,10 +284,43 @@ export async function getDoctor(slug: string, preview = false) {
             { active?: unknown } | null | undefined;
           return item.value.trim() && item.label.trim() && definition?.active !== false;
         }),
-      specializations: rows(specializationResult).map((item) => ({
-        ...item,
-        title: String(item["department_specializations"]?.name ?? item["title"] ?? ""),
-      })) as DoctorSpecialization[],
+      specializations: rows(specializationResult).map((item) => {
+        const definition = item["department_specializations"] as {
+          name?: unknown;
+          description?: unknown;
+          default_icon_url?: unknown;
+        } | null;
+        const assignmentDescription = item["description"];
+        const overrideIcon = item["icon_override_url"];
+        const defaultIcon = definition?.default_icon_url;
+        const legacyIcon = item["icon"];
+        return {
+          id: String(item["id"] ?? ""),
+          title:
+            typeof definition?.name === "string"
+              ? definition.name
+              : String(item["title"] ?? ""),
+          description:
+            typeof assignmentDescription === "string" && assignmentDescription.trim()
+              ? assignmentDescription
+              : typeof definition?.description === "string" && definition.description.trim()
+                ? definition.description
+                : null,
+          icon:
+            typeof overrideIcon === "string" && overrideIcon.trim()
+              ? overrideIcon
+              : typeof defaultIcon === "string" && defaultIcon.trim()
+                ? defaultIcon
+                : typeof legacyIcon === "string" && legacyIcon.trim()
+                  ? legacyIcon
+                  : null,
+          professional_service_id:
+            typeof item["professional_service_id"] === "string"
+              ? item["professional_service_id"]
+              : null,
+          display_order: Number(item["display_order"] ?? 0),
+        } satisfies DoctorSpecialization;
+      }),
       experience: rows(experienceResult) as DoctorExperience[],
       education: rows(educationResult) as DoctorEducation[],
       achievements: rows(achievementResult) as DoctorAchievement[],
