@@ -59,3 +59,4 @@
 - [x] Repair and verify unpublished doctor Preview after normalized relationships
 
 - [x] Repair doctor specialization synchronization across workspace, listings, preview, and public profiles
+- [ ] Refine the Doctor Workspace Hero & Statistics interface without changing data or behavior
