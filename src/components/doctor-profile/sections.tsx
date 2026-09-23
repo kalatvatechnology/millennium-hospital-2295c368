@@ -155,7 +155,7 @@ export const locationAddress = (l: DoctorLocation) =>
 export function DoctorLocationCard({ location, primary }: { location: DoctorLocation; primary: boolean }) {
   const embed = isGoogleMapsEmbedUrl(location.map_embed_url) ? location.map_embed_url!.trim() : null;
   return (
-    <article className="rounded-xl border border-border bg-background p-5 shadow-[var(--shadow-sm)]">
+    <article className={`rounded-xl border border-border bg-background p-5 shadow-[var(--shadow-sm)] ${embed ? "md:col-span-2" : ""}`}>
       <div className={embed ? "grid gap-5 md:grid-cols-2" : ""}>
       <div className="flex min-w-0 flex-col">
       <div className="flex items-start gap-3">
