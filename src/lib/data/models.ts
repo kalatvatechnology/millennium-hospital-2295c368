@@ -110,6 +110,8 @@ export type DoctorLocation = {
   map_url: string | null;
   opening_hours: string | null;
   consultation_availability: string | null;
+  /** Day-by-day schedule for this doctor at this location (display only). */
+  consultation_schedule?: unknown;
   display_order: number;
 };
 
