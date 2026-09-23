@@ -1,0 +1,2 @@
+ALTER TABLE public.doctor_locations ADD COLUMN IF NOT EXISTS consultation_schedule jsonb;
+COMMENT ON COLUMN public.doctor_locations.consultation_schedule IS 'Day-wise schedule: [{day, status: available|appointment|unavailable, start, end, text}]. consultation_availability holds the derived text summary.';

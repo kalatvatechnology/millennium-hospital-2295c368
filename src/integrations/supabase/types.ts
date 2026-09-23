@@ -901,6 +901,7 @@ export type Database = {
       doctor_locations: {
         Row: {
           consultation_availability: string | null
+          consultation_schedule: Json | null
           display_order: number
           doctor_id: string
           enabled: boolean
@@ -910,6 +911,7 @@ export type Database = {
         }
         Insert: {
           consultation_availability?: string | null
+          consultation_schedule?: Json | null
           display_order?: number
           doctor_id: string
           enabled?: boolean
@@ -919,6 +921,7 @@ export type Database = {
         }
         Update: {
           consultation_availability?: string | null
+          consultation_schedule?: Json | null
           display_order?: number
           doctor_id?: string
           enabled?: boolean

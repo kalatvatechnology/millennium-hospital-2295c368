@@ -134,6 +134,27 @@
       "when": 1790196844105,
       "tag": "0018_protect_main_hospital_doctor_location",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790197918912,
+      "tag": "0019_doctor_location_consultation_schedule",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1790198319447,
+      "tag": "0020_reload_api_schema_cache",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1790198452266,
+      "tag": "0021_fix_main_hospital_location_guard_updates",
+      "breakpoints": true
     }
   ]
 }
