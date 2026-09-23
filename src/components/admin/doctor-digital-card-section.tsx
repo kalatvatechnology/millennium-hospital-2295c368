@@ -127,7 +127,7 @@ export function DoctorDigitalCardSection({
           </div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          The preview shows the last saved theme choice only after Save. Buttons in the preview are live links.
+          Buttons in the preview are live links.
           {card.actions.reviews ? null : " Google Reviews is hidden because no review link is stored yet."}
         </p>
       </section>
