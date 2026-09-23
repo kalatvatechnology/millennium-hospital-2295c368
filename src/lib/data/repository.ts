@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/integrations/supabase/client";
 import { backendFeatures, usesProductionContract } from "./backend";
+import { siteConfig } from "@/config/site";
 import { classifyDataError, DataAccessError } from "./errors";
 import {
   mapDepartment,
@@ -328,11 +329,20 @@ export async function getDoctor(slug: string, preview = false) {
         .map((item) => ({
           ...(item["locations"] ?? {}),
           public_name: item["public_name"] ?? null,
-          map_url: item["map_url"] ?? item["locations"]?.map_url ?? null,
+          map_url:
+            (typeof item["map_url"] === "string" && item["map_url"].trim()) ||
+            item["locations"]?.map_url ||
+            null,
           consultation_availability: item["consultation_availability"] ?? null,
           display_order: item["display_order"] ?? 0,
         }))
-        .filter((item) => item.published === true) as DoctorLocation[],
+        .filter((item) => item.published === true)
+        .sort((a, b) => {
+          const primary = siteConfig.contact.primaryLocationSlug;
+          const aPrimary = a.slug === primary ? 0 : 1;
+          const bPrimary = b.slug === primary ? 0 : 1;
+          return aPrimary - bPrimary || Number(a.display_order) - Number(b.display_order);
+        }) as DoctorLocation[],
       faqs: rows(faqResult)
         .map((item) => item["faqs"])
         .filter((item) => item?.published === true)

@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
     permission: "content.write",
   },
   { label: "Facilities", to: "/_admin/facilities", permission: "content.write" },
-  { label: "Locations", to: "/_admin/locations", permission: "content.write" },
+  { label: "Locations", to: "/_admin/locations", permission: "locations.manage" },
   { label: "Appointment enquiries", to: "/_admin/enquiries", permission: "enquiries.manage" },
   { label: "Media & content", to: "/_admin/media", permission: "content.write" },
   { label: "Website content", to: "/_admin/pages", permission: "content.write" },

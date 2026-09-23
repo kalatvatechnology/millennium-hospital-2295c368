@@ -5,6 +5,7 @@ import { ContentSection, PageIntro } from "@/components/shared/page";
 import { EnquiryForm } from "@/components/content/enquiry-form";
 import { createPageMeta } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
+import { hospitalWhatsappDigits } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({ meta: createPageMeta("Contact", "Find verified contact and location information for The Millennium Hospital and send an enquiry.") }),
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/contact")({
 const contacts = [
   { icon: Phone, label: "Phone", value: siteConfig.contact.phone, href: siteConfig.contact.phone ? `tel:${siteConfig.contact.phone}` : null },
   { icon: Mail, label: "Email", value: siteConfig.contact.email, href: siteConfig.contact.email ? `mailto:${siteConfig.contact.email}` : null },
-  { icon: MessageCircle, label: "WhatsApp", value: siteConfig.contact.whatsapp, href: siteConfig.contact.whatsapp ? `https://wa.me/${siteConfig.contact.whatsapp.replace(/\D/g, "")}` : null },
+  { icon: MessageCircle, label: "WhatsApp", value: siteConfig.contact.whatsapp, href: hospitalWhatsappDigits() ? `https://wa.me/${hospitalWhatsappDigits()}` : null },
   { icon: MapPin, label: "Address", value: siteConfig.contact.address, href: null },
   { icon: Clock, label: "Opening hours", value: siteConfig.contact.openingHours, href: null },
 ];

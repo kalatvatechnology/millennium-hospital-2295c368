@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { resolveEnquiryWhatsappTarget } from "@/lib/whatsapp";
 import {
   Award,
   BookOpen,
@@ -99,7 +100,7 @@ function DoctorDetail() {
 
   const { doctor } = data;
   const phone = doctor.phone_number?.replace(/[^+\d]/g, "");
-  const whatsapp = doctor.whatsapp_number?.replace(/\D/g, "");
+  const whatsapp = resolveEnquiryWhatsappTarget("doctor_profile", doctor);
   const heroEnabled = visible(doctor.section_visibility, "hero");
   const portrait = doctor.photo_url;
   const portraitAlt = doctor.profile_image_alt ?? `Portrait of ${doctor.name}`;
