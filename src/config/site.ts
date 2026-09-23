@@ -6,7 +6,7 @@ export const siteConfig = {
   contact: {
     phone: null as string | null,
     email: null as string | null,
-    whatsapp: null as string | null,
+    whatsapp: "+91 90040 70463" as string | null,
     address: null as string | null,
     mapUrl: null as string | null,
     openingHours: null as string | null,
