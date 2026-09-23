@@ -13,7 +13,33 @@ export type Field = {
   required?: boolean;
   options?: { value: string; label: string }[];
   publishControl?: boolean;
+  help?: string;
+  placeholder?: string;
+  /** Returns an error message when the value is invalid. */
+  validate?: (value: string) => string | null;
 };
+
+/** Accepts only https Google Maps embed URLs; never raw iframe HTML. */
+export function mapEmbedUrlError(value: string): string | null {
+  const v = value.trim();
+  if (!v) return null;
+  if (/<\s*iframe|</i.test(v)) return "Paste only the embed URL (the src value), not the iframe code.";
+  let url: URL;
+  try { url = new URL(v); } catch { return "Map Embed URL is not a valid web address."; }
+  if (url.protocol !== "https:") return "Map Embed URL must start with https://.";
+  if (!isGoogleMapsEmbedUrl(v)) return "Use a Google Maps embed URL, e.g. https://www.google.com/maps/embed?pb=...";
+  return null;
+}
+
+export function isGoogleMapsEmbedUrl(value: string | null | undefined): boolean {
+  if (!value) return false;
+  try {
+    const url = new URL(value.trim());
+    const host = url.hostname.toLowerCase();
+    const google = host === "google.com" || host.endsWith(".google.com") || /^(www\.|maps\.)?google\.[a-z.]+$/.test(host);
+    return url.protocol === "https:" && google && url.pathname.startsWith("/maps/embed");
+  } catch { return false; }
+}
 
 export type ContentType = {
   key: string;
@@ -215,7 +241,21 @@ export const contentTypes: ContentType[] = [
       { name: "postal_code", label: "Postal code", type: "text" },
       { name: "phone", label: "Phone", type: "text" },
       { name: "email", label: "Email", type: "text" },
-      { name: "map_url", label: "Map link", type: "text" },
+      {
+        name: "map_url",
+        label: "Map URL (Get Directions)",
+        type: "text",
+        placeholder: "https://www.google.com/maps/...",
+        help: "Used for the Get Directions / Google Maps link.",
+      },
+      {
+        name: "map_embed_url",
+        label: "Map Embed URL (interactive map)",
+        type: "text",
+        placeholder: "https://www.google.com/maps/embed?pb=...",
+        help: "Paste the Google Maps embed URL used to display the interactive map on the website. Paste the URL only, not the iframe code.",
+        validate: mapEmbedUrlError,
+      },
       { name: "opening_hours", label: "Opening hours", type: "textarea" },
       orderField,
       publishedField,
@@ -417,7 +457,7 @@ export function contentPayload(type: ContentType, values: Record<string, any>, c
     if (field.type === "list") payload[field.name] = String(raw).split(",").map((item) => item.trim()).filter(Boolean);
     else if (field.type === "boolean") payload[field.name] = Boolean(raw);
     else if (field.type === "number") { if (raw !== "" && raw !== null) payload[field.name] = Number(raw); }
-    else payload[field.name] = raw === "" ? null : raw;
+    else payload[field.name] = raw === "" ? null : field.validate && typeof raw === "string" ? raw.trim() || null : raw;
   }
   return payload;
 }

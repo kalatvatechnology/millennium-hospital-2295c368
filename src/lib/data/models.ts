@@ -108,6 +108,8 @@ export type DoctorLocation = {
   postal_code: string | null;
   phone: string | null;
   map_url: string | null;
+  /** Central location's Google Maps embed URL (interactive map only). */
+  map_embed_url?: string | null;
   opening_hours: string | null;
   consultation_availability: string | null;
   /** Day-by-day schedule for this doctor at this location (display only). */
