@@ -186,17 +186,15 @@ function AdminEnquiries() {
                   }
                 : null,
             );
-            const text = encodeURIComponent(
-              [
-                "Enquiry from the hospital website",
-                `Patient: ${row.patientName}`,
-                `Contact: ${row.contactNumber}`,
-                row.doctor ? `Doctor: ${row.doctor.name}` : null,
-                row.message ? `Message: ${row.message}` : null,
-              ]
-                .filter(Boolean)
-                .join("\n"),
-            );
+            const text = [
+              "Enquiry from the hospital website",
+              `Patient: ${row.patientName}`,
+              `Contact: ${row.contactNumber}`,
+              row.doctor ? `Doctor: ${row.doctor.name}` : null,
+              row.message ? `Message: ${row.message}` : null,
+            ]
+              .filter(Boolean)
+              .join("\n");
             return (
               <article key={row.id} className="border border-border bg-background p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
