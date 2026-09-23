@@ -286,6 +286,28 @@ export const DepartmentProfessionalEditor = forwardRef<
           ...(current?.[`${kind}s`] ?? []),
           { id, department_id: departmentId, name: values.name.trim(), description: values.description?.trim() || null },
         ],
+        ...(kind === "designation"
+          ? {
+              designationLinks: [
+                ...(current?.designationLinks ?? []).filter(
+                  (item: any) => item.department_id !== departmentId,
+                ),
+                { department_id: departmentId, designation_id: id },
+              ],
+            }
+          : kind === "qualification"
+            ? {
+                qualificationLinks: [
+                  ...(current?.qualificationLinks ?? []),
+                  { department_id: departmentId, qualification_id: id, display_order: previousQualifications.length },
+                ],
+              }
+            : {
+                specializationLinks: [
+                  ...(current?.specializationLinks ?? []),
+                  { department_id: departmentId, specialization_id: id },
+                ],
+              }),
       }));
     }
     setDepartmentIds(previousDepartments);
