@@ -436,16 +436,7 @@ function DoctorDetail() {
           <SectionTitle icon={<Stethoscope />} eyebrow="Clinical focus" title="Specializations" />
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.specializations.map((item) => (
-              <article
-                key={item.id}
-                className="rounded-xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]"
-              >
-                 <SpecializationIcon src={item.icon} />
-                <h3 className="text-lg font-semibold">{item.title}</h3>
-                {item.description ? (
-                  <p className="mt-3 leading-7 text-muted-foreground">{item.description}</p>
-                ) : null}
-              </article>
+              <SpecializationCard key={item.id} item={item} />
             ))}
             {doctor.expertise.map((item) => (
               <article
@@ -693,23 +684,37 @@ function DoctorDetail() {
   );
 }
 
+function SpecializationCard({
+  item,
+}: {
+  item: { title: string; description: string | null; icon: string | null };
+}) {
+  return (
+    <article className="rounded-xl border border-border bg-background p-6 shadow-[var(--shadow-sm)]">
+      <div className="flex min-w-0 items-center gap-3">
+        <SpecializationIcon src={item.icon} />
+        <h3 className="min-w-0 text-lg font-semibold leading-snug">{item.title}</h3>
+      </div>
+      {item.description ? (
+        <p className="mt-4 leading-7 text-muted-foreground">{item.description}</p>
+      ) : null}
+    </article>
+  );
+}
+
 function SpecializationIcon({ src }: { src: string | null }) {
   const [failed, setFailed] = useState(false);
 
-  return (
-    <div className="mb-4 grid size-12 place-items-center overflow-hidden rounded-md border border-border bg-secondary">
-      {src && !failed ? (
-        <img
-          src={src}
-          alt=""
-          className="size-full object-contain p-1.5"
-          loading="lazy"
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <Stethoscope className="size-6 text-muted-foreground" aria-hidden="true" />
-      )}
-    </div>
+  return src && !failed ? (
+    <img
+      src={src}
+      alt=""
+      className="size-10 shrink-0 object-contain"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  ) : (
+    <Stethoscope className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
   );
 }
 
