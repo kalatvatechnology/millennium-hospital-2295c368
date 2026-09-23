@@ -158,6 +158,7 @@ export const DoctorProfileSections = forwardRef<
   { doctorId: string; activeTab: DoctorProfileTab }
 >(function DoctorProfileSections({ doctorId, activeTab }, ref) {
   const editors = useMemo(() => new Map<string, () => Promise<void>>(), []);
+  const canManageLocations = useAdminSession().can("locations.manage");
   useImperativeHandle(
     ref,
     () => ({
@@ -218,6 +219,7 @@ export const DoctorProfileSections = forwardRef<
         <RelationshipGroup
           doctorId={doctorId}
           relation={locationsRelationship}
+          readOnly={!canManageLocations}
           register={(save) => {
             editors.set("locations", save);
           }}
@@ -514,10 +516,12 @@ function RelationshipGroup({
   doctorId,
   relation,
   register,
+  readOnly = false,
 }: {
   doctorId: string;
   relation: Relationship;
   register: (save: () => Promise<void>) => void;
+  readOnly?: boolean;
 }) {
   const query = useQuery({
     queryKey: ["doctor-profile-relation", relation.key, doctorId],
@@ -537,6 +541,7 @@ function RelationshipGroup({
   const [links, setLinks] = useState<Row[]>([]);
   useEffect(() => setLinks((query.data?.links ?? []).map(normalizeRow)), [query.data]);
   const save = async () => {
+    if (readOnly) return;
     const original = query.data?.links ?? [];
     const removed = original.filter(
       (old: Row) => !links.some((row) => row[relation.sourceId] === old[relation.sourceId]),
@@ -611,9 +616,11 @@ function RelationshipGroup({
     <section className="rounded-md border border-border p-4">
       <h3 className="font-semibold">{relation.label}</h3>
       <p className="mt-2 text-sm text-muted-foreground">
-        Select existing records. Changes apply only when the doctor is saved.
+        {readOnly
+          ? "Only Super Admins and Admins can manage locations."
+          : "Select existing records. Changes apply only when the doctor is saved."}
       </p>
-      <div className="mt-4 grid gap-2">
+      <fieldset disabled={readOnly} className="mt-4 grid gap-2">
         {query.data?.options.length ? (
           query.data.options.map((option: Row) => {
             const optionId = option.id;
