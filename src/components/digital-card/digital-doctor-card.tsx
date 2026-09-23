@@ -165,7 +165,7 @@ function Action({
   external?: boolean;
 }) {
   const cls = cn(
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors",
+    "inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-sm font-semibold transition-colors",
     focus,
     className,
   );

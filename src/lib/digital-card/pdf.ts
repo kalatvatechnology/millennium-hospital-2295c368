@@ -94,7 +94,7 @@ export async function downloadDigitalCardPdf(card: DigitalCardData, themeKey: Di
     photoSize = t.photo === "rounded" ? 100 : t.photo === "square" ? 96 : 104;
     const photoH = t.photo === "rounded" ? 116 : photoSize;
     const px = center ? (W - photoSize) / 2 : PAD;
-    const py = t.header === "band" ? 50 : t.header === "block" ? 62 : 70;
+    const py = t.header === "band" ? 50 : t.header === "block" ? 72 : 70;
     if (t.header === "band") {
       fill([255, 255, 255]);
       doc.circle(W / 2, py + photoSize / 2, photoSize / 2 + 4, "F");
