@@ -439,7 +439,9 @@ export const DepartmentServicesEditor = forwardRef<
         db.from("professional_service_departments").select("professional_service_id,department_id"),
         db
           .from("professional_service_items")
-          .select("professional_service_id,individual_service_id,display_order,individual_services(id,title)")
+          .select(
+            "professional_service_id,individual_service_id,display_order,individual_services!professional_service_items_individual_service_id_fkey(id,title)",
+          )
           .order("display_order"),
         db.from("professional_service_doctors").select("professional_service_id").eq("doctor_id", doctorId),
         db
