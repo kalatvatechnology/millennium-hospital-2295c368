@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { AdminError } from "@/components/admin/ui";
 import { userFacingDataError } from "@/lib/data/errors";
 import { useAdminSession } from "@/hooks/use-admin-session";
+import { DoctorLocationsEditor } from "@/components/admin/doctor-locations-editor";
 
 const db = supabase as any;
 type Row = {
@@ -217,9 +218,8 @@ export const DoctorProfileSections = forwardRef<
         />
       </div>
       <div hidden={activeTab !== "locations"}>
-        <RelationshipGroup
+        <DoctorLocationsEditor
           doctorId={doctorId}
-          relation={locationsRelationship}
           readOnly={!canManageLocations}
           register={(save) => {
             editors.set("locations", save);
