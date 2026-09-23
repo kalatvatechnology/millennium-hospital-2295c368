@@ -54,5 +54,5 @@
 - [x] Upgrade Doctor Hero & Statistics with progressive controls, reusable definitions, secure icons, and public rendering
 - [x] Separate the Doctor Hero background from the portrait while preserving legacy Hero image data
 
-- [ ] Implement department-aware Doctor Profile CMS relationships, selectors, creation flows, and compatibility checks
-- [ ] Verify the repaired shared relationship trigger and add-new qualification selection flow
+- [x] Implement department-aware Doctor Profile CMS relationships, selectors, creation flows, and compatibility checks
+- [x] Verify the repaired shared relationship trigger and add-new qualification selection flow
