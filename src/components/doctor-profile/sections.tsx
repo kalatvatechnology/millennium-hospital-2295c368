@@ -1,4 +1,4 @@
-import { isGoogleMapsEmbedUrl } from "@/lib/admin-content";
+import { isGoogleMapsEmbedUrl } from "@/lib/map-embed";
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronDown, Clock, MapPin, Navigation, Phone, Star, Stethoscope } from "lucide-react";
