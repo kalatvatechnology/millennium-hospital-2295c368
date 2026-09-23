@@ -38,7 +38,8 @@ export function DoctorDigitalCardSection({
     try {
       const { downloadDigitalCardPdf } = await import("@/lib/digital-card/pdf");
       await downloadDigitalCardPdf(card, theme);
-    } catch {
+    } catch (cause) {
+      console.error("Digital card PDF failed", cause);
       setPdfError("The PDF could not be created. Please try again.");
     } finally {
       setBusy(false);
