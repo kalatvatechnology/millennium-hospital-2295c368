@@ -113,6 +113,13 @@
       "when": 1790162763913,
       "tag": "0015_doctor_service_items_individual_service_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790166917773,
+      "tag": "0016_dental_care_professional_master_data",
+      "breakpoints": true
     }
   ]
 }
