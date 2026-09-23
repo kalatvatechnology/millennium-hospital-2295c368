@@ -141,6 +141,13 @@
       "when": 1790197918912,
       "tag": "0019_doctor_location_consultation_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1790198319447,
+      "tag": "0020_reload_api_schema_cache",
+      "breakpoints": true
     }
   ]
 }
