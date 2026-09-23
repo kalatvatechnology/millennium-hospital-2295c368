@@ -134,6 +134,13 @@
       "when": 1790196844105,
       "tag": "0018_protect_main_hospital_doctor_location",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790197918912,
+      "tag": "0019_doctor_location_consultation_schedule",
+      "breakpoints": true
     }
   ]
 }
