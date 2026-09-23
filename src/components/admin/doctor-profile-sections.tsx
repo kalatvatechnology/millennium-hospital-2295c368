@@ -550,14 +550,20 @@ function RelationshipGroup({
         .eq(relation.sourceId, row[relation.sourceId]);
       if (error) throw error;
     }
+    const controls = relation.controls ?? [];
+    const allowed = ["doctor_id", relation.sourceId, ...controls];
     for (const [index, row] of links.entries()) {
-      const { id: _id, ...payload } = row;
-      void _id;
+      const payload: Record<string, any> = {};
+      for (const key of allowed) {
+        if (key in row) payload[key] = row[key];
+      }
       payload["doctor_id"] = doctorId;
-      if (relation.controls?.includes("display_order")) payload["display_order"] = index;
+      payload[relation.sourceId] = row[relation.sourceId];
+      if (controls.includes("display_order")) payload["display_order"] = index;
       const existing = original.some(
         (old: Row) => old[relation.sourceId] === row[relation.sourceId],
       );
+      if (existing && controls.length === 0) continue;
       const command = existing
         ? db
             .from(relation.link)
@@ -568,6 +574,7 @@ function RelationshipGroup({
       const { error } = await command;
       if (error) throw error;
     }
+
   };
   useEffect(() => register(save));
   const linked = new Map(links.map((row) => [row[relation.sourceId], row]));
