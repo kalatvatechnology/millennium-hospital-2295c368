@@ -60,4 +60,4 @@
 
 - [x] Repair doctor specialization synchronization across workspace, listings, preview, and public profiles
 - [x] Refine the Doctor Workspace Hero & Statistics interface without changing data or behavior
-- [ ] Restore existing specialization icons in Staff Preview and public doctor profiles without data or permission changes
+- [x] Restore existing specialization icons in Staff Preview and public doctor profiles without data or permission changes
