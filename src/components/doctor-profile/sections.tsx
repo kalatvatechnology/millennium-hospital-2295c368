@@ -1,3 +1,4 @@
+import { isGoogleMapsEmbedUrl } from "@/lib/map-embed";
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronDown, Clock, MapPin, Navigation, Phone, Star, Stethoscope } from "lucide-react";
@@ -152,8 +153,11 @@ export const locationAddress = (l: DoctorLocation) =>
   [l.address_line, l.city, l.state, l.postal_code].filter(Boolean).join(", ");
 
 export function DoctorLocationCard({ location, primary }: { location: DoctorLocation; primary: boolean }) {
+  const embed = isGoogleMapsEmbedUrl(location.map_embed_url) ? location.map_embed_url!.trim() : null;
   return (
-    <article className="flex flex-col rounded-xl border border-border bg-background p-5 shadow-[var(--shadow-sm)]">
+    <article className={`rounded-xl border border-border bg-background p-5 shadow-[var(--shadow-sm)] ${embed ? "md:col-span-2" : ""}`}>
+      <div className={embed ? "grid gap-5 md:grid-cols-2" : ""}>
+      <div className="flex min-w-0 flex-col">
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
           <MapPin className="size-4" aria-hidden="true" />
@@ -194,6 +198,20 @@ export function DoctorLocationCard({ location, primary }: { location: DoctorLoca
             </a>
           </Button>
         ) : null}
+      </div>
+      </div>
+      {embed ? (
+        <div className="aspect-video w-full min-w-0 overflow-hidden rounded-lg border border-border bg-surface">
+          <iframe
+            src={embed}
+            title={`Map showing ${location.public_name || location.name}`}
+            className="size-full border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        </div>
+      ) : null}
       </div>
     </article>
   );

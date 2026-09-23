@@ -160,7 +160,14 @@ function ContentWorkspace() {
               setError(null);
               if (isNew) void navigate({ to: returnTo });
             }}
-            onSave={() => save.mutate()}
+            onSave={() => {
+              for (const field of type.fields) {
+                const message = field.validate?.(String(values[field.name] ?? ""));
+                if (message) return setError(message);
+              }
+              setError(null);
+              save.mutate();
+            }}
           />
         </WorkspaceSection>
       </WorkspaceLayout>
@@ -224,10 +231,18 @@ function FieldControl({
           required={field.required}
           type={field.type === "number" ? "number" : "text"}
           className="mt-2"
+          placeholder={field.placeholder}
+          aria-describedby={field.help ? `${id}-help` : undefined}
           value={value ?? ""}
           onChange={(event) => onChange(event.target.value)}
         />
       )}
+      {field.help ? (
+        <p id={`${id}-help`} className="mt-1 text-xs text-muted-foreground">{field.help}</p>
+      ) : null}
+      {field.validate && value ? (
+        <p className="mt-1 text-xs text-destructive">{field.validate(String(value))}</p>
+      ) : null}
     </div>
   );
 }

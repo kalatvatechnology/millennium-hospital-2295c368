@@ -1896,6 +1896,7 @@ export type Database = {
           display_order: number
           email: string | null
           id: string
+          map_embed_url: string | null
           map_url: string | null
           name: string
           opening_hours: string | null
@@ -1913,6 +1914,7 @@ export type Database = {
           display_order?: number
           email?: string | null
           id?: string
+          map_embed_url?: string | null
           map_url?: string | null
           name: string
           opening_hours?: string | null
@@ -1930,6 +1932,7 @@ export type Database = {
           display_order?: number
           email?: string | null
           id?: string
+          map_embed_url?: string | null
           map_url?: string | null
           name?: string
           opening_hours?: string | null

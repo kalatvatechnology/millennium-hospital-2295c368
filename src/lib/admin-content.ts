@@ -13,7 +13,14 @@ export type Field = {
   required?: boolean;
   options?: { value: string; label: string }[];
   publishControl?: boolean;
+  help?: string;
+  placeholder?: string;
+  /** Returns an error message when the value is invalid. */
+  validate?: (value: string) => string | null;
 };
+
+export { mapEmbedUrlError, isGoogleMapsEmbedUrl } from "@/lib/map-embed";
+import { mapEmbedUrlError } from "@/lib/map-embed";
 
 export type ContentType = {
   key: string;
@@ -215,7 +222,21 @@ export const contentTypes: ContentType[] = [
       { name: "postal_code", label: "Postal code", type: "text" },
       { name: "phone", label: "Phone", type: "text" },
       { name: "email", label: "Email", type: "text" },
-      { name: "map_url", label: "Map link", type: "text" },
+      {
+        name: "map_url",
+        label: "Map URL (Get Directions)",
+        type: "text",
+        placeholder: "https://www.google.com/maps/...",
+        help: "Used for the Get Directions / Google Maps link.",
+      },
+      {
+        name: "map_embed_url",
+        label: "Map Embed URL (interactive map)",
+        type: "text",
+        placeholder: "https://www.google.com/maps/embed?pb=...",
+        help: "Paste the Google Maps embed URL used to display the interactive map on the website. Paste the URL only, not the iframe code.",
+        validate: mapEmbedUrlError,
+      },
       { name: "opening_hours", label: "Opening hours", type: "textarea" },
       orderField,
       publishedField,
@@ -417,7 +438,7 @@ export function contentPayload(type: ContentType, values: Record<string, any>, c
     if (field.type === "list") payload[field.name] = String(raw).split(",").map((item) => item.trim()).filter(Boolean);
     else if (field.type === "boolean") payload[field.name] = Boolean(raw);
     else if (field.type === "number") { if (raw !== "" && raw !== null) payload[field.name] = Number(raw); }
-    else payload[field.name] = raw === "" ? null : raw;
+    else payload[field.name] = raw === "" ? null : field.validate && typeof raw === "string" ? raw.trim() || null : raw;
   }
   return payload;
 }

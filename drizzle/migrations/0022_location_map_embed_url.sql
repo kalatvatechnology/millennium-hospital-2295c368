@@ -1,0 +1,2 @@
+ALTER TABLE public.locations ADD COLUMN IF NOT EXISTS map_embed_url text;
+COMMENT ON COLUMN public.locations.map_embed_url IS 'Google Maps embed URL (URL only, never iframe HTML) for the interactive map. map_url remains the Get Directions link.';
