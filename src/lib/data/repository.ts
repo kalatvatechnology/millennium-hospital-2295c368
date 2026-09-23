@@ -338,9 +338,9 @@ export async function getDoctor(slug: string, preview = false) {
         }))
         .filter((item) => item.published === true)
         .sort((a, b) => {
-          const primary = siteConfig.contact.primaryLocationSlug;
-          const aPrimary = a.slug === primary ? 0 : 1;
-          const bPrimary = b.slug === primary ? 0 : 1;
+          const primary = siteConfig.contact.primaryLocationId;
+          const aPrimary = a.id === primary ? 0 : 1;
+          const bPrimary = b.id === primary ? 0 : 1;
           return aPrimary - bPrimary || Number(a.display_order) - Number(b.display_order);
         }) as DoctorLocation[],
       faqs: rows(faqResult)
