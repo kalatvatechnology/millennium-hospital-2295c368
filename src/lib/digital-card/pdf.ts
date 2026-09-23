@@ -75,7 +75,7 @@ export async function downloadDigitalCardPdf(card: DigitalCardData, themeKey: Di
 
   // Header + portrait
   if (t.header === "photo") {
-    const ph = 236;
+    const ph = 196;
     if (card.photoUrl) {
       const img = await shapedPhoto(card.photoUrl, W, ph, "large").catch(() => null);
       if (img) doc.addImage(img, "PNG", 0, 0, W, ph);
@@ -205,7 +205,7 @@ export async function downloadDigitalCardPdf(card: DigitalCardData, themeKey: Di
   const gap = 7;
   const half = (maxW - gap) / 2;
   const bh = 30;
-  const actionsTop = Math.min(y, H - 150);
+  const actionsTop = y;
   y = actionsTop;
   button(PAD, y, half, bh, "Save Contact", card.actions.saveContact, true);
   button(PAD + half + gap, y, half, bh, "Book Appointment", card.actions.book, true);
