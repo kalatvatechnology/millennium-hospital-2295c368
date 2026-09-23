@@ -173,15 +173,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     const primaryDesignation = designations.find(
       (item: any) => item.id === designationByDepartment[departmentIds[0] ?? ""],
     )?.name;
-    const knownQualificationNames = new Set(
-      qualifications.map((item: any) => item.name.trim().toLowerCase()),
-    );
-    const unmatchedLegacyQualifications = legacyQualifications.filter(
-      (name) => !knownQualificationNames.has(name.trim().toLowerCase()),
-    );
-    const selectedQualificationNames = qualificationIds
-      .map((id) => qualifications.find((item: any) => item.id === id)?.name)
-      .filter(Boolean);
     const selectedSpecializationNames = specializationIds
       .map((id) => specializations.find((item: any) => item.id === id)?.name)
       .filter(Boolean);
