@@ -112,7 +112,13 @@ export async function listDoctors(): Promise<Doctor[]> {
     ).map((row) => mapDoctor(row));
   }
   const doctorRows = rows(
-    await published(db.from("doctors").select("*, doctor_departments(departments(id,name,slug))"))
+    await published(
+      db
+        .from("doctors")
+        .select(
+          "*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))",
+        ),
+    )
       .order("display_order")
       .order("full_name"),
   );
@@ -373,7 +379,9 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
     db.from("department_services").select("departments(*)").eq("service_id", mapped.id),
     db
       .from("doctor_services")
-      .select("doctors(*, doctor_departments(departments(id,name,slug)))")
+      .select(
+        "doctors(*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)))",
+      )
       .eq("service_id", mapped.id),
   ]);
   return {
@@ -532,7 +540,7 @@ export async function getBlogPost(
   const related = rows(
     await db
       .from("blog_post_doctors")
-      .select("doctors(name,slug,published)")
+      .select("doctors!blog_post_doctors_doctor_id_fkey(name,slug,published)")
       .eq("post_id", post["id"]),
   );
   return {
