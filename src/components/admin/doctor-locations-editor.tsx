@@ -363,7 +363,7 @@ export function DoctorLocationsEditor({
                       <ConsultationScheduleEditor
                         id={id}
                         value={row.consultation_schedule}
-                        legacyText={row.legacy_text}
+                        legacyText={row.legacy_text ?? null}
                         onChange={(next) => update(row.location_id, { consultation_schedule: next })}
                       />
                     </div>
