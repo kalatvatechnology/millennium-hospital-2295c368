@@ -23,6 +23,11 @@ import {
 } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
 import { listStaffEnquiries, updateEnquiryStatus } from "@/lib/data/staff-repository";
+import {
+  isDoctorOriginSource,
+  resolveEnquiryWhatsappTarget,
+  whatsappUrl,
+} from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/_admin/enquiries")({
   head: () => ({
@@ -171,7 +176,16 @@ function AdminEnquiries() {
       ) : (
         <div className="mt-6 grid gap-4">
           {rows.map((row) => {
-            const target = row.doctor?.whatsappNumber ?? null;
+            const doctorOrigin = isDoctorOriginSource(row.source);
+            const target = resolveEnquiryWhatsappTarget(
+              row.source,
+              row.doctor
+                ? {
+                    whatsapp_number: row.doctor.whatsappNumber,
+                    whatsapp_country_code: row.doctor.whatsappCountryCode,
+                  }
+                : null,
+            );
             const text = encodeURIComponent(
               [
                 "Enquiry from the hospital website",
