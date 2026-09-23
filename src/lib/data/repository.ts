@@ -183,6 +183,7 @@ export async function getDoctor(slug: string, preview = false) {
         .from("doctor_specializations")
         .select("id,title,description,icon,professional_service_id,enabled,display_order,department_specializations(name)")
         .eq("doctor_id", doctor.id)
+        .not("specialization_id", "is", null)
         .eq("enabled", true)
         .order("display_order"),
       db

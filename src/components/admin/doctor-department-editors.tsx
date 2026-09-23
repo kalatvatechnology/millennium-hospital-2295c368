@@ -758,6 +758,7 @@ export const DepartmentSpecializationsEditor = forwardRef<
         .from("doctor_specializations")
         .select("id,title,description,icon,icon_override_url,enabled,display_order,department_id,specialization_id,department_specializations(name,description,default_icon_url)")
         .eq("doctor_id", doctorId)
+        .not("specialization_id", "is", null)
         .order("display_order");
       if (error) throw error;
       return data ?? [];
