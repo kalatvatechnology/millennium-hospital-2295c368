@@ -616,7 +616,6 @@ export function DoctorWorkspace() {
                         legacyQualifications={
                           Array.isArray(values.qualifications) ? values.qualifications : []
                         }
-                        legacySpecialty={values.specialty ?? ""}
                         canWrite={canWrite}
                         onDepartmentsChange={handleDepartmentsChange}
                       />

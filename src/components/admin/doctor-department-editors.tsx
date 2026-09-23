@@ -81,7 +81,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     departments: Department[];
     legacyDesignation: string;
     legacyQualifications: string[];
-    legacySpecialty: string;
     canWrite: boolean;
     onDepartmentsChange: (ids: string[]) => void;
   }
@@ -91,7 +90,6 @@ export const DepartmentProfessionalEditor = forwardRef<
     departments,
     legacyDesignation,
     legacyQualifications,
-    legacySpecialty,
     canWrite,
     onDepartmentsChange,
   },
@@ -160,6 +158,12 @@ export const DepartmentProfessionalEditor = forwardRef<
 
   const updateDepartments = (ids: string[]) => {
     setDepartmentIds(ids);
+    const allowedSpecializationIds = new Set(
+      (query.data?.specializations ?? [])
+        .filter((item: any) => ids.includes(item.department_id))
+        .map((item: any) => item.id),
+    );
+    setSpecializationIds((current) => current.filter((id) => allowedSpecializationIds.has(id)));
     onDepartmentsChange(ids);
   };
   const snapshot = (): ProfessionalSnapshot => {
