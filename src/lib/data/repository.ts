@@ -61,7 +61,7 @@ export async function getDepartment(slug: string) {
       db
         .from("doctor_departments")
         .select(
-          "doctors(*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug)))",
+          "doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)))",
         )
         .eq("department_id", department["id"]),
       db
@@ -105,14 +105,20 @@ export async function listDoctors(): Promise<Doctor[]> {
       await published(
         db
           .from("doctors")
-          .select("*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug))"),
+          .select("*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))"),
       )
         .order("display_order")
         .order("name"),
     ).map((row) => mapDoctor(row));
   }
   const doctorRows = rows(
-    await published(db.from("doctors").select("*, doctor_departments(departments(id,name,slug))"))
+    await published(
+      db
+        .from("doctors")
+        .select(
+          "*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))",
+        ),
+    )
       .order("display_order")
       .order("full_name"),
   );
@@ -124,8 +130,8 @@ export async function listDoctors(): Promise<Doctor[]> {
 
 export async function getDoctor(slug: string, preview = false) {
   const selection = usesProductionContract
-    ? "*, doctor_departments(departments(id,name,slug))"
-    : "*, department:departments(id,name,slug), doctor_departments(departments(id,name,slug))";
+    ? "*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))"
+    : "*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug))";
   // Preview skips the publication filter only; row access is still enforced by
   // database policies, so signed-out visitors never receive unpublished rows.
   const base = db.from("doctors").select(selection).eq("slug", slug);
@@ -352,7 +358,7 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
         .eq("professional_service_id", mapped.id),
       db
         .from("professional_service_doctors")
-        .select("doctors(*, department:departments(id,name,slug))")
+        .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug))")
         .eq("professional_service_id", mapped.id),
     ]);
     return {
@@ -373,7 +379,9 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
     db.from("department_services").select("departments(*)").eq("service_id", mapped.id),
     db
       .from("doctor_services")
-      .select("doctors(*, doctor_departments(departments(id,name,slug)))")
+      .select(
+        "doctors(*, doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)))",
+      )
       .eq("service_id", mapped.id),
   ]);
   return {
@@ -411,7 +419,7 @@ export async function getFacility(slug: string) {
   const [doctors, departments, professional, hospital] = await Promise.all([
     db
       .from("facility_doctors")
-      .select("doctors(*, department:departments(id,name,slug))")
+      .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug))")
       .eq("facility_id", facility["id"]),
     db.from("facility_departments").select("departments(*)").eq("facility_id", facility["id"]),
     db
@@ -491,7 +499,9 @@ export async function listReviews(): Promise<Review[]> {
   let query = db
     .from("reviews")
     .select(
-      usesProductionContract ? "*, doctor:doctors(full_name,slug)" : "*, doctor:doctors(name,slug)",
+      usesProductionContract
+        ? "*, doctor:doctors!reviews_doctor_id_fkey(full_name,slug)"
+        : "*, doctor:doctors!reviews_doctor_id_fkey(name,slug)",
     );
   query = usesProductionContract
     ? query.eq("status", "published")
@@ -530,7 +540,7 @@ export async function getBlogPost(
   const related = rows(
     await db
       .from("blog_post_doctors")
-      .select("doctors(name,slug,published)")
+      .select("doctors!blog_post_doctors_doctor_id_fkey(name,slug,published)")
       .eq("post_id", post["id"]),
   );
   return {
