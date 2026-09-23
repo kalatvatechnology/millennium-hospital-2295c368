@@ -1344,6 +1344,7 @@ export type Database = {
           created_at: string
           department_id: string | null
           designation: string | null
+          digital_card_theme: string
           display_order: number
           experience_years: number | null
           expertise: string[]
@@ -1385,6 +1386,7 @@ export type Database = {
           created_at?: string
           department_id?: string | null
           designation?: string | null
+          digital_card_theme?: string
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
@@ -1426,6 +1428,7 @@ export type Database = {
           created_at?: string
           department_id?: string | null
           designation?: string | null
+          digital_card_theme?: string
           display_order?: number
           experience_years?: number | null
           expertise?: string[]

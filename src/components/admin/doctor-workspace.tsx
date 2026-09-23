@@ -37,6 +37,7 @@ import { useAdminSession } from "@/hooks/use-admin-session";
 import { contentTypeByKey, deleteRecord, saveRecord } from "@/lib/admin-content";
 import { userFacingDataError } from "@/lib/data/errors";
 import { supabase } from "@/integrations/supabase/client";
+import { DoctorDigitalCardSection } from "@/components/admin/doctor-digital-card-section";
 import { InlineDelete } from "@/components/admin/workspace";
 import {
   DoctorStatisticsEditor,
@@ -66,6 +67,7 @@ const sections = [
   ["reviews", "Reviews"],
   ["faqs", "FAQs"],
   ["seo", "SEO"],
+  ["digital-card", "Digital Card"],
   ["publishing", "Publishing"],
 ] as const;
 type SectionKey = (typeof sections)[number][0];
@@ -266,7 +268,7 @@ export function DoctorWorkspace() {
   }, []);
   const title = isNew ? "New doctor" : values.name || "Doctor workspace";
   const detailTab =
-    sectionKeys.has(section) && !["profile", "social-media", "seo", "publishing"].includes(section)
+    sectionKeys.has(section) && !["profile", "social-media", "seo", "digital-card", "publishing"].includes(section)
       ? (section as DoctorProfileTab)
       : null;
   const payload = () => {
@@ -913,6 +915,14 @@ export function DoctorWorkspace() {
                       onValue={(value) => set("og_image_url", value)}
                     />
                   </div>
+                ) : null}
+                {section === "digital-card" && !isNew ? (
+                  <DoctorDigitalCardSection
+                    slug={String(baseline.slug ?? values.slug ?? "")}
+                    theme={values.digital_card_theme}
+                    onThemeChange={(next) => set("digital_card_theme", next)}
+                    canWrite={canWrite}
+                  />
                 ) : null}
                 {section === "publishing" ? (
                   <div className="grid max-w-2xl gap-5">
