@@ -120,6 +120,13 @@
       "when": 1790166917773,
       "tag": "0016_dental_care_professional_master_data",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790194786545,
+      "tag": "0017_location_admin_permissions_and_primary_links",
+      "breakpoints": true
     }
   ]
 }
