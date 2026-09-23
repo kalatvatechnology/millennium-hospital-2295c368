@@ -40,6 +40,7 @@ export type Permission =
   | "content.read"
   | "content.write"
   | "content.publish"
+  | "locations.manage"
   | "enquiries.manage"
   | "users.manage"
   | "audit.read"
@@ -83,6 +84,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "content.read",
     "content.write",
     "content.publish",
+    "locations.manage",
     "enquiries.manage",
     "users.manage",
     "audit.read",
@@ -95,6 +97,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "content.read",
     "content.write",
     "content.publish",
+    "locations.manage",
     "enquiries.manage",
     "audit.read",
     "blog.review",

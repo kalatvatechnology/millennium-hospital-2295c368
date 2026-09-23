@@ -27,6 +27,7 @@ import {
   isDoctorOriginSource,
   resolveEnquiryWhatsappTarget,
   whatsappUrl,
+  hospitalWhatsappDigits,
 } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/_admin/enquiries")({
@@ -187,7 +188,9 @@ function AdminEnquiries() {
                 : null,
             );
             const text = [
-              "Enquiry from the hospital website",
+              doctorOrigin && row.doctor
+                ? `Enquiry from ${row.doctor.name}'s profile`
+                : "Enquiry from the hospital website",
               `Patient: ${row.patientName}`,
               `Contact: ${row.contactNumber}`,
               row.doctor ? `Doctor: ${row.doctor.name}` : null,
@@ -226,7 +229,7 @@ function AdminEnquiries() {
                       <Button asChild variant="outline" size="sm">
                         <a href={whatsappUrl(target, text)} target="_blank" rel="noreferrer">
                           <MessageCircle className="size-4" />{" "}
-                          {doctorOrigin && row.doctor?.whatsappNumber
+                          {target !== hospitalWhatsappDigits()
                             ? "Forward to doctor"
                             : "Forward to hospital"}
                         </a>

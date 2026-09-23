@@ -10,6 +10,8 @@ export const siteConfig = {
     address: null as string | null,
     mapUrl: null as string | null,
     openingHours: null as string | null,
+    /** Slug of the primary hospital location, always listed first on doctor profiles. */
+    primaryLocationSlug: "ulwe-main",
   },
   social: {
     facebook: null as string | null,
