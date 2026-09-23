@@ -209,7 +209,9 @@ export async function getDoctor(slug: string, preview = false) {
         .order("display_order"),
       db
         .from("doctor_locations")
-        .select("consultation_availability,public_name,map_url,display_order,locations(*)")
+        .select(
+          "consultation_availability,consultation_schedule,public_name,map_url,display_order,locations(*)",
+        )
         .eq("doctor_id", doctor.id)
         .eq("enabled", true)
         .order("display_order"),
@@ -334,6 +336,7 @@ export async function getDoctor(slug: string, preview = false) {
             item["locations"]?.map_url ||
             null,
           consultation_availability: item["consultation_availability"] ?? null,
+          consultation_schedule: item["consultation_schedule"] ?? null,
           display_order: item["display_order"] ?? 0,
         }))
         .filter((item) => item.published === true)
