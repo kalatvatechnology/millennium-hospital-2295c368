@@ -224,12 +224,11 @@ function AdminEnquiries() {
                     </Select>
                     {target ? (
                       <Button asChild variant="outline" size="sm">
-                        <a
-                          href={`https://wa.me/${target.replace(/\D/g, "")}?text=${text}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <MessageCircle className="size-4" /> Forward
+                        <a href={whatsappUrl(target, text)} target="_blank" rel="noreferrer">
+                          <MessageCircle className="size-4" />{" "}
+                          {doctorOrigin && row.doctor?.whatsappNumber
+                            ? "Forward to doctor"
+                            : "Forward to hospital"}
                         </a>
                       </Button>
                     ) : null}
