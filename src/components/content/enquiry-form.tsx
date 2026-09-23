@@ -18,7 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type Props = { presetDoctorId?: string; source?: string; title?: string; description?: string };
+type Props = {
+  presetDoctorId?: string;
+  source?: string;
+  title?: string;
+  description?: string;
+  /** Two-column layout without the outer card, heading or department/service choices. */
+  compact?: boolean;
+};
 
 const NONE = "none";
 
@@ -27,6 +34,7 @@ export function EnquiryForm({
   source = "website",
   title = "Send an enquiry",
   description = "Share your details and the hospital team will get in touch.",
+  compact = false,
 }: Props) {
   const options = useQuery(enquiryOptionsQuery);
   const [patientName, setPatientName] = useState("");
@@ -37,6 +45,8 @@ export function EnquiryForm({
   const [departmentId, setDepartmentId] = useState(NONE);
   const [serviceId, setServiceId] = useState(NONE);
   const [preferredAt, setPreferredAt] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -53,6 +63,8 @@ export function EnquiryForm({
     setDepartmentId(NONE);
     setServiceId(NONE);
     setPreferredAt("");
+    setPreferredDate("");
+    setPreferredTime("");
     setMessage("");
     setSent(null);
   };
@@ -63,6 +75,19 @@ export function EnquiryForm({
     const digits = contactNumber.replace(/\D/g, "");
     if (patientName.trim().length < 2) return setError("Please enter the patient's full name.");
     if (digits.length < 8) return setError("Please enter a valid contact number.");
+
+    // Compact mode collects date and time separately; a full date-time is stored as the
+    // preferred time, while a partial preference is kept in the message instead.
+    const combinedAt = compact
+      ? preferredDate && preferredTime
+        ? `${preferredDate}T${preferredTime}`
+        : ""
+      : preferredAt;
+    const partial =
+      compact && !combinedAt && (preferredDate || preferredTime)
+        ? `Preferred ${preferredDate ? `date: ${preferredDate}` : ""}${preferredDate && preferredTime ? ", " : ""}${preferredTime ? `time: ${preferredTime}` : ""}`
+        : null;
+    const finalMessage = [partial, message.trim()].filter(Boolean).join("\n") || null;
 
     setSubmitting(true);
     const value = (id: string) => (id === NONE ? null : id);
@@ -77,8 +102,8 @@ export function EnquiryForm({
         preferredDoctorId: value(doctorId),
         preferredDepartmentId: value(departmentId),
         preferredServiceId: value(serviceId),
-        preferredAt: preferredAt ? new Date(preferredAt).toISOString() : null,
-        message: message.trim() || null,
+        preferredAt: combinedAt ? new Date(combinedAt).toISOString() : null,
+        message: finalMessage,
         source,
       });
     } catch (submitError) {
@@ -96,8 +121,8 @@ export function EnquiryForm({
         : null,
       familyMember.trim() ? `Family member: ${familyMember.trim()}` : null,
       doctor ? `Doctor: ${doctor.name}` : null,
-      preferredAt ? `Preferred time: ${preferredAt.replace("T", " ")}` : null,
-      message.trim() ? `Message: ${message.trim()}` : null,
+      combinedAt ? `Preferred time: ${combinedAt.replace("T", " ")}` : null,
+      finalMessage ? `Message: ${finalMessage}` : null,
     ].filter(Boolean);
     const url = target ? whatsappUrl(target, lines.join("\n")) : null;
 
@@ -136,10 +161,17 @@ export function EnquiryForm({
   const list = options.data;
 
   return (
-    <form className="border border-border bg-surface p-6 sm:p-8" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-      <div className="mt-6 grid gap-5">
+    <form
+      className={compact ? "" : "border border-border bg-surface p-6 sm:p-8"}
+      onSubmit={handleSubmit}
+    >
+      {compact ? null : (
+        <>
+          <h2 className="text-2xl font-semibold">{title}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        </>
+      )}
+      <div className={compact ? "grid gap-4 sm:grid-cols-2" : "mt-6 grid gap-5"}>
         <div>
           <Label htmlFor="patient-name">Patient full name</Label>
           <Input
@@ -205,7 +237,7 @@ export function EnquiryForm({
             </Select>
           </div>
         ) : null}
-        {list?.departments.length ? (
+        {!compact && list?.departments.length ? (
           <div>
             <Label htmlFor="preferred-department">Department (optional)</Label>
             <Select value={departmentId} onValueChange={setDepartmentId}>
@@ -223,7 +255,7 @@ export function EnquiryForm({
             </Select>
           </div>
         ) : null}
-        {list?.services.length ? (
+        {!compact && list?.services.length ? (
           <div>
             <Label htmlFor="preferred-service">Service (optional)</Label>
             <Select value={serviceId} onValueChange={setServiceId}>
@@ -241,6 +273,30 @@ export function EnquiryForm({
             </Select>
           </div>
         ) : null}
+        {compact ? (
+          <>
+            <div>
+              <Label htmlFor="preferred-date">Preferred date (optional)</Label>
+              <Input
+                id="preferred-date"
+                type="date"
+                value={preferredDate}
+                onChange={(e) => setPreferredDate(e.target.value)}
+                className="mt-2 bg-background"
+              />
+            </div>
+            <div>
+              <Label htmlFor="preferred-time">Preferred time (optional)</Label>
+              <Input
+                id="preferred-time"
+                type="time"
+                value={preferredTime}
+                onChange={(e) => setPreferredTime(e.target.value)}
+                className="mt-2 bg-background"
+              />
+            </div>
+          </>
+        ) : (
         <div>
           <Label htmlFor="preferred-at">Preferred date and time (optional)</Label>
           <Input
@@ -251,24 +307,30 @@ export function EnquiryForm({
             className="mt-2 bg-background"
           />
         </div>
-        <div>
+        )}
+        <div className={compact ? "sm:col-span-2" : undefined}>
           <Label htmlFor="enquiry-message">How can we help? (optional)</Label>
           <Textarea
             id="enquiry-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="mt-2 min-h-32 bg-background"
+            className={compact ? "mt-2 min-h-24 bg-background" : "mt-2 min-h-32 bg-background"}
           />
         </div>
         {error ? (
-          <p role="alert" className="text-sm font-medium text-destructive">
+          <p role="alert" className="text-sm font-medium text-destructive sm:col-span-2">
             {error}
           </p>
         ) : null}
-        <Button type="submit" size="lg" disabled={submitting}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={submitting}
+          className={compact ? "sm:col-span-2 sm:justify-self-start sm:px-8" : undefined}
+        >
           {submitting ? "Sending…" : "Send enquiry"}
         </Button>
-        <p className="text-xs text-muted-foreground">
+        <p className={compact ? "text-xs text-muted-foreground sm:col-span-2" : "text-xs text-muted-foreground"}>
           Please do not use this form for medical emergencies. Contact your local emergency service
           instead.
         </p>
