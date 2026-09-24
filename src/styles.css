@@ -72,6 +72,23 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-dc-ivory: var(--dc-ivory);
+  --color-dc-cream: var(--dc-cream);
+  --color-dc-blush: var(--dc-blush);
+  --color-dc-coral: var(--dc-coral);
+  --color-dc-midnight: var(--dc-midnight);
+  --color-dc-charcoal: var(--dc-charcoal);
+  --color-dc-gold: var(--dc-gold);
+  --color-dc-gold-foreground: var(--dc-gold-foreground);
+  --color-dc-sky: var(--dc-sky);
+  --color-dc-aqua: var(--dc-aqua);
+  --color-dc-mint: var(--dc-mint);
+  --color-dc-teal: var(--dc-teal);
+  --color-dc-stone: var(--dc-stone);
+  --color-dc-navy: var(--dc-navy);
+  --color-dc-red: var(--dc-red);
+  --color-dc-paper: var(--dc-paper);
+  --color-dc-ink: var(--dc-ink);
 }
 
 :root {
@@ -122,6 +139,24 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 14%);
   --sidebar-ring: oklch(0.541 0.202 22);
+  /* Digital Doctor Card palette — fixed brand artwork, identical in light and dark UI. */
+  --dc-navy: oklch(0.391 0.105 270);
+  --dc-red: oklch(0.541 0.202 22);
+  --dc-paper: oklch(1 0 0);
+  --dc-ink: oklch(0.278 0.029 257);
+  --dc-ivory: oklch(0.978 0.012 85);
+  --dc-cream: oklch(0.946 0.026 80);
+  --dc-blush: oklch(0.905 0.045 32);
+  --dc-coral: oklch(0.72 0.12 32);
+  --dc-midnight: oklch(0.205 0.045 268);
+  --dc-charcoal: oklch(0.275 0.03 262);
+  --dc-gold: oklch(0.8 0.085 82);
+  --dc-gold-foreground: oklch(0.22 0.035 265);
+  --dc-sky: oklch(0.962 0.022 228);
+  --dc-aqua: oklch(0.83 0.075 205);
+  --dc-mint: oklch(0.91 0.06 168);
+  --dc-teal: oklch(0.46 0.085 210);
+  --dc-stone: oklch(0.91 0.01 80);
 }
 
 .dark {

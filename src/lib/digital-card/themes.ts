@@ -1,9 +1,10 @@
+/** Stored keys are stable (database check constraint); only names and artwork changed. */
 export const DIGITAL_CARD_THEMES = [
-  { key: "millennium_signature", name: "Millennium Signature", description: "Navy and red hospital identity — the default card." },
-  { key: "clinical_elegance", name: "Clinical Elegance", description: "Light, calm and highly readable with navy type." },
-  { key: "modern_executive", name: "Modern Executive", description: "Geometric blocks and strong typography." },
-  { key: "premium_medical", name: "Premium Medical", description: "Deep contrast with a refined photo treatment." },
-  { key: "minimal_luxe", name: "Minimal Luxe", description: "Large portrait, restrained type, small accents." },
+  { key: "millennium_signature", name: "Millennium Signature", description: "Official Millennium identity with elegant medical curves." },
+  { key: "clinical_elegance", name: "Radiant Care", description: "Warm organic forms with a welcoming premium feel." },
+  { key: "modern_executive", name: "Executive Focus", description: "Bold architectural design for a sophisticated professional identity." },
+  { key: "premium_medical", name: "Oral Health Plus", description: "Fresh healthcare artwork inspired by clean smiles and wellness." },
+  { key: "minimal_luxe", name: "Minimal Luxe", description: "Editorial minimalism with premium photography and typography." },
 ] as const;
 
 export type DigitalCardTheme = (typeof DIGITAL_CARD_THEMES)[number]["key"];

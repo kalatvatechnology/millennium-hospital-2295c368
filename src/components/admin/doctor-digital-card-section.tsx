@@ -68,8 +68,8 @@ export function DoctorDigitalCardSection({
                   selected ? "border-primary ring-2 ring-primary/30" : "border-border",
                 )}
               >
-                <div aria-hidden="true" className="pointer-events-none relative h-44 overflow-hidden">
-                  <div className="absolute left-1/2 top-2 w-[400px] origin-top -translate-x-1/2 scale-[0.36]">
+                <div aria-hidden="true" className="pointer-events-none relative h-56 overflow-hidden bg-muted">
+                  <div className="absolute left-1/2 top-3 w-[400px] origin-top -translate-x-1/2 scale-[0.4]">
                     <DigitalDoctorCard card={card} theme={t.key} />
                   </div>
                 </div>
