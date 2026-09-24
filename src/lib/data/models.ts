@@ -43,6 +43,7 @@ export type Doctor = {
   location: string | null;
   whatsapp_number: string | null;
   whatsapp_country_code: string | null;
+  google_review_url?: string | null;
   consultation_info: string | null;
   location_info: string | null;
   social_links: Record<string, string>;
@@ -110,6 +111,8 @@ export type DoctorLocation = {
   map_url: string | null;
   /** Central location's Google Maps embed URL (interactive map only). */
   map_embed_url?: string | null;
+  /** Central location's Google Reviews link (hospital fallback for Digital Cards). */
+  google_review_url?: string | null;
   opening_hours: string | null;
   consultation_availability: string | null;
   /** Day-by-day schedule for this doctor at this location (display only). */

@@ -122,6 +122,7 @@ const blankDoctor = () => ({
   phone_country_code: "",
   whatsapp_number: "",
   whatsapp_country_code: "",
+  google_review_url: "",
   photo_url: "",
   profile_image_alt: "",
   hero_image_url: "",
@@ -320,6 +321,8 @@ export function DoctorWorkspace() {
       if (number && !/^\d{6,15}$/.test(number))
         issues[key] = "Enter 6–15 digits without spaces or the country code.";
     }
+    const reviewIssue = googleReviewUrlError(String(values.google_review_url ?? ""));
+    if (reviewIssue) issues["google_review_url"] = reviewIssue;
     if (slug) {
       let slugQuery = db.from("doctors").select("id").eq("slug", slug).limit(1);
       if (!isNew) slugQuery = slugQuery.neq("id", doctorId);
