@@ -382,8 +382,8 @@ function Radiant({ card }: { card: DigitalCardData }) {
 function Executive({ card }: { card: DigitalCardData }) {
   return (
     <Shell card={card} className="rounded-2xl bg-dc-midnight text-dc-paper">
-      <div className="relative h-80 bg-dc-charcoal">
-        <Photo card={card} className="h-80 w-full bg-dc-charcoal" />
+      <div className="relative h-80 bg-dc-midnight">
+        <Photo card={card} className="h-80 w-full bg-dc-midnight" />
         {/* architectural diagonal panels over the portrait */}
         <div aria-hidden="true" className="absolute inset-0 bg-dc-navy/55 [clip-path:polygon(0_62%,100%_40%,100%_100%,0_100%)]" />
         <div aria-hidden="true" className="absolute inset-0 bg-dc-midnight [clip-path:polygon(0_80%,100%_60%,100%_100%,0_100%)]" />
@@ -447,7 +447,7 @@ function OralHealth({ card }: { card: DigitalCardData }) {
         </Art>
         <Art className="inset-0 size-full text-dc-teal" viewBox="0 0 400 240">
           <path d="M228 150 C 270 190, 340 190, 380 150" fill="none" stroke="currentColor" strokeOpacity=".45" strokeWidth="2" strokeLinecap="round" />
-          <path d="M318 64 c -10 -12 -32 -10 -34 8 c -2 16 6 30 8 48 c 2 10 10 10 12 0 l 4 -18 l 4 18 c 2 10 10 10 12 0 c 2 -18 10 -32 8 -48 c -2 -18 -24 -20 -34 -8 z" fill="none" stroke="currentColor" strokeOpacity=".35" strokeWidth="1.5" />
+          <path d="M318 64 c -10 -12 -32 -10 -34 8 c -2 16 6 30 8 48 c 2 10 10 10 12 0 l 4 -18 l 4 18 c 2 10 10 10 12 0 c 2 -18 10 -32 8 -48 c -2 -18 -24 -20 -34 -8 z" fill="none" stroke="currentColor" strokeOpacity=".2" strokeWidth="1.2" />
         </Art>
         <Art className="inset-x-0 -bottom-px h-14 w-full text-dc-paper" viewBox="0 0 400 56">
           <path d="M0 40 C 110 10, 260 60, 400 24 L400 56 L0 56 Z" fill="currentColor" />
