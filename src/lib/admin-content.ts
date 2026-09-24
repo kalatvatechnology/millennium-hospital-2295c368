@@ -21,6 +21,7 @@ export type Field = {
 
 export { mapEmbedUrlError, isGoogleMapsEmbedUrl } from "@/lib/map-embed";
 import { mapEmbedUrlError } from "@/lib/map-embed";
+import { googleReviewUrlError } from "@/lib/review-url";
 
 export type ContentType = {
   key: string;
