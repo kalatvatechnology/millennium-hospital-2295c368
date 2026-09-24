@@ -484,6 +484,8 @@ export async function saveRecord(
   values: Record<string, any>,
 ) {
   if (type.available === false) throw classifyDataError(new Error("table does not exist"));
+  if ("google_review_url" in values)
+    values = { ...values, google_review_url: String(values["google_review_url"] ?? "").trim() || null };
   const query = (supabase as any).from(type.table);
   const { data, error } = id ? await query.update(values).eq("id", id).select().single() : await query.insert(values).select().single();
   if (error) throw classifyDataError(error);
