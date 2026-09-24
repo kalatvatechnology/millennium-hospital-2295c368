@@ -243,7 +243,7 @@ export const contentTypes: ContentType[] = [
         label: "Google Reviews URL",
         type: "text",
         placeholder: "https://g.page/r/.../review",
-        help: "Optional. For the main hospital, this is the hospital review link used on Digital Cards when a doctor has no own review link.",
+        help: "Paste the Google review link for this location. This will be used by Digital Doctor Cards when the doctor does not have their own Google Reviews URL.",
         validate: googleReviewUrlError,
       },
       { name: "opening_hours", label: "Opening hours", type: "textarea" },
