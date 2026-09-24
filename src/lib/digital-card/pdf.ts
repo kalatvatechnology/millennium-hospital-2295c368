@@ -333,9 +333,9 @@ class Renderer {
     const fx = px.endsWith("%") ? parseFloat(px) / 100 : 0.5;
     const fy = py.endsWith("%") ? parseFloat(py) / 100 : 0.5;
     ctx.drawImage(bmp, (cw - dw) * fx, (ch - dh) * fy, dw, dh);
-    const format = cover ? "JPEG" : "PNG";
-    const data = cover && r < 1 ? canvas.toDataURL("image/jpeg", 0.92) : canvas.toDataURL("image/png");
-    this.alpha(opacity, () => this.doc.addImage(data, data.startsWith("data:image/jpeg") ? "JPEG" : format === "JPEG" ? "PNG" : "PNG", x, y, w, h));
+    const jpeg = cover && r < 1;
+    const data = jpeg ? canvas.toDataURL("image/jpeg", 0.92) : canvas.toDataURL("image/png");
+    this.alpha(opacity, () => this.doc.addImage(data, jpeg ? "JPEG" : "PNG", x, y, w, h));
   }
 
   private async svg(el: SVGSVGElement, cs: CSSStyleDeclaration, x: number, y: number, w: number, h: number, opacity: number) {
