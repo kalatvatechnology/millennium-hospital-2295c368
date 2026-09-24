@@ -274,6 +274,7 @@ export function DigitalDoctorCard({ card, theme }: { card: DigitalCardData; them
           <div className="grid grid-cols-2 gap-2">
             <Action
               onClick={() => downloadVCard(card)}
+              pdfHref={card.actions.saveContact}
               icon={<UserPlus className="size-4" aria-hidden="true" />}
               className={v.primary}
               label={`Save ${card.name} to contacts`}
