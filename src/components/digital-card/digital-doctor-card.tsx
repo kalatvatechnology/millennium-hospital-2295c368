@@ -155,6 +155,7 @@ function Action({
   className,
   label,
   external,
+  pdfHref,
 }: {
   href?: string;
   onClick?: () => void;
@@ -163,6 +164,8 @@ function Action({
   className: string;
   label: string;
   external?: boolean;
+  /** Link used by the PDF renderer when the on-screen control is a button. */
+  pdfHref?: string;
 }) {
   const cls = cn(
     "inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-sm font-semibold transition-colors",
@@ -175,7 +178,7 @@ function Action({
       {children}
     </a>
   ) : (
-    <button type="button" onClick={onClick} aria-label={label} className={cls}>
+    <button type="button" onClick={onClick} aria-label={label} className={cls} data-pdf-href={pdfHref}>
       {icon}
       {children}
     </button>
