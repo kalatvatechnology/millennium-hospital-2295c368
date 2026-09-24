@@ -383,7 +383,7 @@ function Executive({ card }: { card: DigitalCardData }) {
   return (
     <Shell card={card} className="rounded-2xl bg-dc-midnight text-dc-paper">
       <div className="relative h-80 bg-dc-midnight">
-        <Photo card={card} className="h-80 w-full bg-dc-midnight" />
+        <Photo card={card} className="h-80 w-full bg-dc-charcoal text-6xl text-dc-gold" />
         {/* architectural diagonal panels over the portrait */}
         <div aria-hidden="true" className="absolute inset-0 bg-dc-navy/55 [clip-path:polygon(0_62%,100%_40%,100%_100%,0_100%)]" />
         <div aria-hidden="true" className="absolute inset-0 bg-dc-midnight [clip-path:polygon(0_80%,100%_60%,100%_100%,0_100%)]" />
