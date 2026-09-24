@@ -50,6 +50,7 @@ import {
   type DepartmentRelationEditorHandle,
   type ProfessionalEditorHandle,
 } from "@/components/admin/doctor-department-editors";
+import { googleReviewUrlError } from "@/lib/review-url";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -122,6 +123,7 @@ const blankDoctor = () => ({
   phone_country_code: "",
   whatsapp_number: "",
   whatsapp_country_code: "",
+  google_review_url: "",
   photo_url: "",
   profile_image_alt: "",
   hero_image_url: "",
@@ -297,6 +299,7 @@ export function DoctorWorkspace() {
           item.url.trim(),
         ]),
     ),
+    google_review_url: String(values.google_review_url ?? "").trim() || null,
     ...(canPublish ? {} : { published: baseline.published }),
     };
   };
@@ -320,6 +323,8 @@ export function DoctorWorkspace() {
       if (number && !/^\d{6,15}$/.test(number))
         issues[key] = "Enter 6–15 digits without spaces or the country code.";
     }
+    const reviewIssue = googleReviewUrlError(String(values.google_review_url ?? ""));
+    if (reviewIssue) issues["google_review_url"] = reviewIssue;
     if (slug) {
       let slugQuery = db.from("doctors").select("id").eq("slug", slug).limit(1);
       if (!isNew) slugQuery = slugQuery.neq("id", doctorId);
@@ -675,6 +680,15 @@ export function DoctorWorkspace() {
                           setProfileValue("whatsapp_number", value.replace(/\D/g, "").slice(0, 15))
                         }
                         error={fieldErrors["whatsapp_number"]}
+                      />
+                      <Field
+                        name="google_review_url"
+                        label="Google Reviews URL (optional)"
+                        kind="text"
+                        value={values.google_review_url}
+                        onChange={(value) => setProfileValue("google_review_url", value)}
+                        error={fieldErrors["google_review_url"]}
+                        help="The doctor's own Google review link. If empty, the Digital Card uses the hospital's review link."
                       />
                     </ProfileGroup>
                     <ProfileGroup title="Profile image" singleColumn>

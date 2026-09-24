@@ -1348,6 +1348,7 @@ export type Database = {
           display_order: number
           experience_years: number | null
           expertise: string[]
+          google_review_url: string | null
           hero_background_image_alt: string | null
           hero_background_image_url: string | null
           hero_background_position: string
@@ -1390,6 +1391,7 @@ export type Database = {
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
+          google_review_url?: string | null
           hero_background_image_alt?: string | null
           hero_background_image_url?: string | null
           hero_background_position?: string
@@ -1432,6 +1434,7 @@ export type Database = {
           display_order?: number
           experience_years?: number | null
           expertise?: string[]
+          google_review_url?: string | null
           hero_background_image_alt?: string | null
           hero_background_image_url?: string | null
           hero_background_position?: string
@@ -1898,6 +1901,7 @@ export type Database = {
           created_at: string
           display_order: number
           email: string | null
+          google_review_url: string | null
           id: string
           map_embed_url: string | null
           map_url: string | null
@@ -1916,6 +1920,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           email?: string | null
+          google_review_url?: string | null
           id?: string
           map_embed_url?: string | null
           map_url?: string | null
@@ -1934,6 +1939,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           email?: string | null
+          google_review_url?: string | null
           id?: string
           map_embed_url?: string | null
           map_url?: string | null

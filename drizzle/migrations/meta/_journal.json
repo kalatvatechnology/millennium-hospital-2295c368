@@ -169,6 +169,13 @@
       "when": 1790202445137,
       "tag": "0023_doctor_digital_card_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790258695474,
+      "tag": "0024_google_review_urls",
+      "breakpoints": true
     }
   ]
 }

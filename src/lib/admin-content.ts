@@ -21,6 +21,7 @@ export type Field = {
 
 export { mapEmbedUrlError, isGoogleMapsEmbedUrl } from "@/lib/map-embed";
 import { mapEmbedUrlError } from "@/lib/map-embed";
+import { googleReviewUrlError } from "@/lib/review-url";
 
 export type ContentType = {
   key: string;
@@ -236,6 +237,14 @@ export const contentTypes: ContentType[] = [
         placeholder: "https://www.google.com/maps/embed?pb=...",
         help: "Paste the Google Maps embed URL used to display the interactive map on the website. Paste the URL only, not the iframe code.",
         validate: mapEmbedUrlError,
+      },
+      {
+        name: "google_review_url",
+        label: "Google Reviews URL",
+        type: "text",
+        placeholder: "https://g.page/r/.../review",
+        help: "Optional. For the main hospital, this is the hospital review link used on Digital Cards when a doctor has no own review link.",
+        validate: googleReviewUrlError,
       },
       { name: "opening_hours", label: "Opening hours", type: "textarea" },
       orderField,
@@ -475,6 +484,8 @@ export async function saveRecord(
   values: Record<string, any>,
 ) {
   if (type.available === false) throw classifyDataError(new Error("table does not exist"));
+  if ("google_review_url" in values)
+    values = { ...values, google_review_url: String(values["google_review_url"] ?? "").trim() || null };
   const query = (supabase as any).from(type.table);
   const { data, error } = id ? await query.update(values).eq("id", id).select().single() : await query.insert(values).select().single();
   if (error) throw classifyDataError(error);

@@ -141,6 +141,7 @@ export function mapDoctor(row: Row, department?: unknown, specializationRows?: u
     location: text(row["location"] ?? row["location_info"]),
     whatsapp_number: text(row["whatsapp"] ?? row["whatsapp_number"]),
     whatsapp_country_code: text(row["whatsapp_country_code"]),
+    google_review_url: text(row["google_review_url"]),
     consultation_info: text(row["consultation_info"]),
     location_info: text(row["location_info"]),
     social_links: object(row["social_links"]),

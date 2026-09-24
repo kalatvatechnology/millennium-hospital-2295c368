@@ -1,6 +1,7 @@
 import { siteConfig } from "@/config/site";
 import { groupSchedule } from "@/lib/schedule-groups";
 import { resolveEnquiryWhatsappTarget, whatsappUrl } from "@/lib/whatsapp";
+import { validGoogleReviewUrl } from "@/lib/review-url";
 import type { Doctor, DoctorLocation, DoctorSpecialization, Service } from "@/lib/data/models";
 
 /** Everything the Digital Doctor Card shows. Built on demand from current doctor data — never stored. */
@@ -97,8 +98,12 @@ export function buildDigitalCardData(result: DoctorResult, origin: string): Digi
       book: `${profile}#request-appointment`,
       whatsapp: wa ? whatsappUrl(wa, `Hello, I would like to book an appointment with ${doctor.name}.`) : null,
       call: phone ? `tel:${phone.tel}` : null,
-      // No Google review destination is stored for doctors or the hospital yet, so the button stays hidden.
-      reviews: null,
+      // Doctor's own review link, else the main hospital location's; hidden when neither is stored.
+      reviews:
+        validGoogleReviewUrl(doctor.google_review_url) ??
+        validGoogleReviewUrl(
+          result.locations.find((l) => l.id === siteConfig.contact.primaryLocationId)?.google_review_url,
+        ),
       directions: location?.map_url?.trim() || null,
       profile,
     },
