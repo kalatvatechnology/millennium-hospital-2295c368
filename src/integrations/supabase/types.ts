@@ -2112,6 +2112,7 @@ export type Database = {
       }
       media_items: {
         Row: {
+          alt_text: string | null
           created_at: string
           description: string | null
           display_order: number
@@ -2125,6 +2126,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          alt_text?: string | null
           created_at?: string
           description?: string | null
           display_order?: number
@@ -2138,6 +2140,7 @@ export type Database = {
           url: string
         }
         Update: {
+          alt_text?: string | null
           created_at?: string
           description?: string | null
           display_order?: number
@@ -2857,7 +2860,7 @@ export type Database = {
         | "closed"
         | "cancelled"
       forward_status: "prepared" | "sent" | "failed"
-      media_type: "youtube" | "reel" | "podcast"
+      media_type: "youtube" | "reel" | "podcast" | "image"
       post_status: "draft" | "in_review" | "ready_to_publish" | "published"
       request_status: "pending" | "approved" | "rejected"
       review_type: "hospital" | "doctor"
@@ -3012,7 +3015,7 @@ export const Constants = {
         "cancelled",
       ],
       forward_status: ["prepared", "sent", "failed"],
-      media_type: ["youtube", "reel", "podcast"],
+      media_type: ["youtube", "reel", "podcast", "image"],
       post_status: ["draft", "in_review", "ready_to_publish", "published"],
       request_status: ["pending", "approved", "rejected"],
       review_type: ["hospital", "doctor"],
