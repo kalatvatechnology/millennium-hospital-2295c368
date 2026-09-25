@@ -6,16 +6,47 @@ import { PublicPage } from "@/components/layout/public-page";
 import { Async } from "@/components/shared/async";
 import { ContentSection, EmptyState } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
-import { departmentQuery, faqQuery, type DoctorWithDepartment } from "@/lib/queries";
+import { departmentQuery, faqQuery, type DoctorWithDepartment, type FaqRow, type MediaItem } from "@/lib/queries";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
+import { enabledItems, type DepartmentPage } from "@/lib/department-page";
+import { MediaGrid } from "@/components/content/media";
 import { createPageMeta } from "@/lib/seo";
+import { siteConfig } from "@/config/site";
 
 export const Route = createFileRoute("/departments/$slug")({
-  head: () => ({
-    meta: createPageMeta("Department", "Specialist departments and clinical care at The Millennium Hospital."),
-  }),
   validateSearch: (search: Record<string, unknown>): { preview?: boolean } =>
     search["preview"] === true || search["preview"] === "1" ? { preview: true } : {},
+  loaderDeps: ({ search }) => ({ preview: Boolean(search.preview) }),
+  loader: async ({ context, params, deps }) => {
+    // Preview depends on the staff session, which only exists in the browser.
+    if (deps.preview) return null;
+    try {
+      return await context.queryClient.ensureQueryData(departmentQuery(params.slug, false));
+    } catch {
+      return null;
+    }
+  },
+  head: ({ loaderData }) => {
+    const fallback = createPageMeta("Department", "Specialist departments and clinical care at The Millennium Hospital.");
+    if (!loaderData) return { meta: fallback };
+    const { department, page } = loaderData;
+    const seo = page?.seo;
+    const title = seo?.title || `${department.name} | ${siteConfig.name}`;
+    const description =
+      seo?.description || department.short_description || department.description || `${department.name} at ${siteConfig.name}.`;
+    const image = seo?.og_image_url || page?.hero.image_url || department.card_image_url || "";
+    const meta: Record<string, string>[] = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ];
+    if (/^https:\/\//.test(image)) meta.push({ property: "og:image", content: image }, { name: "twitter:image", content: image });
+    if (seo && !seo.index) meta.push({ name: "robots", content: "noindex, nofollow" });
+    return { meta, links: seo?.canonical_url ? [{ rel: "canonical", href: seo.canonical_url }] : [] };
+  },
   component: DepartmentDetail,
 });
 
@@ -40,7 +71,7 @@ function DepartmentDetail() {
               />
             </ContentSection>
           ) : (
-            <DepartmentView department={data.department} doctors={data.doctors} />
+            <DepartmentView department={data.department} doctors={data.doctors} page={data.page} faqs={data.faqs} media={data.media} />
           )
         }
       </Async>
@@ -50,6 +81,92 @@ function DepartmentDetail() {
 
 type Dept = { name: string; slug: string; description: string | null; short_description?: string | null; card_image_url?: string | null; card_image_alt?: string | null };
 
+
+const lines = (t: string) => t.split("\n").map((l) => l.trim()).filter(Boolean);
+
+/** Published CMS content when present; otherwise the approved V1 presentation fallback. */
+function resolveView(department: Dept, page: DepartmentPage | null) {
+  if (page) {
+    const about = enabledItems(page.about);
+    const care = enabledItems(page.care);
+    const conditions = enabledItems(page.conditions);
+    const facilityPoints = enabledItems(page.facilities);
+    const approach = enabledItems(page.approach);
+    const aboutIntro = page.about.intro || department.description || "";
+    const h = page.hero;
+    return {
+      hero: {
+        enabled: h.enabled,
+        lines: lines(h.headline),
+        lead: h.intro || department.short_description || "",
+        image: h.image_url || department.card_image_url || null,
+        alt: h.image_alt || department.card_image_alt || `${department.name} care at The Millennium Hospital`,
+        book: h.show_book,
+        contact: h.show_contact,
+        specialists: h.show_specialists,
+        hasActions: h.show_book || h.show_contact || h.show_specialists,
+      },
+      about: page.about.enabled && (aboutIntro || about.length)
+        ? { label: page.about.label, title: page.about.title, intro: aboutIntro, items: about }
+        : null,
+      care: page.care.enabled && care.length ? { label: page.care.label, title: page.care.title, intro: page.care.intro, items: care } : null,
+      conditions: page.conditions.enabled && conditions.length
+        ? { label: page.conditions.label, title: page.conditions.title, intro: page.conditions.intro, items: conditions.map((c) => c.title) }
+        : null,
+      specialists: page.specialists.enabled,
+      facilities: page.facilities.enabled && (facilityPoints.length || page.facilities.intro)
+        ? {
+            label: page.facilities.label,
+            title: page.facilities.title || "Advanced facilities\n& technology",
+            text: page.facilities.intro,
+            image: page.facilities.image_url || null,
+            alt: page.facilities.image_alt || `${department.name} facilities`,
+            points: facilityPoints.map((f) => f.title),
+          }
+        : null,
+      approach: page.approach.enabled && approach.length
+        ? { label: page.approach.label, title: page.approach.title || "The Millennium\napproach", intro: page.approach.intro, items: approach }
+        : null,
+      faqsEnabled: page.faqs.enabled,
+      mediaEnabled: page.media.enabled,
+    };
+  }
+  const p = getDepartmentPresentation(department.slug);
+  const about = department.description ?? p?.lead ?? null;
+  return {
+    hero: {
+      enabled: true,
+      lines: p?.heroLines ?? [],
+      lead: department.short_description ?? p?.lead ?? department.description ?? "",
+      image: department.card_image_url ?? p?.heroImage ?? null,
+      alt: department.card_image_alt ?? `${department.name} care at The Millennium Hospital`,
+      book: true,
+      contact: false,
+      specialists: true,
+      hasActions: true,
+    },
+    about: about ? { label: "About the department", title: p?.introHeading ?? "", intro: about, items: p?.highlights ?? [] } : null,
+    care: p ? { label: "Specialized care", title: "", intro: p.careIntro, items: p.careAreas } : null,
+    conditions: p ? { label: "Conditions", title: "", intro: "", items: p.conditions } : null,
+    specialists: true,
+    facilities: p
+      ? { label: "Facilities", title: "Advanced facilities\n& technology", text: p.facilityText, image: p.facilityImage, alt: "Hospital clinical corridor with imaging and rehabilitation areas", points: p.facilityPoints }
+      : null,
+    approach: {
+      label: "The Millennium approach",
+      title: "Care,\ncoordinated\naround you.",
+      intro: `${department.name} is part of a wider multi-specialty hospital, so care can draw on colleagues across departments when you need it.`,
+      items: [
+        { title: "Specialist-led care", text: "Consultations with clinicians focused on their field." },
+        { title: "Coordinated treatment", text: "Departments working together across your care." },
+        { title: "Modern clinical environment", text: "Care delivered within a multi-specialty hospital." },
+        { title: "Patient-focused recovery", text: "Clear guidance from diagnosis through recovery." },
+      ],
+    },
+    faqsEnabled: true,
+    mediaEnabled: false,
+  };
+}
 
 function DepartmentView({ department, doctors, page, faqs, media }: { department: Dept; doctors: DoctorWithDepartment[]; page: DepartmentPage | null; faqs: FaqRow[]; media: MediaItem[] }) {
   const v = resolveView(department, page);
@@ -248,7 +365,7 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
       </section> : null}
 
       {/* 08 FAQ — only when department FAQs exist. */}
-      {v.faqsEnabled ? <DepartmentFaqs departmentName={department.name} linked={faqs} legacy={!page} n={num} /> : null}
+      {(() => { const faqNum = v.faqsEnabled && (faqs.length || !page) ? num() : ""; return faqNum ? <DepartmentFaqs departmentName={department.name} linked={faqs} legacy={!page} n={faqNum} /> : null; })()}
 
       {/* 09 MEDIA — only when media is linked to the department. */}
       {v.mediaEnabled && media.length ? (
@@ -363,7 +480,7 @@ function SpecialistShowcase({ doctors }: { doctors: DoctorWithDepartment[] }) {
   );
 }
 
-function DepartmentFaqs({ departmentName, linked, legacy, n }: { departmentName: string; linked: FaqRow[]; legacy: boolean; n: () => string }) {
+function DepartmentFaqs({ departmentName, linked, legacy, n }: { departmentName: string; linked: FaqRow[]; legacy: boolean; n: string }) {
   const faqs = useQuery({ ...faqQuery, enabled: legacy && !linked.length });
   const [open, setOpen] = useState<string | null>(null);
   // Linked FAQs win. Before a department's CMS page is published, the earlier category match still applies.
@@ -377,7 +494,7 @@ function DepartmentFaqs({ departmentName, linked, legacy, n }: { departmentName:
     <section className="bg-background">
       <div className={`${wrap} grid gap-6 py-14 sm:py-20 lg:grid-cols-[0.34fr_0.66fr] lg:gap-10`}>
         <div>
-          <Label n={n()} text="Questions" />
+          <Label n={n} text="Questions" />
           <h2 className="mt-6 text-3xl font-semibold sm:text-4xl">Frequently asked questions</h2>
         </div>
         <div className="border-t border-border">
