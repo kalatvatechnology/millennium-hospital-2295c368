@@ -76,9 +76,9 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <span className="h-px w-6 bg-brand-accent" aria-hidden />
               <span className="text-primary">{department.name}</span>
             </nav>
-            <h1 className="mt-6 min-w-0 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-6xl lg:text-[3.4rem] xl:text-[4.25rem]">
+            <h1 className="mt-6 min-w-0 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-[3.4rem] lg:text-[2.6rem] xl:text-[3.5rem] 2xl:text-[3.9rem]">
               {p ? p.heroLines.map((l, i) => (
-                <span key={l} className={`block ${i === p.heroLines.length - 1 ? "text-primary" : ""}`}>{l}</span>
+                <span key={l} className={`block sm:whitespace-nowrap ${i === p.heroLines.length - 1 ? "text-primary" : ""}`}>{l}</span>
               )) : department.name}
             </h1>
             {lead ? <p className="mt-6 max-w-[30rem] border-l-2 border-brand-accent pl-5 text-lg leading-8 text-muted-foreground">{lead}</p> : null}
@@ -106,7 +106,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {/* 02 ABOUT */}
       {about ? (
         <section className="bg-background">
-          <div className={`${wrap} grid gap-6 py-14 sm:py-20 lg:grid-cols-[0.3fr_0.7fr] lg:gap-10`}>
+          <div className={`${wrap} grid gap-6 py-12 sm:py-16 lg:grid-cols-[0.3fr_0.7fr] lg:gap-10`}>
             <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
               <BigNumber n="01" />
               <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>About the<br className="hidden lg:block" /> department</p>
@@ -115,7 +115,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{p?.introHeading ?? `About ${department.name}`}</h2>
               <p className="mt-5 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{about}</p>
               {p ? (
-                <dl className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4">
+                <dl className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4">
                   {p.highlights.map((h, i) => (
                     <div key={h.title} className={`border-t border-border py-5 sm:pr-6 lg:border-l lg:border-t-0 lg:py-1 lg:pl-6 ${i === 0 ? "lg:border-l-0 lg:pl-0" : ""}`}>
                       <span className="block h-0.5 w-6 bg-brand-accent" aria-hidden />
@@ -133,7 +133,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {/* 03 SPECIALIZED CARE */}
       {p ? (
         <section className="bg-secondary">
-          <div className={`${wrap} grid gap-8 py-14 sm:py-20 lg:grid-cols-[0.4fr_0.6fr] lg:gap-16`}>
+          <div className={`${wrap} grid gap-8 py-12 sm:py-16 lg:grid-cols-[0.4fr_0.6fr] lg:gap-16`}>
             <div className="lg:sticky lg:top-28 lg:self-start">
               <Label n="02" text="Specialized care" />
               <h2 className="mt-4 text-3xl font-semibold leading-[1.1] sm:text-[2.75rem]">Specialized<br />{department.name} Care</h2>
@@ -159,7 +159,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {/* 04 CONDITIONS — signature typographic spread */}
       {p ? (
         <section className="bg-background">
-          <div className={`${wrap} py-14 sm:py-20`}>
+          <div className={`${wrap} py-12 sm:py-16`}>
             <div className="grid gap-6 lg:grid-cols-[0.28fr_0.72fr] lg:gap-12">
               <div>
                 <Label n="03" text="Conditions" />
@@ -231,7 +231,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
 
       {/* 07 THE MILLENNIUM APPROACH */}
       <section className="bg-secondary">
-        <div className={`${wrap} py-14 sm:py-20`}>
+        <div className={`${wrap} py-12 sm:py-16`}>
           <div className="grid gap-6 lg:grid-cols-[0.5fr_0.5fr] lg:items-end">
             <div>
               <Label n="06" text="The Millennium approach" />
@@ -239,7 +239,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
             </div>
             <p className="max-w-md leading-7 text-muted-foreground lg:justify-self-end">{department.name} is part of a wider multi-specialty hospital, so care can draw on colleagues across departments when you need it.</p>
           </div>
-          <ol className="mt-10 grid border-t border-foreground/20 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-8 grid border-t border-foreground/20 sm:grid-cols-2 lg:grid-cols-4">
             {APPROACH.map(([t, d], i) => (
               <li key={t} className="border-b border-foreground/20 py-6 sm:pr-8 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0">
                 <span className="font-heading text-sm font-semibold text-brand-accent">{String(i + 1).padStart(2, "0")}</span>
@@ -257,7 +257,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {/* 09 CTA */}
       <section className="relative bg-sidebar text-sidebar-foreground">
         <span className="absolute left-1/2 top-0 h-10 w-px -translate-x-1/2 bg-brand-accent" aria-hidden />
-        <div className={`${wrap} py-16 text-center sm:py-[5.5rem]`}>
+        <div className={`${wrap} py-14 text-center sm:py-20`}>
           <p className={`${eyebrow} text-sidebar-foreground/65`}>Appointments</p>
           <h2 className="mx-auto mt-4 max-w-3xl font-heading text-4xl font-semibold uppercase leading-[1.02] sm:text-6xl">Ready to take<br />the next step?</h2>
           <p className="mx-auto mt-4 max-w-md text-lg text-sidebar-foreground/80">Speak with our {lower} care team.</p>
