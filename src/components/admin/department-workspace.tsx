@@ -36,6 +36,7 @@ import {
   type DepartmentPage,
   type ListSection,
   type PageItem,
+  type DepartmentLinks,
 } from "@/lib/department-page";
 import { cn } from "@/lib/utils";
 
@@ -82,16 +83,20 @@ async function removeImages(urls: string[]) {
   if (error) console.error("Department image cleanup failed", { paths, error });
 }
 
-function saveErrorMessage(cause: unknown) {
+class ValidationError extends Error {}
+
+function saveErrorMessage(cause: unknown, fallback: string) {
+  if (cause instanceof ValidationError) return cause.message;
   const raw = cause as { code?: string; message?: string; details?: string };
   const text = `${raw?.message ?? ""} ${raw?.details ?? ""}`;
   if ((raw?.code === "23505" || /duplicate key/i.test(text)) && /slug/i.test(text))
-    return "This web address is already being used by another department. Please choose a different one.";
+    return "Another department is already using this web address.";
   if (/permission to publish/i.test(text))
-    return "Your role can save drafts, but publishing is done by an editor or admin.";
+    return "Your role can save drafts, but publishing and unpublishing are done by an editor or admin.";
   if (/short_description_length/i.test(text))
     return "Short description must be 180 characters or fewer.";
-  return userFacingDataError(cause);
+  console.error(fallback, cause);
+  return fallback;
 }
 
 function validate(identity: Identity, page: DepartmentPage): string | null {
@@ -253,7 +258,7 @@ export function DepartmentWorkspace() {
   const persist = async (mode: "draft" | "publish") => {
     setError(null);
     const problem = validate(identity, page);
-    if (problem) throw new Error(problem);
+    if (problem) throw new ValidationError(problem);
     const now = new Date().toISOString();
     const payload: Record<string, unknown> = {
       name: identity.name.trim(),
@@ -298,7 +303,7 @@ export function DepartmentWorkspace() {
       await refresh();
       toast.success("Department draft saved successfully.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause)),
+    onError: (cause) => setError(saveErrorMessage(cause, "Unable to save department draft.")),
   });
   const publish = useMutation({
     mutationFn: () => persist("publish"),
@@ -306,7 +311,7 @@ export function DepartmentWorkspace() {
       await refresh();
       toast.success("Department published successfully.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause)),
+    onError: (cause) => setError(saveErrorMessage(cause, "Unable to publish department.")),
   });
   const unpublish = useMutation({
     mutationFn: async () => {
@@ -320,7 +325,7 @@ export function DepartmentWorkspace() {
       await refresh();
       toast.success("Department unpublished. It is no longer visible on the website.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause)),
+    onError: (cause) => setError(saveErrorMessage(cause, "Unable to unpublish department.")),
   });
 
   const cancel = () => {
@@ -522,6 +527,16 @@ export function DepartmentWorkspace() {
               title="Identity & Hero"
               description="Department details and the top of the public page. Name, slug and descriptions also appear on the Department Card."
             >
+              <div role="note" className="border border-border bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+                <p>
+                  <strong className="text-foreground">Department identity &amp; card data</strong>{" "}
+                  (name, slug, short and full description) goes live as soon as you save.
+                </p>
+                <p className="mt-1">
+                  <strong className="text-foreground">Page content</strong> (hero, sections,
+                  specialists, FAQs, media, SEO) follows Save Draft → Preview → Publish.
+                </p>
+              </div>
               {!hasPageContent(row["page_draft"]) &&
               !hasPageContent(row["page_published"]) &&
               getDepartmentPresentation(row["slug"]) ? (
@@ -1167,7 +1182,8 @@ function ImageField({
       onUpload(next);
       onChange(next);
     } catch (cause) {
-      setMessage(userFacingDataError(cause));
+      console.error("Department image upload failed", cause);
+      setMessage("Image upload failed. Please try again.");
     } finally {
       setBusy(false);
       if (input.current) input.current.value = "";
