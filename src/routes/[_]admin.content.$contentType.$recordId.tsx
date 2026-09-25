@@ -120,7 +120,20 @@ function ContentWorkspace() {
       toast.success(`${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`);
       void navigate({ to: returnTo });
     },
-    onError: (cause: Error) => setError(userFacingDataError(cause)),
+    onError: (cause: Error) => {
+      type ErrLike = { code?: string; message?: string; details?: string };
+      const raw = cause as Error & ErrLike & { cause?: ErrLike; originalError?: ErrLike };
+      const inner = raw.originalError ?? raw.cause;
+      const code = raw.code ?? inner?.code;
+      const text = `${raw.message ?? ""} ${inner?.message ?? ""} ${inner?.details ?? ""}`;
+      const duplicateSlug =
+        type.key === "departments" && (code === "23505" || /duplicate key/i.test(text)) && /slug/i.test(text);
+      setError(
+        duplicateSlug
+          ? "This web address is already being used by another department. Please choose a different one."
+          : userFacingDataError(cause),
+      );
+    },
   });
   const remove = useMutation({
     mutationFn: () => deleteRecord(type, recordId, String(values[type.titleField] ?? "")),
