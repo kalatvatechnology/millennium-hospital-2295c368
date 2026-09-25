@@ -2,6 +2,7 @@ import { PlayCircle } from "lucide-react";
 import type { MediaItem } from "@/lib/queries";
 
 const typeLabel: Record<MediaItem["media_type"], string> = {
+  image: "Image",
   youtube: "Video",
   reel: "Reel",
   podcast: "Podcast",
@@ -22,7 +23,7 @@ export function MediaCard({ item }: { item: MediaItem }) {
         {item.thumbnail_url ? (
           <img
             src={item.thumbnail_url}
-            alt={item.title}
+            alt={(item as { alt_text?: string | null }).alt_text || item.title}
             className="size-full object-cover"
             loading="lazy"
           />

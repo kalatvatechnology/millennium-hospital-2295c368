@@ -286,7 +286,7 @@ export const contentTypes: ContentType[] = [
     table: usesProductionContract ? "media_content" : "media_items",
     label: "Media & content",
     singular: "media item",
-    description: "Videos, reels and podcasts. Video files stay on their original platform.",
+    description: "Images, videos, reels and podcasts. Video files stay on their original platform.",
     titleField: "title",
     subtitleField: usesProductionContract ? "platform" : "media_type",
     orderBy: "display_order",
@@ -298,14 +298,29 @@ export const contentTypes: ContentType[] = [
         type: "select",
         required: true,
         options: [
+          { value: "image", label: "Image (upload)" },
           { value: "youtube", label: "YouTube video" },
           { value: "reel", label: "Reel" },
           { value: "podcast", label: "Podcast" },
           { value: "article", label: "Article" },
         ],
       },
-      { name: "url", label: "Link", type: "text", required: true },
-      { name: "thumbnail_url", label: "Thumbnail URL", type: "text" },
+      {
+        name: "url",
+        label: "Link",
+        type: "text",
+        help: "Required for YouTube, Instagram/Reels and podcast links. Not needed for uploaded images.",
+      },
+      {
+        name: "thumbnail_url",
+        label: "Image / thumbnail",
+        type: "image",
+        imageFolder: "media",
+        help: "Upload the image for Image media, or an optional thumbnail for links. JPG, PNG or WebP.",
+      },
+      ...(usesProductionContract
+        ? []
+        : [{ name: "alt_text", label: "Image alt text", type: "text" as const, maxLength: 160 }]),
       { name: "description", label: "Description", type: "textarea" },
       {
         name: usesProductionContract ? "show_on_homepage" : "show_on_home",
