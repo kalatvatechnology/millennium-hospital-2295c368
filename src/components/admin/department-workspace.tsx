@@ -549,7 +549,7 @@ function Grid({ children }: { children: ReactNode }) {
   return <div className="grid gap-4 md:grid-cols-2">{children}</div>;
 }
 
-function Field({ label, help, required, wide, count, children }: { label: string; help?: string; required?: boolean; wide?: boolean; count?: [number, number]; children: ReactNode }) {
+function Field({ label, help, required, wide, count, children }: { label: string; help?: string | undefined; required?: boolean; wide?: boolean; count?: [number, number]; children: ReactNode }) {
   return (
     <div className={cn("grid gap-1.5", wide && "md:col-span-2")}>
       <div className="flex items-baseline justify-between gap-3">
