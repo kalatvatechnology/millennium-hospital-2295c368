@@ -47,7 +47,7 @@ const order = (query: any, field = "display_order") =>
   query.order(field).order("created_at", { ascending: false });
 
 export async function listDepartments(): Promise<Department[]> {
-  return rows(await order(published(db.from("departments").select("*")), "display_order")).map(
+  return rows(await published(db.from("departments").select("*")).order("display_order").order("name").order("id")).map(
     mapDepartment,
   );
 }

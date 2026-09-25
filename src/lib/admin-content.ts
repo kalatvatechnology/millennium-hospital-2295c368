@@ -4,7 +4,7 @@ import { logAction } from "@/lib/audit";
 import { backendFeatures, usesProductionContract } from "@/lib/data/backend";
 import { classifyDataError } from "@/lib/data/errors";
 
-export type FieldType = "text" | "textarea" | "number" | "boolean" | "list" | "select";
+export type FieldType = "text" | "textarea" | "number" | "boolean" | "list" | "select" | "image";
 
 export type Field = {
   name: string;
@@ -15,6 +15,10 @@ export type Field = {
   publishControl?: boolean;
   help?: string;
   placeholder?: string;
+  /** Maximum characters; shows a live counter and blocks save when exceeded. */
+  maxLength?: number;
+  /** Storage folder for image fields (inside the managed image bucket). */
+  imageFolder?: string;
   /** Returns an error message when the value is invalid. */
   validate?: (value: string) => string | null;
 };
@@ -62,10 +66,36 @@ export const contentTypes: ContentType[] = [
     subtitleField: "slug",
     orderBy: "display_order",
     fields: [
-      { name: "name", label: "Name", type: "text", required: true },
+      { name: "name", label: "Department name", type: "text", required: true },
       { name: "slug", label: "Web address (slug)", type: "text", required: true },
-      { name: "description", label: "Description", type: "textarea" },
-      orderField,
+      {
+        name: "short_description",
+        label: "Short description",
+        type: "textarea",
+        maxLength: 180,
+        help: "Shown on the public Department Card. Maximum 180 characters.",
+      },
+      {
+        name: "card_image_url",
+        label: "Department card image",
+        type: "image",
+        imageFolder: "departments",
+        help: "Recommended 1200 × 800 px (3:2 landscape). JPG, PNG or WebP.",
+      },
+      {
+        name: "card_image_alt",
+        label: "Image alt text",
+        type: "text",
+        maxLength: 160,
+        placeholder: "Orthopaedics Department at The Millennium Hospital",
+        help: "Describe the department image for accessibility and SEO.",
+      },
+      {
+        name: "description",
+        label: "Full description (future department page)",
+        type: "textarea",
+      },
+      { ...orderField, help: "Lower number = earlier position." },
       publishedField,
     ],
   },
@@ -462,6 +492,8 @@ export async function listRecords(type: ContentType) {
         : "*",
     )
     .order(type.orderBy)
+    .order(type.titleField)
+    .order("id")
     .limit(1000);
   if (error) throw classifyDataError(error);
   return (data ?? []) as Record<string, any>[];

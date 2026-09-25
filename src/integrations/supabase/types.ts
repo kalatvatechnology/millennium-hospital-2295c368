@@ -599,32 +599,41 @@ export type Database = {
       }
       departments: {
         Row: {
+          card_image_alt: string | null
+          card_image_url: string | null
           created_at: string
           description: string | null
           display_order: number
           id: string
           name: string
           published: boolean
+          short_description: string | null
           slug: string
           updated_at: string
         }
         Insert: {
+          card_image_alt?: string | null
+          card_image_url?: string | null
           created_at?: string
           description?: string | null
           display_order?: number
           id?: string
           name: string
           published?: boolean
+          short_description?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
+          card_image_alt?: string | null
+          card_image_url?: string | null
           created_at?: string
           description?: string | null
           display_order?: number
           id?: string
           name?: string
           published?: boolean
+          short_description?: string | null
           slug?: string
           updated_at?: string
         }

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Pencil, Plus } from "lucide-react";
+import { ImageOff, Pencil, Plus } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import {
   DataTable,
@@ -49,7 +49,7 @@ function AvailableContentManager({ type }: { type: ContentType }) {
     const term = search.trim().toLowerCase();
     return rows.filter((row) => {
       const haystack =
-        `${row[type.titleField] ?? ""} ${type.subtitleField ? (row[type.subtitleField] ?? "") : ""}`.toLowerCase();
+        `${row[type.titleField] ?? ""} ${type.subtitleField ? (row[type.subtitleField] ?? "") : ""} ${row["short_description"] ?? ""}`.toLowerCase();
       if (term && !haystack.includes(term)) return false;
       if (status === "all") return true;
       const rowStatus = statusOf(row);
@@ -67,15 +67,35 @@ function AvailableContentManager({ type }: { type: ContentType }) {
     {
       key: "title",
       header: type.label,
-      cell: (row) => (
-        <div>
-          <p className="font-medium">{row[type.titleField] ?? "Untitled"}</p>
-          {type.subtitleField ? (
-            <p className="text-sm text-muted-foreground">{row[type.subtitleField] ?? "—"}</p>
-          ) : null}
-        </div>
-      ),
+      cell: (row) =>
+        type.key === "departments" ? (
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-[72px] shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-surface">
+              {row["card_image_url"] ? (
+                <img src={row["card_image_url"]} alt="" className="size-full object-cover" loading="lazy" />
+              ) : (
+                <ImageOff className="size-4 text-muted-foreground" aria-label="No image" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium">{row[type.titleField] ?? "Untitled"}</p>
+              <p className="line-clamp-1 max-w-md text-sm text-muted-foreground">
+                {row["short_description"] || "No short description yet"}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="font-medium">{row[type.titleField] ?? "Untitled"}</p>
+            {type.subtitleField ? (
+              <p className="text-sm text-muted-foreground">{row[type.subtitleField] ?? "—"}</p>
+            ) : null}
+          </div>
+        ),
     },
+    ...(type.key === "departments"
+      ? [{ key: "order", header: "Order", cell: (row: Record<string, any>) => <span className="tabular-nums">{row["display_order"] ?? "—"}</span> }]
+      : []),
     {
       key: "status",
       header: "Status",
@@ -139,7 +159,7 @@ function AvailableContentManager({ type }: { type: ContentType }) {
                 to="/_admin/content/$contentType/$recordId"
                 params={{ contentType: type.key, recordId: "new" }}
               >
-                <Plus className="size-4" /> New {type.singular}
+                <Plus className="size-4" /> {type.key === "departments" ? "Add Department" : `New ${type.singular}`}
               </Link>
             </Button>
           )

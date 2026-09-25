@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ImagePlus, Trash2, Upload } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { AdminShell } from "@/components/admin/admin-shell";
@@ -98,7 +102,9 @@ function ContentWorkspace() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
         queryClient.invalidateQueries({ queryKey: ["admin-content-record", type.table, recordId] }),
+        queryClient.invalidateQueries({ queryKey: [type.table] }),
       ]);
+      toast.success(`${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`);
       void navigate({ to: returnTo });
     },
     onError: (cause: Error) => setError(userFacingDataError(cause)),
@@ -147,7 +153,11 @@ function ContentWorkspace() {
           {!isNew ? (
             <InlineDelete
               label={type.singular}
-              description="This permanently removes the record and cannot be undone."
+              description={
+                type.key === "departments"
+                  ? "Delete this department? Doctors, services and other records linked to it may be affected. If linked records prevent deletion, you'll see a message and nothing will be removed. This cannot be undone."
+                  : "This permanently removes the record and cannot be undone."
+              }
               busy={remove.isPending}
               onConfirm={() => remove.mutate()}
             />
@@ -162,7 +172,11 @@ function ContentWorkspace() {
             }}
             onSave={() => {
               for (const field of type.fields) {
-                const message = field.validate?.(String(values[field.name] ?? ""));
+                const raw = String(values[field.name] ?? "");
+                if (field.required && !raw.trim()) return setError(`${field.label} is required.`);
+                if (field.maxLength && raw.length > field.maxLength)
+                  return setError(`${field.label} must be ${field.maxLength} characters or fewer.`);
+                const message = raw ? field.validate?.(raw) : null;
                 if (message) return setError(message);
               }
               setError(null);
@@ -185,6 +199,7 @@ function FieldControl({
   onChange: (value: any) => void;
 }) {
   const id = `content-${field.name}`;
+  if (field.type === "image") return <ImageFieldControl field={field} value={value} onChange={onChange} />;
   if (field.type === "boolean")
     return (
       <label className="flex items-center gap-3 border border-border p-4 lg:col-span-2">
@@ -221,7 +236,8 @@ function FieldControl({
         <Textarea
           id={id}
           required={field.required}
-          className="mt-2 min-h-36"
+          className={field.maxLength ? "mt-2 min-h-24" : "mt-2 min-h-36"}
+          aria-describedby={field.help ? `${id}-help` : undefined}
           value={value ?? ""}
           onChange={(event) => onChange(event.target.value)}
         />
@@ -237,12 +253,122 @@ function FieldControl({
           onChange={(event) => onChange(event.target.value)}
         />
       )}
-      {field.help ? (
-        <p id={`${id}-help`} className="mt-1 text-xs text-muted-foreground">{field.help}</p>
+      {field.help || field.maxLength ? (
+        <div className="mt-1 flex justify-between gap-3 text-xs text-muted-foreground">
+          <p id={`${id}-help`}>{field.help}</p>
+          {field.maxLength ? (
+            <span
+              aria-live="polite"
+              className={String(value ?? "").length > field.maxLength ? "shrink-0 text-destructive" : "shrink-0"}
+            >
+              {String(value ?? "").length}/{field.maxLength}
+            </span>
+          ) : null}
+        </div>
       ) : null}
       {field.validate && value ? (
         <p className="mt-1 text-xs text-destructive">{field.validate(String(value))}</p>
       ) : null}
+    </div>
+  );
+}
+
+const imageBucket = "doctor-profile-images";
+const imageEndpoint = "/api/public/doctor-profile-image";
+const allowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
+const maxImageBytes = 5 * 1024 * 1024;
+
+function ImageFieldControl({
+  field,
+  value,
+  onChange,
+}: {
+  field: Field;
+  value: any;
+  onChange: (value: any) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [broken, setBroken] = useState(false);
+  const current = String(value ?? "");
+  const id = `content-${field.name}`;
+
+  const upload = async (file?: File) => {
+    if (!file) return;
+    if (!allowedImageTypes.includes(file.type)) return setMessage("Please upload a JPG, PNG, or WebP image.");
+    if (file.size > maxImageBytes) return setMessage("Image is too large. Please upload a smaller image (up to 5 MB).");
+    setMessage(null);
+    setBusy(true);
+    try {
+      const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+      const path = `${field.imageFolder ?? "content"}/${crypto.randomUUID()}/card.${extension}`;
+      const { error } = await supabase.storage
+        .from(imageBucket)
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const url = `${imageEndpoint}?path=${encodeURIComponent(path)}`;
+      const check = await fetch(url, { cache: "no-store" });
+      if (!check.ok) {
+        await supabase.storage.from(imageBucket).remove([path]);
+        throw new Error("The uploaded image could not be verified.");
+      }
+      setBroken(false);
+      onChange(url);
+    } catch (cause) {
+      setMessage(userFacingDataError(cause as Error));
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="lg:col-span-2">
+      <Label htmlFor={id}>{field.label}</Label>
+      <input
+        ref={inputRef}
+        id={id}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="sr-only"
+        onChange={(event) => void upload(event.target.files?.[0])}
+      />
+      {current && !broken ? (
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <img
+            src={current}
+            alt="Department card preview"
+            onError={() => setBroken(true)}
+            className="aspect-[3/2] w-full max-w-sm rounded-md border border-border object-cover"
+          />
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
+              <Upload className="size-4" /> {busy ? "Uploading…" : "Replace image"}
+            </Button>
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => onChange("")}>
+              <Trash2 className="size-4" /> Remove image
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            void upload(event.dataTransfer.files?.[0]);
+          }}
+          className="mt-2 flex aspect-[3/2] w-full max-w-sm flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-surface text-sm text-muted-foreground hover:border-primary/40"
+        >
+          <ImagePlus className="size-6 text-primary" />
+          {busy ? "Uploading…" : broken ? "Saved image could not load — upload a new one" : "Click or drop an image to upload"}
+        </button>
+      )}
+      {field.help ? <p className="mt-1 text-xs text-muted-foreground">{field.help}</p> : null}
+      {message ? <p role="alert" className="mt-1 text-xs text-destructive">{message}</p> : null}
     </div>
   );
 }

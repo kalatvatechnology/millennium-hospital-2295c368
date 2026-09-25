@@ -6,6 +6,9 @@ export type Department = {
   name: string;
   slug: string;
   description: string | null;
+  short_description?: string | null;
+  card_image_url?: string | null;
+  card_image_alt?: string | null;
   display_order: number | null;
   status: ContentStatus;
 };

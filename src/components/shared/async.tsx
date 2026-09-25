@@ -6,15 +6,20 @@ export function Async<T>({
   query,
   children,
   empty,
+  error,
   isEmpty,
 }: {
   query: UseQueryResult<T>;
   children: (data: T) => ReactNode;
   empty?: ReactNode;
+  error?: ReactNode;
   isEmpty?: (data: T) => boolean;
 }) {
   if (query.isPending) return <LoadingState />;
-  if (query.isError) return <ErrorState />;
+  if (query.isError) {
+    console.error(query.error);
+    return error ? <>{error}</> : <ErrorState />;
+  }
   const data = query.data as T;
   if (empty && isEmpty?.(data)) return <>{empty}</>;
   return <>{children(data)}</>;

@@ -176,6 +176,13 @@
       "when": 1790258695474,
       "tag": "0024_google_review_urls",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1790319863626,
+      "tag": "0025_department_card_fields",
+      "breakpoints": true
     }
   ]
 }
