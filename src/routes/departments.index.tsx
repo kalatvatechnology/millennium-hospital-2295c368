@@ -17,12 +17,13 @@ function DepartmentsPage() {
   const departments = useQuery(departmentsQuery);
   return (
     <PublicPage>
-      <PageIntro eyebrow="Specialties" title="Departments and specialties" description="Each department lists its specialists and related professional services." />
+      <PageIntro eyebrow="Specialties" title="Departments" description="Explore our specialized departments and clinical services at The Millennium Hospital." />
       <ContentSection>
         <Async
           query={departments}
+          error={<div role="alert" className="py-12 text-center"><h2 className="text-lg font-semibold">We're unable to load departments right now.</h2><p className="mt-2 text-sm text-muted-foreground">Please try again later.</p></div>}
           isEmpty={(data) => data.length === 0}
-          empty={<EmptyState title="Departments are being prepared" description="No departments have been published yet." action={<Button asChild><Link to="/contact">Contact the hospital</Link></Button>} />}
+          empty={<EmptyState title="No departments are currently available." description="Please check back soon or contact the hospital for help." action={<Button asChild><Link to="/contact">Contact the hospital</Link></Button>} />}
         >
           {(data) => (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

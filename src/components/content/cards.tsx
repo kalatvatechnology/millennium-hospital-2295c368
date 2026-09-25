@@ -43,20 +43,36 @@ export function DoctorCard({ doctor }: { doctor: DoctorWithDepartment }) {
 }
 
 export function DepartmentCard({ department }: { department: Department }) {
+  const summary = department.short_description ?? department.description;
   return (
-    <article className="group rounded-lg border border-border bg-card p-5 shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
-      <span className="grid size-10 place-items-center rounded-lg bg-secondary text-primary"><Layers /></span>
-      <h3 className="mt-4 text-base font-semibold">{department.name}</h3>
-      <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
-        {department.description ?? "Further department information has not yet been published."}
-      </p>
-      <Link
-        to="/departments/$slug"
-        params={{ slug: department.slug }}
-        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"
-      >
-        View department <ArrowRight className="size-4" />
-      </Link>
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-sm)] transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-[var(--shadow-md)]">
+      <div className="relative aspect-[3/2] overflow-hidden bg-secondary">
+        {department.card_image_url ? (
+          <img
+            src={department.card_image_url}
+            alt={department.card_image_alt ?? `${department.name} department at The Millennium Hospital`}
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+        ) : (
+          <div className="grid size-full place-items-center bg-gradient-to-br from-secondary to-surface" aria-hidden="true">
+            <span className="grid size-14 place-items-center rounded-full bg-background text-primary shadow-[var(--shadow-sm)]"><Layers /></span>
+          </div>
+        )}
+        <span className="absolute inset-x-0 bottom-0 h-1 bg-accent" aria-hidden="true" />
+      </div>
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="text-lg font-semibold text-foreground">{department.name}</h3>
+        {summary ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{summary}</p> : null}
+        <Link
+          to="/departments/$slug"
+          params={{ slug: department.slug }}
+          className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-primary after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={`Read more about ${department.name}`}
+        >
+          Read More <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
     </article>
   );
 }
