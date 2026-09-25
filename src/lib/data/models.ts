@@ -143,7 +143,7 @@ export type Facility = {
   status: ContentStatus;
 };
 
-export type MediaPlatform = "reel" | "youtube" | "podcast" | "article";
+export type MediaPlatform = "reel" | "youtube" | "podcast" | "article" | "image";
 export type MediaItem = {
   id: string;
   title: string;
