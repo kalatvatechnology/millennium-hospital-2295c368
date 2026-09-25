@@ -492,6 +492,8 @@ export async function listRecords(type: ContentType) {
         : "*",
     )
     .order(type.orderBy)
+    .order(type.titleField)
+    .order("id")
     .limit(1000);
   if (error) throw classifyDataError(error);
   return (data ?? []) as Record<string, any>[];

@@ -48,6 +48,9 @@ export function mapDepartment(row: Row): Department {
     name: required(row["name"], "Unnamed department"),
     slug: required(row["slug"], ""),
     description: text(row["description"]),
+    short_description: text(row["short_description"]),
+    card_image_url: text(row["card_image_url"]),
+    card_image_alt: text(row["card_image_alt"]),
     display_order: number(row["display_order"]),
     status: status(row),
   };
