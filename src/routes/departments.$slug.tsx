@@ -19,7 +19,8 @@ export const Route = createFileRoute("/departments/$slug")({
   component: DepartmentDetail,
 });
 
-const wrap = "mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-10";
+// Master grid: same container as the site header, so every section shares its edges.
+const wrap = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 const eyebrow = "text-xs font-bold uppercase tracking-[0.18em]";
 
 function DepartmentDetail() {
@@ -69,8 +70,8 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
     <div className="dept-page overflow-x-clip">
       {/* 01 HERO */}
       <section className="relative bg-background">
-        <div className="mx-auto grid max-w-[1440px] lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:min-h-[36rem]">
-          <div className="dept-reveal flex flex-col justify-center px-4 pb-6 pt-8 sm:px-8 sm:pt-10 lg:py-14 lg:pl-[max(2.5rem,calc((100vw-1240px)/2+2.5rem))] lg:pr-10">
+        <div className={`${wrap} grid lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:min-h-[36rem]`}>
+          <div className="dept-reveal flex flex-col justify-center pb-6 pt-8 sm:pt-10 lg:py-14 lg:pr-10">
             <nav aria-label="Breadcrumb" className={`${eyebrow} flex items-center gap-3 text-muted-foreground`}>
               <Link to="/departments" className="hover:text-primary">Departments</Link>
               <span className="h-px w-6 bg-brand-accent" aria-hidden />
@@ -84,7 +85,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
             {lead ? <p className="mt-6 max-w-[30rem] border-l-2 border-brand-accent pl-5 text-lg leading-8 text-muted-foreground">{lead}</p> : null}
             <div className="mt-8 hidden flex-wrap gap-3 lg:flex"><HeroActions /></div>
           </div>
-          <figure className="dept-reveal relative mx-4 sm:mx-8 lg:m-0">
+          <figure className="dept-reveal relative lg:my-0">
             <div className="group relative aspect-[6/7] overflow-hidden bg-secondary sm:aspect-[16/12] lg:absolute lg:inset-0 lg:aspect-auto">
               {heroImage ? (
                 <img src={heroImage} alt={heroAlt} className="size-full object-cover object-[center_28%] transition-transform duration-[1200ms] group-hover:scale-[1.02]" width={1280} height={1536} />
@@ -99,7 +100,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <span className="font-heading text-sm font-semibold">Dept. / {department.name}</span>
             </figcaption>
           </figure>
-          <div className="flex flex-col gap-3 px-4 pb-8 pt-5 sm:flex-row sm:px-8 lg:hidden"><HeroActions /></div>
+          <div className="flex flex-col gap-3 pb-8 pt-5 sm:flex-row lg:hidden"><HeroActions /></div>
         </div>
       </section>
 
@@ -212,7 +213,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <img src={p.facilityImage} alt="Hospital clinical corridor with imaging and rehabilitation areas" className="size-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]" loading="lazy" width={1600} height={1008} />
               <div className="absolute inset-0 hidden bg-gradient-to-r from-foreground/85 via-foreground/40 to-transparent lg:block" aria-hidden />
             </div>
-            <div className="bg-background px-4 py-10 sm:px-8 lg:absolute lg:inset-y-0 lg:left-[max(2.5rem,calc((100vw-1240px)/2+2.5rem))] lg:flex lg:max-w-md lg:flex-col lg:justify-center lg:bg-transparent lg:p-0 lg:text-primary-foreground">
+            <div className="bg-background lg:absolute lg:inset-0 lg:bg-transparent"><div className={`${wrap} py-10 lg:flex lg:h-full lg:flex-col lg:justify-center lg:py-0 lg:text-primary-foreground`}><div className="lg:max-w-md">
               <Label n="05" text="Facilities" darkLg />
               <h2 className="mt-4 font-heading text-3xl font-semibold uppercase leading-[1.05] sm:text-[2.6rem]">Advanced facilities<br />&amp; technology</h2>
               <p className="mt-4 leading-7 text-muted-foreground lg:text-primary-foreground/80">{p.facilityText}</p>
@@ -224,7 +225,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <Link to="/facilities" className="group mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary lg:text-primary-foreground">
                 Explore hospital facilities <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
-            </div>
+            </div></div></div>
           </div>
         </section>
       ) : null}
