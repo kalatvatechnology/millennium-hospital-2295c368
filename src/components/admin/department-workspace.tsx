@@ -1050,7 +1050,7 @@ function CompletionCard({
   missing: ReturnType<typeof getDepartmentCompletion>["missing"];
   onNavigate: (section: string) => void;
 }) {
-  const visible = missing.slice(0, 4);
+  const visible = [...missing.slice(0, 4), ...missing.slice(4).filter((i) => i.section === "faqs" || i.section === "media")];
   return (
     <section aria-labelledby="profile-readiness" className="mb-6 border border-border bg-background p-4 shadow-[var(--shadow-sm)] sm:p-5">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
