@@ -121,9 +121,11 @@ function ContentWorkspace() {
       void navigate({ to: returnTo });
     },
     onError: (cause: Error) => {
-      const raw = cause as Error & { code?: string; cause?: { code?: string; message?: string } };
-      const code = raw.code ?? raw.cause?.code;
-      const text = `${raw.message ?? ""} ${raw.cause?.message ?? ""}`;
+      type ErrLike = { code?: string; message?: string; details?: string };
+      const raw = cause as Error & ErrLike & { cause?: ErrLike; originalError?: ErrLike };
+      const inner = raw.originalError ?? raw.cause;
+      const code = raw.code ?? inner?.code;
+      const text = `${raw.message ?? ""} ${inner?.message ?? ""} ${inner?.details ?? ""}`;
       const duplicateSlug =
         type.key === "departments" && (code === "23505" || /duplicate key/i.test(text)) && /slug/i.test(text);
       setError(
