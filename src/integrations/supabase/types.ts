@@ -521,6 +521,39 @@ export type Database = {
           },
         ]
       }
+      department_faqs: {
+        Row: {
+          department_id: string
+          display_order: number
+          faq_id: string
+        }
+        Insert: {
+          department_id: string
+          display_order?: number
+          faq_id: string
+        }
+        Update: {
+          department_id?: string
+          display_order?: number
+          faq_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_faqs_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_faqs_faq_id_fkey"
+            columns: ["faq_id"]
+            isOneToOne: false
+            referencedRelation: "faqs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       department_qualifications: {
         Row: {
           active: boolean
@@ -606,6 +639,10 @@ export type Database = {
           display_order: number
           id: string
           name: string
+          page_draft: Json
+          page_draft_saved_at: string | null
+          page_published: Json | null
+          page_published_at: string | null
           published: boolean
           short_description: string | null
           slug: string
@@ -619,6 +656,10 @@ export type Database = {
           display_order?: number
           id?: string
           name: string
+          page_draft?: Json
+          page_draft_saved_at?: string | null
+          page_published?: Json | null
+          page_published_at?: string | null
           published?: boolean
           short_description?: string | null
           slug: string
@@ -632,6 +673,10 @@ export type Database = {
           display_order?: number
           id?: string
           name?: string
+          page_draft?: Json
+          page_draft_saved_at?: string | null
+          page_published?: Json | null
+          page_published_at?: string | null
           published?: boolean
           short_description?: string | null
           slug?: string
@@ -1966,14 +2011,17 @@ export type Database = {
       media_departments: {
         Row: {
           department_id: string
+          display_order: number
           media_id: string
         }
         Insert: {
           department_id: string
+          display_order?: number
           media_id: string
         }
         Update: {
           department_id?: string
+          display_order?: number
           media_id?: string
         }
         Relationships: [

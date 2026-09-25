@@ -183,6 +183,13 @@
       "when": 1790319863626,
       "tag": "0025_department_card_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1790329896680,
+      "tag": "0026_department_cms_workspace",
+      "breakpoints": true
     }
   ]
 }
