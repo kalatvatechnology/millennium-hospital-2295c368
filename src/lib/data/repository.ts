@@ -52,10 +52,11 @@ export async function listDepartments(): Promise<Department[]> {
   );
 }
 
-export async function getDepartment(slug: string) {
-  const department = one(
-    await published(db.from("departments").select("*").eq("slug", slug)).maybeSingle(),
-  );
+export async function getDepartment(slug: string, preview = false) {
+  // Preview skips only the publication filter; database policies still decide
+  // which rows the signed-in user may read.
+  const base = db.from("departments").select("*").eq("slug", slug);
+  const department = one(await (preview ? base : published(base)).maybeSingle());
   if (!department) return null;
   if (!usesProductionContract) {
     const [doctorResult, serviceResult] = await Promise.all([

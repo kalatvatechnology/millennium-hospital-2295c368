@@ -35,8 +35,8 @@ export const departmentsQuery = queryOptions({
   queryKey: ["departments"],
   queryFn: listDepartments,
 });
-export const departmentQuery = (slug: string) =>
-  queryOptions({ queryKey: ["department", slug], queryFn: () => getDepartment(slug) });
+export const departmentQuery = (slug: string, preview = false) =>
+  queryOptions({ queryKey: ["department", slug, preview], queryFn: () => getDepartment(slug, preview) });
 export const doctorsQuery = queryOptions({ queryKey: ["doctors"], queryFn: listDoctors });
 export const doctorQuery = (slug: string, preview = false) =>
   queryOptions({ queryKey: ["doctor", slug, preview], queryFn: () => getDoctor(slug, preview) });
