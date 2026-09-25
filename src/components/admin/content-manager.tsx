@@ -120,12 +120,16 @@ function AvailableContentManager({ type }: { type: ContentType }) {
               to={
                 type.key === "doctors"
                   ? "/_admin/doctors/$doctorId/$section"
-                  : "/_admin/content/$contentType/$recordId"
+                  : type.key === "departments"
+                    ? "/_admin/departments/$departmentId/$section"
+                    : "/_admin/content/$contentType/$recordId"
               }
               params={
                 type.key === "doctors"
                   ? { doctorId: String(row["id"]), section: "profile" }
-                  : { contentType: type.key, recordId: String(row["id"]) }
+                  : type.key === "departments"
+                    ? { departmentId: String(row["id"]), section: "identity" }
+                    : { contentType: type.key, recordId: String(row["id"]) }
               }
             >
               <Pencil className="size-4" /> Edit

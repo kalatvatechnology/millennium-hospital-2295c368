@@ -65,6 +65,7 @@ import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as AdminBlogCommentsIndexRouteImport } from './routes/[_]admin.blog-comments.index'
 import { Route as AdminBlogCommentsCommentIdRouteImport } from './routes/[_]admin.blog-comments.$commentId'
 import { Route as AdminBlogIndexRouteImport } from './routes/[_]admin.blog.index'
+import { Route as AdminDepartmentsIndexRouteImport } from './routes/[_]admin.departments.index'
 import { Route as AdminDoctorsIndexRouteImport } from './routes/[_]admin.doctors.index'
 import { Route as AdminProfileRequestsRequestIdRouteImport } from './routes/[_]admin.profile-requests.$requestId'
 import { Route as AdminSeoKeywordKeywordIdRouteImport } from './routes/[_]admin.seo-keyword.$keywordId'
@@ -76,6 +77,7 @@ import { Route as ServicesHospitalSlugRouteImport } from './routes/services.hosp
 import { Route as ServicesProfessionalSlugRouteImport } from './routes/services.professional.$slug'
 import { Route as AdminBlogPostIdSectionRouteImport } from './routes/[_]admin.blog.$postId.$section'
 import { Route as AdminContentContentTypeRecordIdRouteImport } from './routes/[_]admin.content.$contentType.$recordId'
+import { Route as AdminDepartmentsDepartmentIdSectionRouteImport } from './routes/[_]admin.departments.$departmentId.$section'
 import { Route as AdminDoctorsDoctorIdSectionRouteImport } from './routes/[_]admin.doctors.$doctorId.$section'
 
 const IndexRoute = IndexRouteImport.update({
@@ -360,6 +362,11 @@ const AdminBlogIndexRoute = AdminBlogIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminBlogRoute,
 } as any)
+const AdminDepartmentsIndexRoute = AdminDepartmentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminDepartmentsRoute,
+} as any)
 const AdminDoctorsIndexRoute = AdminDoctorsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -420,6 +427,12 @@ const AdminContentContentTypeRecordIdRoute =
     path: '/content/$contentType/$recordId',
     getParentRoute: () => AdminRoute,
   } as any)
+const AdminDepartmentsDepartmentIdSectionRoute =
+  AdminDepartmentsDepartmentIdSectionRouteImport.update({
+    id: '/$departmentId/$section',
+    path: '/$departmentId/$section',
+    getParentRoute: () => AdminDepartmentsRoute,
+  } as any)
 const AdminDoctorsDoctorIdSectionRoute =
   AdminDoctorsDoctorIdSectionRouteImport.update({
     id: '/$doctorId/$section',
@@ -446,7 +459,7 @@ export interface FileRoutesByFullPath {
   '/_admin/blog': typeof AdminBlogRouteWithChildren
   '/_admin/blog-comments': typeof AdminBlogCommentsRouteWithChildren
   '/_admin/dashboard': typeof AdminDashboardRoute
-  '/_admin/departments': typeof AdminDepartmentsRoute
+  '/_admin/departments': typeof AdminDepartmentsRouteWithChildren
   '/_admin/doctors': typeof AdminDoctorsRouteWithChildren
   '/_admin/enquiries': typeof AdminEnquiriesRoute
   '/_admin/facilities': typeof AdminFacilitiesRoute
@@ -492,9 +505,11 @@ export interface FileRoutesByFullPath {
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
   '/_admin/blog-comments/': typeof AdminBlogCommentsIndexRoute
   '/_admin/blog/': typeof AdminBlogIndexRoute
+  '/_admin/departments/': typeof AdminDepartmentsIndexRoute
   '/_admin/doctors/': typeof AdminDoctorsIndexRoute
   '/_admin/blog/$postId/$section': typeof AdminBlogPostIdSectionRoute
   '/_admin/content/$contentType/$recordId': typeof AdminContentContentTypeRecordIdRoute
+  '/_admin/departments/$departmentId/$section': typeof AdminDepartmentsDepartmentIdSectionRoute
   '/_admin/doctors/$doctorId/$section': typeof AdminDoctorsDoctorIdSectionRoute
 }
 export interface FileRoutesByTo {
@@ -508,7 +523,6 @@ export interface FileRoutesByTo {
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
-  '/_admin/departments': typeof AdminDepartmentsRoute
   '/_admin/enquiries': typeof AdminEnquiriesRoute
   '/_admin/facilities': typeof AdminFacilitiesRoute
   '/_admin/faq-categories': typeof AdminFaqCategoriesRoute
@@ -553,9 +567,11 @@ export interface FileRoutesByTo {
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
   '/_admin/blog-comments': typeof AdminBlogCommentsIndexRoute
   '/_admin/blog': typeof AdminBlogIndexRoute
+  '/_admin/departments': typeof AdminDepartmentsIndexRoute
   '/_admin/doctors': typeof AdminDoctorsIndexRoute
   '/_admin/blog/$postId/$section': typeof AdminBlogPostIdSectionRoute
   '/_admin/content/$contentType/$recordId': typeof AdminContentContentTypeRecordIdRoute
+  '/_admin/departments/$departmentId/$section': typeof AdminDepartmentsDepartmentIdSectionRoute
   '/_admin/doctors/$doctorId/$section': typeof AdminDoctorsDoctorIdSectionRoute
 }
 export interface FileRoutesById {
@@ -578,7 +594,7 @@ export interface FileRoutesById {
   '/_admin/blog': typeof AdminBlogRouteWithChildren
   '/_admin/blog-comments': typeof AdminBlogCommentsRouteWithChildren
   '/_admin/dashboard': typeof AdminDashboardRoute
-  '/_admin/departments': typeof AdminDepartmentsRoute
+  '/_admin/departments': typeof AdminDepartmentsRouteWithChildren
   '/_admin/doctors': typeof AdminDoctorsRouteWithChildren
   '/_admin/enquiries': typeof AdminEnquiriesRoute
   '/_admin/facilities': typeof AdminFacilitiesRoute
@@ -624,9 +640,11 @@ export interface FileRoutesById {
   '/services/professional/$slug': typeof ServicesProfessionalSlugRoute
   '/_admin/blog-comments/': typeof AdminBlogCommentsIndexRoute
   '/_admin/blog/': typeof AdminBlogIndexRoute
+  '/_admin/departments/': typeof AdminDepartmentsIndexRoute
   '/_admin/doctors/': typeof AdminDoctorsIndexRoute
   '/_admin/blog/$postId/$section': typeof AdminBlogPostIdSectionRoute
   '/_admin/content/$contentType/$recordId': typeof AdminContentContentTypeRecordIdRoute
+  '/_admin/departments/$departmentId/$section': typeof AdminDepartmentsDepartmentIdSectionRoute
   '/_admin/doctors/$doctorId/$section': typeof AdminDoctorsDoctorIdSectionRoute
 }
 export interface FileRouteTypes {
@@ -696,9 +714,11 @@ export interface FileRouteTypes {
     | '/services/professional/$slug'
     | '/_admin/blog-comments/'
     | '/_admin/blog/'
+    | '/_admin/departments/'
     | '/_admin/doctors/'
     | '/_admin/blog/$postId/$section'
     | '/_admin/content/$contentType/$recordId'
+    | '/_admin/departments/$departmentId/$section'
     | '/_admin/doctors/$doctorId/$section'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -712,7 +732,6 @@ export interface FileRouteTypes {
     | '/terms-and-conditions'
     | '/_admin/audit-logs'
     | '/_admin/dashboard'
-    | '/_admin/departments'
     | '/_admin/enquiries'
     | '/_admin/facilities'
     | '/_admin/faq-categories'
@@ -757,9 +776,11 @@ export interface FileRouteTypes {
     | '/services/professional/$slug'
     | '/_admin/blog-comments'
     | '/_admin/blog'
+    | '/_admin/departments'
     | '/_admin/doctors'
     | '/_admin/blog/$postId/$section'
     | '/_admin/content/$contentType/$recordId'
+    | '/_admin/departments/$departmentId/$section'
     | '/_admin/doctors/$doctorId/$section'
   id:
     | '__root__'
@@ -827,9 +848,11 @@ export interface FileRouteTypes {
     | '/services/professional/$slug'
     | '/_admin/blog-comments/'
     | '/_admin/blog/'
+    | '/_admin/departments/'
     | '/_admin/doctors/'
     | '/_admin/blog/$postId/$section'
     | '/_admin/content/$contentType/$recordId'
+    | '/_admin/departments/$departmentId/$section'
     | '/_admin/doctors/$doctorId/$section'
   fileRoutesById: FileRoutesById
 }
@@ -1246,6 +1269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBlogIndexRouteImport
       parentRoute: typeof AdminBlogRoute
     }
+    '/_admin/departments/': {
+      id: '/_admin/departments/'
+      path: '/'
+      fullPath: '/_admin/departments/'
+      preLoaderRoute: typeof AdminDepartmentsIndexRouteImport
+      parentRoute: typeof AdminDepartmentsRoute
+    }
     '/_admin/doctors/': {
       id: '/_admin/doctors/'
       path: '/'
@@ -1323,6 +1353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminContentContentTypeRecordIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/departments/$departmentId/$section': {
+      id: '/_admin/departments/$departmentId/$section'
+      path: '/$departmentId/$section'
+      fullPath: '/_admin/departments/$departmentId/$section'
+      preLoaderRoute: typeof AdminDepartmentsDepartmentIdSectionRouteImport
+      parentRoute: typeof AdminDepartmentsRoute
+    }
     '/_admin/doctors/$doctorId/$section': {
       id: '/_admin/doctors/$doctorId/$section'
       path: '/$doctorId/$section'
@@ -1359,6 +1396,20 @@ const AdminBlogCommentsRouteChildren: AdminBlogCommentsRouteChildren = {
 
 const AdminBlogCommentsRouteWithChildren =
   AdminBlogCommentsRoute._addFileChildren(AdminBlogCommentsRouteChildren)
+
+interface AdminDepartmentsRouteChildren {
+  AdminDepartmentsIndexRoute: typeof AdminDepartmentsIndexRoute
+  AdminDepartmentsDepartmentIdSectionRoute: typeof AdminDepartmentsDepartmentIdSectionRoute
+}
+
+const AdminDepartmentsRouteChildren: AdminDepartmentsRouteChildren = {
+  AdminDepartmentsIndexRoute: AdminDepartmentsIndexRoute,
+  AdminDepartmentsDepartmentIdSectionRoute:
+    AdminDepartmentsDepartmentIdSectionRoute,
+}
+
+const AdminDepartmentsRouteWithChildren =
+  AdminDepartmentsRoute._addFileChildren(AdminDepartmentsRouteChildren)
 
 interface AdminDoctorsRouteChildren {
   AdminDoctorsIndexRoute: typeof AdminDoctorsIndexRoute
@@ -1402,7 +1453,7 @@ interface AdminRouteChildren {
   AdminBlogRoute: typeof AdminBlogRouteWithChildren
   AdminBlogCommentsRoute: typeof AdminBlogCommentsRouteWithChildren
   AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminDepartmentsRoute: typeof AdminDepartmentsRoute
+  AdminDepartmentsRoute: typeof AdminDepartmentsRouteWithChildren
   AdminDoctorsRoute: typeof AdminDoctorsRouteWithChildren
   AdminEnquiriesRoute: typeof AdminEnquiriesRoute
   AdminFacilitiesRoute: typeof AdminFacilitiesRoute
@@ -1438,7 +1489,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBlogRoute: AdminBlogRouteWithChildren,
   AdminBlogCommentsRoute: AdminBlogCommentsRouteWithChildren,
   AdminDashboardRoute: AdminDashboardRoute,
-  AdminDepartmentsRoute: AdminDepartmentsRoute,
+  AdminDepartmentsRoute: AdminDepartmentsRouteWithChildren,
   AdminDoctorsRoute: AdminDoctorsRouteWithChildren,
   AdminEnquiriesRoute: AdminEnquiriesRoute,
   AdminFacilitiesRoute: AdminFacilitiesRoute,

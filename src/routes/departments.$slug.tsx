@@ -6,16 +6,47 @@ import { PublicPage } from "@/components/layout/public-page";
 import { Async } from "@/components/shared/async";
 import { ContentSection, EmptyState } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
-import { departmentQuery, faqQuery, type DoctorWithDepartment } from "@/lib/queries";
+import { departmentQuery, faqQuery, type DoctorWithDepartment, type FaqRow, type MediaItem } from "@/lib/queries";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
+import { enabledItems, type DepartmentPage } from "@/lib/department-page";
+import { MediaGrid } from "@/components/content/media";
 import { createPageMeta } from "@/lib/seo";
+import { siteConfig } from "@/config/site";
 
 export const Route = createFileRoute("/departments/$slug")({
-  head: () => ({
-    meta: createPageMeta("Department", "Specialist departments and clinical care at The Millennium Hospital."),
-  }),
   validateSearch: (search: Record<string, unknown>): { preview?: boolean } =>
     search["preview"] === true || search["preview"] === "1" ? { preview: true } : {},
+  loaderDeps: ({ search }) => ({ preview: Boolean(search.preview) }),
+  loader: async ({ context, params, deps }) => {
+    // Preview depends on the staff session, which only exists in the browser.
+    if (deps.preview) return null;
+    try {
+      return await context.queryClient.ensureQueryData(departmentQuery(params.slug, false));
+    } catch {
+      return null;
+    }
+  },
+  head: ({ loaderData }) => {
+    const fallback = createPageMeta("Department", "Specialist departments and clinical care at The Millennium Hospital.");
+    if (!loaderData) return { meta: fallback };
+    const { department, page } = loaderData;
+    const seo = page?.seo;
+    const title = seo?.title || `${department.name} | ${siteConfig.name}`;
+    const description =
+      seo?.description || department.short_description || department.description || `${department.name} at ${siteConfig.name}.`;
+    const image = seo?.og_image_url || page?.hero.image_url || department.card_image_url || "";
+    const meta: Record<string, string>[] = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ];
+    if (/^https:\/\//.test(image)) meta.push({ property: "og:image", content: image }, { name: "twitter:image", content: image });
+    if (seo && !seo.index) meta.push({ name: "robots", content: "noindex, nofollow" });
+    return { meta, links: seo?.canonical_url ? [{ rel: "canonical", href: seo.canonical_url }] : [] };
+  },
   component: DepartmentDetail,
 });
 
@@ -40,7 +71,7 @@ function DepartmentDetail() {
               />
             </ContentSection>
           ) : (
-            <DepartmentView department={data.department} doctors={data.doctors} />
+            <DepartmentView department={data.department} doctors={data.doctors} page={data.page} faqs={data.faqs} media={data.media} />
           )
         }
       </Async>
@@ -50,26 +81,106 @@ function DepartmentDetail() {
 
 type Dept = { name: string; slug: string; description: string | null; short_description?: string | null; card_image_url?: string | null; card_image_alt?: string | null };
 
-const APPROACH = [
-  ["Specialist-led care", "Consultations with clinicians focused on their field."],
-  ["Coordinated treatment", "Departments working together across your care."],
-  ["Modern clinical environment", "Care delivered within a multi-specialty hospital."],
-  ["Patient-focused recovery", "Clear guidance from diagnosis through recovery."],
-] as const;
 
-function DepartmentView({ department, doctors }: { department: Dept; doctors: DoctorWithDepartment[] }) {
+const lines = (t: string) => t.split("\n").map((l) => l.trim()).filter(Boolean);
+
+/** Published CMS content when present; otherwise the approved V1 presentation fallback. */
+function resolveView(department: Dept, page: DepartmentPage | null) {
+  if (page) {
+    const about = enabledItems(page.about);
+    const care = enabledItems(page.care);
+    const conditions = enabledItems(page.conditions);
+    const facilityPoints = enabledItems(page.facilities);
+    const approach = enabledItems(page.approach);
+    const aboutIntro = page.about.intro || department.description || "";
+    const h = page.hero;
+    return {
+      hero: {
+        enabled: h.enabled,
+        lines: lines(h.headline),
+        lead: h.intro || department.short_description || "",
+        image: h.image_url || department.card_image_url || null,
+        alt: h.image_alt || department.card_image_alt || `${department.name} care at The Millennium Hospital`,
+        book: h.show_book,
+        contact: h.show_contact,
+        specialists: h.show_specialists,
+        hasActions: h.show_book || h.show_contact || h.show_specialists,
+      },
+      about: page.about.enabled && (aboutIntro || about.length)
+        ? { label: page.about.label, title: page.about.title, intro: aboutIntro, items: about }
+        : null,
+      care: page.care.enabled && care.length ? { label: page.care.label, title: page.care.title, intro: page.care.intro, items: care } : null,
+      conditions: page.conditions.enabled && conditions.length
+        ? { label: page.conditions.label, title: page.conditions.title, intro: page.conditions.intro, items: conditions.map((c) => c.title) }
+        : null,
+      specialists: page.specialists.enabled,
+      facilities: page.facilities.enabled && (facilityPoints.length || page.facilities.intro)
+        ? {
+            label: page.facilities.label,
+            title: page.facilities.title || "Advanced facilities\n& technology",
+            text: page.facilities.intro,
+            image: page.facilities.image_url || null,
+            alt: page.facilities.image_alt || `${department.name} facilities`,
+            points: facilityPoints.map((f) => f.title),
+          }
+        : null,
+      approach: page.approach.enabled && approach.length
+        ? { label: page.approach.label, title: page.approach.title || "The Millennium\napproach", intro: page.approach.intro, items: approach }
+        : null,
+      faqsEnabled: page.faqs.enabled,
+      mediaEnabled: page.media.enabled,
+    };
+  }
   const p = getDepartmentPresentation(department.slug);
-  // A CMS card image always wins; the presentation image is a replaceable design placeholder.
-  const heroImage = department.card_image_url ?? p?.heroImage ?? null;
-  const heroAlt = department.card_image_alt ?? `${department.name} care at The Millennium Hospital`;
-  const lead = department.short_description ?? p?.lead ?? department.description ?? "";
   const about = department.description ?? p?.lead ?? null;
+  return {
+    hero: {
+      enabled: true,
+      lines: p?.heroLines ?? [],
+      lead: department.short_description ?? p?.lead ?? department.description ?? "",
+      image: department.card_image_url ?? p?.heroImage ?? null,
+      alt: department.card_image_alt ?? `${department.name} care at The Millennium Hospital`,
+      book: true,
+      contact: false,
+      specialists: true,
+      hasActions: true,
+    },
+    about: about ? { label: "About the department", title: p?.introHeading ?? "", intro: about, items: p?.highlights ?? [] } : null,
+    care: p ? { label: "Specialized care", title: "", intro: p.careIntro, items: p.careAreas } : null,
+    conditions: p ? { label: "Conditions", title: "", intro: "", items: p.conditions } : null,
+    specialists: true,
+    facilities: p
+      ? { label: "Facilities", title: "Advanced facilities\n& technology", text: p.facilityText, image: p.facilityImage, alt: "Hospital clinical corridor with imaging and rehabilitation areas", points: p.facilityPoints }
+      : null,
+    approach: {
+      label: "The Millennium approach",
+      title: "Care,\ncoordinated\naround you.",
+      intro: `${department.name} is part of a wider multi-specialty hospital, so care can draw on colleagues across departments when you need it.`,
+      items: [
+        { title: "Specialist-led care", text: "Consultations with clinicians focused on their field." },
+        { title: "Coordinated treatment", text: "Departments working together across your care." },
+        { title: "Modern clinical environment", text: "Care delivered within a multi-specialty hospital." },
+        { title: "Patient-focused recovery", text: "Clear guidance from diagnosis through recovery." },
+      ],
+    },
+    faqsEnabled: true,
+    mediaEnabled: false,
+  };
+}
+
+function DepartmentView({ department, doctors, page, faqs, media }: { department: Dept; doctors: DoctorWithDepartment[]; page: DepartmentPage | null; faqs: FaqRow[]; media: MediaItem[] }) {
+  const v = resolveView(department, page);
   const lower = department.name.toLowerCase();
+  const heroImage = v.hero.image;
+  const heroAlt = v.hero.alt;
+  const lead = v.hero.lead;
+  let n = 0;
+  const num = () => String(++n).padStart(2, "0");
 
   return (
     <div className="dept-page overflow-x-clip">
       {/* 01 HERO */}
-      <section className="relative bg-background">
+      {v.hero.enabled ? <section className="relative bg-background">
         <div className={`${wrap} grid lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:min-h-[36rem]`}>
           <div className="dept-reveal flex flex-col justify-center pb-6 pt-8 sm:pt-10 lg:py-14 lg:pr-10">
             <nav aria-label="Breadcrumb" className={`${eyebrow} text-[0.8rem] flex items-center gap-3 text-muted-foreground`}>
@@ -78,12 +189,12 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <span className="text-primary">{department.name}</span>
             </nav>
             <h1 className="mt-6 min-w-0 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-[3.4rem] lg:text-[2.6rem] xl:text-[3.5rem] 2xl:text-[3.9rem]">
-              {p ? p.heroLines.map((l, i) => (
-                <span key={l} className={`block sm:whitespace-nowrap ${i === p.heroLines.length - 1 ? "text-primary" : ""}`}>{l}</span>
+              {v.hero.lines.length ? v.hero.lines.map((l, i) => (
+                <span key={`${l}-${i}`} className={`block sm:whitespace-nowrap ${i === v.hero.lines.length - 1 && v.hero.lines.length > 1 ? "text-primary" : ""}`}>{l}</span>
               )) : department.name}
             </h1>
             {lead ? <p className="mt-7 max-w-[30rem] border-l-2 border-brand-accent pl-5 text-lg leading-[1.85rem] text-muted-foreground">{lead}</p> : null}
-            <div className="mt-9 hidden flex-wrap gap-3 lg:flex"><HeroActions /></div>
+            {v.hero.hasActions ? <div className="mt-9 hidden flex-wrap gap-3 lg:flex"><HeroActions {...v.hero} specialists={v.hero.specialists && v.specialists} /></div> : null}
           </div>
           <figure className="dept-reveal relative lg:my-0">
             <div className="group relative aspect-[6/7] overflow-hidden bg-secondary sm:aspect-[16/12] lg:absolute lg:inset-0 lg:aspect-auto">
@@ -100,25 +211,25 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <span className="font-heading text-sm font-semibold">Dept. / {department.name}</span>
             </figcaption>
           </figure>
-          <div className="flex flex-col gap-3 pb-8 pt-5 sm:flex-row lg:hidden"><HeroActions /></div>
+          <div className="flex flex-col gap-3 pb-8 pt-5 sm:flex-row lg:hidden">{v.hero.hasActions ? <HeroActions {...v.hero} specialists={v.hero.specialists && v.specialists} /> : null}</div>
         </div>
-      </section>
+      </section> : null}
 
       {/* 02 ABOUT */}
-      {about ? (
+      {v.about ? (
         <section className="bg-background">
           <div className={`${wrap} grid gap-6 py-12 sm:py-16 lg:grid-cols-[0.3fr_0.7fr] lg:gap-10`}>
             <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
-              <BigNumber n="01" />
-              <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>About the<br className="hidden lg:block" /> department</p>
+              <BigNumber n={num()} />
+              <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>{v.about.label === "About the department" ? <>About the<br className="hidden lg:block" /> department</> : v.about.label}</p>
             </div>
             <div className="dept-reveal">
-              <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{p?.introHeading ?? `About ${department.name}`}</h2>
-              <p className="mt-5 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{about}</p>
-              {p ? (
+              <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{v.about.title || `About ${department.name}`}</h2>
+              {v.about.intro ? <p className="mt-5 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{v.about.intro}</p> : null}
+              {v.about.items.length ? (
                 <dl className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4">
-                  {p.highlights.map((h, i) => (
-                    <div key={h.title} className={`border-t border-border py-5 sm:pr-6 xl:border-l xl:border-t-0 xl:py-1 xl:pl-6 ${i === 0 ? "xl:border-l-0 xl:pl-0" : ""}`}>
+                  {v.about.items.map((h, i) => (
+                    <div key={`${h.title}-${i}`} className={`border-t border-border py-5 sm:pr-6 xl:border-l xl:border-t-0 xl:py-1 xl:pl-6 ${i === 0 ? "xl:border-l-0 xl:pl-0" : ""}`}>
                       <span className="block h-0.5 w-6 bg-brand-accent" aria-hidden />
                       <dt className="mt-4 font-heading text-base font-semibold text-foreground">{h.title}</dt>
                       <dd className="mt-2 text-sm leading-6 text-muted-foreground">{h.text}</dd>
@@ -132,22 +243,22 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       ) : null}
 
       {/* 03 SPECIALIZED CARE */}
-      {p ? (
+      {v.care ? (
         <section className="bg-secondary">
           <div className={`${wrap} grid gap-8 py-12 sm:py-16 lg:grid-cols-[0.4fr_0.6fr] lg:gap-16`}>
             <div className="lg:sticky lg:top-28 lg:self-start">
-              <Label n="02" text="Specialized care" />
-              <h2 className="mt-4 text-3xl font-semibold leading-[1.1] sm:text-[2.75rem]">Specialized<br />{department.name} Care</h2>
-              <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">{p.careIntro}</p>
+              <Label n={num()} text={v.care.label} />
+              <h2 className="mt-4 text-3xl font-semibold leading-[1.1] sm:text-[2.75rem]">{v.care.title ? <Lines text={v.care.title} /> : <>Specialized<br />{department.name} Care</>}</h2>
+              {v.care.intro ? <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">{v.care.intro}</p> : null}
             </div>
             <ol className="border-t border-foreground/20">
-              {p.careAreas.map((a, i) => (
-                <li key={a.title} className="group relative grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 border-b border-foreground/20 py-5 transition-colors hover:bg-background/70 sm:grid-cols-[4.5rem_1fr_auto] sm:py-5">
+              {v.care.items.map((a, i) => (
+                <li key={`${a.title}-${i}`} className="group relative grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 border-b border-foreground/20 py-5 transition-colors hover:bg-background/70 sm:grid-cols-[4.5rem_1fr_auto] sm:py-5">
                   <span className="absolute left-0 top-0 h-full w-0.5 origin-top scale-y-0 bg-brand-accent transition-transform duration-300 group-hover:scale-y-100" aria-hidden />
                   <span className="pl-2 font-heading text-sm font-semibold tabular-nums text-brand-accent sm:pl-4">{String(i + 1).padStart(2, "0")}</span>
                   <div className="transition-transform duration-300 group-hover:translate-x-1.5">
                     <h3 className="text-xl font-semibold sm:text-[1.65rem]">{a.title}</h3>
-                    <p className="mt-1.5 max-w-md text-sm leading-6 text-muted-foreground">{a.text}</p>
+                    {a.text ? <p className="mt-1.5 max-w-md text-sm leading-6 text-muted-foreground">{a.text}</p> : null}
                   </div>
                   <ArrowRight className="mr-2 size-5 text-muted-foreground transition-all duration-300 group-hover:translate-x-1 group-hover:text-brand-accent sm:mr-4" aria-hidden />
                 </li>
@@ -158,18 +269,19 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       ) : null}
 
       {/* 04 CONDITIONS — signature typographic spread */}
-      {p ? (
+      {v.conditions ? (
         <section className="bg-background">
           <div className={`${wrap} py-12 sm:py-16`}>
             <div className="grid gap-6 lg:grid-cols-[0.28fr_0.72fr] lg:gap-12">
               <div>
-                <Label n="03" text="Conditions" />
-                <h2 className="mt-4 font-heading text-2xl font-semibold uppercase leading-tight tracking-[0.04em] text-primary sm:text-3xl">Conditions<br />we treat</h2>
+                <Label n={num()} text={v.conditions.label} />
+                <h2 className="mt-4 font-heading text-2xl font-semibold uppercase leading-tight tracking-[0.04em] text-primary sm:text-3xl">{v.conditions.title ? <Lines text={v.conditions.title} /> : <>Conditions<br />we treat</>}</h2>
+                {v.conditions.intro ? <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">{v.conditions.intro}</p> : null}
               </div>
               <ul className="flex flex-wrap items-baseline gap-x-3 gap-y-1 sm:gap-x-4" aria-label={`Conditions treated by ${department.name}`}>
-                {p.conditions.map((c, i) => (
-                  <li key={c} className="font-heading text-[1.9rem] font-medium leading-[1.25] tracking-[-0.02em] text-foreground transition-colors hover:text-primary sm:text-5xl xl:text-[3.6rem]">
-                    {c}{i < p.conditions.length - 1 ? <span className="ml-3 font-light text-brand-accent sm:ml-4" aria-hidden>/</span> : null}
+                {v.conditions.items.map((c, i, all) => (
+                  <li key={`${c}-${i}`} className="font-heading text-[1.9rem] font-medium leading-[1.25] tracking-[-0.02em] text-foreground transition-colors hover:text-primary sm:text-5xl xl:text-[3.6rem]">
+                    {c}{i < all.length - 1 ? <span className="ml-3 font-light text-brand-accent sm:ml-4" aria-hidden>/</span> : null}
                   </li>
                 ))}
               </ul>
@@ -179,11 +291,11 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       ) : null}
 
       {/* 05 SPECIALISTS */}
-      <section id="specialists" className="scroll-mt-24 bg-primary text-primary-foreground">
+      {v.specialists ? <section id="specialists" className="scroll-mt-24 bg-primary text-primary-foreground">
         <div className={`${wrap} ${doctors.length ? "py-16 sm:py-24" : "py-12 sm:py-16"}`}>
           <div className={`grid lg:grid-cols-[0.4fr_0.6fr] ${doctors.length ? "gap-10 lg:gap-16" : "gap-6 lg:items-end lg:gap-16"}`}>
             <div>
-              <Label n="04" text="Our specialists" dark />
+              <Label n={num()} text="Our specialists" dark />
               <h2 className="mt-4 font-heading text-3xl font-semibold uppercase leading-[1.02] tracking-[-0.01em] sm:text-5xl">Meet our<br />{department.name}<br />specialists</h2>
               <p className="mt-4 max-w-sm leading-7 text-primary-foreground/75">Clinicians in this department, connected to their full Millennium Hospital profiles.</p>
               <Link to="/doctors" className="group mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
@@ -203,23 +315,23 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
             )}
           </div>
         </div>
-      </section>
+      </section> : null}
 
       {/* 06 FACILITIES — cinematic */}
-      {p ? (
+      {v.facilities ? (
         <section className="bg-foreground">
           <div className="relative">
             <div className="group relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:aspect-auto lg:h-[max(32rem,40.48vw)]">
-              <img src={p.facilityImage} alt="Hospital clinical corridor with imaging and rehabilitation areas" className="size-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]" loading="lazy" width={1600} height={1008} />
+              {v.facilities.image ? <img src={v.facilities.image} alt={v.facilities.alt} className="size-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]" loading="lazy" width={1600} height={1008} /> : <div className="size-full bg-primary" aria-hidden />}
               <div className="absolute inset-0 hidden bg-gradient-to-r from-foreground/85 via-foreground/40 to-transparent lg:block" aria-hidden />
             </div>
             <div className="bg-background lg:absolute lg:inset-0 lg:bg-transparent"><div className={`${wrap} py-10 lg:flex lg:h-full lg:flex-col lg:justify-center lg:py-0 lg:text-primary-foreground`}><div className="lg:max-w-md">
-              <Label n="05" text="Facilities" darkLg />
-              <h2 className="mt-4 font-heading text-3xl font-semibold uppercase leading-[1.05] sm:text-[2.6rem]">Advanced facilities<br />&amp; technology</h2>
-              <p className="mt-4 text-[1.1rem] leading-8 text-muted-foreground lg:text-primary-foreground/85">{p.facilityText}</p>
+              <Label n={num()} text={v.facilities.label} darkLg />
+              <h2 className="mt-4 font-heading text-3xl font-semibold uppercase leading-[1.05] sm:text-[2.6rem]"><Lines text={v.facilities.title} /></h2>
+              {v.facilities.text ? <p className="mt-4 text-[1.1rem] leading-8 text-muted-foreground lg:text-primary-foreground/85">{v.facilities.text}</p> : null}
               <ul className="mt-6 space-y-2.5">
-                {p.facilityPoints.map((f) => (
-                  <li key={f} className="flex items-center gap-4 text-[0.95rem] font-semibold"><span className="h-px w-6 bg-brand-accent" aria-hidden />{f}</li>
+                {v.facilities.points.map((f, i) => (
+                  <li key={`${f}-${i}`} className="flex items-center gap-4 text-[0.95rem] font-semibold"><span className="h-px w-6 bg-brand-accent" aria-hidden />{f}</li>
                 ))}
               </ul>
               <Link to="/facilities" className="group mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary lg:text-primary-foreground">
@@ -231,18 +343,18 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       ) : null}
 
       {/* 07 THE MILLENNIUM APPROACH */}
-      <section className="bg-secondary">
+      {v.approach ? <section className="bg-secondary">
         <div className={`${wrap} py-12 sm:py-16`}>
           <div className="grid gap-6 lg:grid-cols-[0.5fr_0.5fr] lg:items-end">
             <div>
-              <Label n="06" text="The Millennium approach" />
-              <h2 className="mt-4 font-heading text-4xl font-semibold uppercase leading-[1] tracking-[-0.01em] sm:text-[3.4rem]">Care,<br />coordinated<br /><span className="text-primary">around you.</span></h2>
+              <Label n={num()} text={v.approach.label} />
+              <h2 className="mt-4 font-heading text-4xl font-semibold uppercase leading-[1] tracking-[-0.01em] sm:text-[3.4rem]"><Lines text={v.approach.title} accentLast /></h2>
             </div>
-            <p className="max-w-md leading-7 text-muted-foreground lg:justify-self-end">{department.name} is part of a wider multi-specialty hospital, so care can draw on colleagues across departments when you need it.</p>
+            {v.approach.intro ? <p className="max-w-md leading-7 text-muted-foreground lg:justify-self-end">{v.approach.intro}</p> : null}
           </div>
           <ol className="mt-8 grid border-t border-foreground/20 sm:grid-cols-2 lg:grid-cols-4">
-            {APPROACH.map(([t, d], i) => (
-              <li key={t} className="border-b border-foreground/20 py-6 sm:pr-8 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0">
+            {v.approach.items.map(({ title: t, text: d }, i) => (
+              <li key={`${t}-${i}`} className="border-b border-foreground/20 py-6 sm:pr-8 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0">
                 <span className="font-heading text-sm font-semibold text-brand-accent">{String(i + 1).padStart(2, "0")}</span>
                 <p className="mt-4 font-heading text-xl font-semibold">{t}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{d}</p>
@@ -250,10 +362,21 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
             ))}
           </ol>
         </div>
-      </section>
+      </section> : null}
 
-      {/* 08 FAQ — only when department FAQs exist; media is hidden until the CMS links it. */}
-      <DepartmentFaqs departmentName={department.name} />
+      {/* 08 FAQ — only when department FAQs exist. */}
+      {(() => { const faqNum = v.faqsEnabled && (faqs.length || !page) ? num() : ""; return faqNum ? <DepartmentFaqs departmentName={department.name} linked={faqs} legacy={!page} n={faqNum} /> : null; })()}
+
+      {/* 09 MEDIA — only when media is linked to the department. */}
+      {v.mediaEnabled && media.length ? (
+        <section className="bg-secondary">
+          <div className={`${wrap} py-12 sm:py-16`}>
+            <Label n={num()} text="Media" />
+            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Watch &amp; listen</h2>
+            <div className="mt-8"><MediaGrid items={media} /></div>
+          </div>
+        </section>
+      ) : null}
 
       {/* 09 CTA */}
       <section className="relative bg-sidebar text-sidebar-foreground">
@@ -276,15 +399,35 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
   );
 }
 
-function HeroActions() {
+function HeroActions({ book, contact, specialists }: { book: boolean; contact: boolean; specialists: boolean }) {
   return (
     <>
-      <Button asChild size="lg" className="min-h-12 bg-brand-accent px-7 text-brand-accent-foreground hover:bg-brand-accent/90 sm:min-w-[15rem]">
-        <Link to="/contact"><CalendarDays /> Book an Appointment</Link>
-      </Button>
-      <Button asChild size="lg" variant="outline" className="group min-h-12 px-7 sm:min-w-[15rem]">
-        <a href="#specialists">Meet Our Specialists <ArrowRight className="transition-transform group-hover:translate-x-1" /></a>
-      </Button>
+      {book ? (
+        <Button asChild size="lg" className="min-h-12 bg-brand-accent px-7 text-brand-accent-foreground hover:bg-brand-accent/90 sm:min-w-[15rem]">
+          <Link to="/contact"><CalendarDays /> Book an Appointment</Link>
+        </Button>
+      ) : null}
+      {contact ? (
+        <Button asChild size="lg" variant="outline" className="min-h-12 px-7 sm:min-w-[15rem]">
+          <Link to="/contact">Contact Hospital</Link>
+        </Button>
+      ) : null}
+      {specialists ? (
+        <Button asChild size="lg" variant="outline" className="group min-h-12 px-7 sm:min-w-[15rem]">
+          <a href="#specialists">Meet Our Specialists <ArrowRight className="transition-transform group-hover:translate-x-1" /></a>
+        </Button>
+      ) : null}
+    </>
+  );
+}
+
+function Lines({ text, accentLast = false }: { text: string; accentLast?: boolean }) {
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  return (
+    <>
+      {lines.map((l, i) => (
+        <span key={`${l}-${i}`} className={`block ${accentLast && i === lines.length - 1 && lines.length > 1 ? "text-primary" : ""}`}>{l}</span>
+      ))}
     </>
   );
 }
@@ -337,16 +480,21 @@ function SpecialistShowcase({ doctors }: { doctors: DoctorWithDepartment[] }) {
   );
 }
 
-function DepartmentFaqs({ departmentName }: { departmentName: string }) {
-  const faqs = useQuery(faqQuery);
+function DepartmentFaqs({ departmentName, linked, legacy, n }: { departmentName: string; linked: FaqRow[]; legacy: boolean; n: string }) {
+  const faqs = useQuery({ ...faqQuery, enabled: legacy && !linked.length });
   const [open, setOpen] = useState<string | null>(null);
-  const items = (faqs.data?.faqs ?? []).filter((f) => f.category?.toLowerCase() === departmentName.toLowerCase());
+  // Linked FAQs win. Before a department's CMS page is published, the earlier category match still applies.
+  const items = linked.length
+    ? linked
+    : legacy
+      ? (faqs.data?.faqs ?? []).filter((f) => f.category?.toLowerCase() === departmentName.toLowerCase())
+      : [];
   if (!items.length) return null;
   return (
     <section className="bg-background">
       <div className={`${wrap} grid gap-6 py-14 sm:py-20 lg:grid-cols-[0.34fr_0.66fr] lg:gap-10`}>
         <div>
-          <Label n="07" text="Questions" />
+          <Label n={n} text="Questions" />
           <h2 className="mt-6 text-3xl font-semibold sm:text-4xl">Frequently asked questions</h2>
         </div>
         <div className="border-t border-border">
