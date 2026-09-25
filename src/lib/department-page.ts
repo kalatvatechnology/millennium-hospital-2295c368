@@ -55,7 +55,12 @@ function items(v: unknown): PageItem[] {
   if (!Array.isArray(v)) return [];
   return v.map((raw) => {
     const r = obj(raw);
-    return { id: str(r["id"]) || newItemId(), title: str(r["title"]), text: str(r["text"]), enabled: bool(r["enabled"], true) };
+    return {
+      id: str(r["id"]) || newItemId(),
+      title: str(r["title"]),
+      text: str(r["text"]),
+      enabled: bool(r["enabled"], true),
+    };
   });
 }
 

@@ -87,17 +87,22 @@ function saveErrorMessage(cause: unknown) {
   const text = `${raw?.message ?? ""} ${raw?.details ?? ""}`;
   if ((raw?.code === "23505" || /duplicate key/i.test(text)) && /slug/i.test(text))
     return "This web address is already being used by another department. Please choose a different one.";
-  if (/permission to publish/i.test(text)) return "Your role can save drafts, but publishing is done by an editor or admin.";
-  if (/short_description_length/i.test(text)) return "Short description must be 180 characters or fewer.";
+  if (/permission to publish/i.test(text))
+    return "Your role can save drafts, but publishing is done by an editor or admin.";
+  if (/short_description_length/i.test(text))
+    return "Short description must be 180 characters or fewer.";
   return userFacingDataError(cause);
 }
 
 function validate(identity: Identity, page: DepartmentPage): string | null {
   if (!identity.name.trim()) return "Department name is required.";
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(identity.slug)) return "Slug may only use lowercase letters, numbers and single hyphens.";
-  if (identity.short_description.length > 180) return "Short description must be 180 characters or fewer.";
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(identity.slug))
+    return "Slug may only use lowercase letters, numbers and single hyphens.";
+  if (identity.short_description.length > 180)
+    return "Short description must be 180 characters or fewer.";
   if (page.hero.image_url && !page.hero.image_alt.trim()) return "Add alt text for the hero image.";
-  if (page.facilities.image_url && !page.facilities.image_alt.trim()) return "Add alt text for the facilities image.";
+  if (page.facilities.image_url && !page.facilities.image_alt.trim())
+    return "Add alt text for the facilities image.";
   const lists: [string, ListSection][] = [
     ["About highlight", page.about],
     ["Care area", page.care],
@@ -105,9 +110,15 @@ function validate(identity: Identity, page: DepartmentPage): string | null {
     ["Facility point", page.facilities],
     ["Principle", page.approach],
   ];
-  for (const [label, s] of lists) if (s.items.some((i) => !i.title.trim())) return `Every ${label.toLowerCase()} needs a title.`;
-  if (page.seo.canonical_url && !/^https:\/\//.test(page.seo.canonical_url)) return "Canonical URL must start with https://";
-  if (page.seo.og_image_url && !/^https:\/\//.test(page.seo.og_image_url) && !managedPath(page.seo.og_image_url))
+  for (const [label, s] of lists)
+    if (s.items.some((i) => !i.title.trim())) return `Every ${label.toLowerCase()} needs a title.`;
+  if (page.seo.canonical_url && !/^https:\/\//.test(page.seo.canonical_url))
+    return "Canonical URL must start with https://";
+  if (
+    page.seo.og_image_url &&
+    !/^https:\/\//.test(page.seo.og_image_url) &&
+    !managedPath(page.seo.og_image_url)
+  )
     return "OG image must be an https link or an uploaded image.";
   return null;
 }
@@ -116,19 +127,38 @@ function validate(identity: Identity, page: DepartmentPage): string | null {
 function pageFromPresentation(slug: string, base: DepartmentPage): DepartmentPage | null {
   const p = getDepartmentPresentation(slug);
   if (!p) return null;
-  const item = (title: string, text = ""): PageItem => ({ id: newItemId(), title, text, enabled: true });
+  const item = (title: string, text = ""): PageItem => ({
+    id: newItemId(),
+    title,
+    text,
+    enabled: true,
+  });
   return {
     ...base,
     hero: { ...base.hero, headline: p.heroLines.join("\n"), intro: p.lead },
-    about: { ...base.about, title: p.introHeading, items: p.highlights.map((h) => item(h.title, h.text)) },
-    care: { ...base.care, intro: p.careIntro, items: p.careAreas.map((a) => item(a.title, a.text)) },
+    about: {
+      ...base.about,
+      title: p.introHeading,
+      items: p.highlights.map((h) => item(h.title, h.text)),
+    },
+    care: {
+      ...base.care,
+      intro: p.careIntro,
+      items: p.careAreas.map((a) => item(a.title, a.text)),
+    },
     conditions: { ...base.conditions, items: p.conditions.map((c) => item(c)) },
-    facilities: { ...base.facilities, intro: p.facilityText, items: p.facilityPoints.map((f) => item(f)) },
+    facilities: {
+      ...base.facilities,
+      intro: p.facilityText,
+      items: p.facilityPoints.map((f) => item(f)),
+    },
   };
 }
 
 export function DepartmentWorkspace() {
-  const { departmentId, section } = useParams({ from: "/_admin/departments/$departmentId/$section" });
+  const { departmentId, section } = useParams({
+    from: "/_admin/departments/$departmentId/$section",
+  });
   const active = (SECTIONS.find((s) => s.key === section)?.key ?? "identity") as SectionKey;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -138,15 +168,26 @@ export function DepartmentWorkspace() {
   const record = useQuery({
     queryKey: ["admin-department-workspace", departmentId],
     queryFn: async () => {
-      const { data, error } = await db.from("departments").select("*").eq("id", departmentId).maybeSingle();
+      const { data, error } = await db
+        .from("departments")
+        .select("*")
+        .eq("id", departmentId)
+        .maybeSingle();
       if (error) throw error;
       return data as Record<string, any> | null;
     },
   });
 
-  const [identity, setIdentity] = useState<Identity>({ name: "", slug: "", short_description: "", description: "" });
+  const [identity, setIdentity] = useState<Identity>({
+    name: "",
+    slug: "",
+    short_description: "",
+    description: "",
+  });
   const [page, setPage] = useState<DepartmentPage>(() => parseDepartmentPage({}));
-  const [baseline, setBaseline] = useState<{ identity: Identity; page: DepartmentPage } | null>(null);
+  const [baseline, setBaseline] = useState<{ identity: Identity; page: DepartmentPage } | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const uploads = useRef(new Set<string>());
 
@@ -181,9 +222,14 @@ export function DepartmentWorkspace() {
 
   const row = record.data;
   const published = Boolean(row?.["published"]);
-  const publishedPage = row && hasPageContent(row["page_published"]) ? parseDepartmentPage(row["page_published"]) : null;
+  const publishedPage =
+    row && hasPageContent(row["page_published"])
+      ? parseDepartmentPage(row["page_published"])
+      : null;
   const hasDraftChanges =
-    !!row && hasPageContent(row["page_draft"]) && JSON.stringify(row["page_draft"]) !== JSON.stringify(row["page_published"]);
+    !!row &&
+    hasPageContent(row["page_draft"]) &&
+    JSON.stringify(row["page_draft"]) !== JSON.stringify(row["page_published"]);
 
   const persist = async (mode: "draft" | "publish") => {
     setError(null);
@@ -198,8 +244,12 @@ export function DepartmentWorkspace() {
       page_draft: page,
       page_draft_saved_at: now,
     };
-    if (mode === "publish") Object.assign(payload, { page_published: page, page_published_at: now, published: true });
-    const { error: saveError } = await db.from("departments").update(payload).eq("id", departmentId);
+    if (mode === "publish")
+      Object.assign(payload, { page_published: page, page_published_at: now, published: true });
+    const { error: saveError } = await db
+      .from("departments")
+      .update(payload)
+      .eq("id", departmentId);
     if (saveError) throw saveError;
     // Only after a successful save: remove images no longer referenced by the draft, the published page or the card.
     const keep = new Set([
@@ -207,7 +257,10 @@ export function DepartmentWorkspace() {
       ...(mode === "draft" && publishedPage ? pageImageUrls(publishedPage) : []),
       row?.["card_image_url"] ?? "",
     ]);
-    const previous = [...(baseline ? pageImageUrls(baseline.page) : []), ...(publishedPage ? pageImageUrls(publishedPage) : [])];
+    const previous = [
+      ...(baseline ? pageImageUrls(baseline.page) : []),
+      ...(publishedPage ? pageImageUrls(publishedPage) : []),
+    ];
     await removeImages([...previous, ...uploads.current].filter((u) => !keep.has(u)));
     uploads.current.clear();
   };
@@ -238,7 +291,10 @@ export function DepartmentWorkspace() {
   });
   const unpublish = useMutation({
     mutationFn: async () => {
-      const { error: e } = await db.from("departments").update({ published: false }).eq("id", departmentId);
+      const { error: e } = await db
+        .from("departments")
+        .update({ published: false })
+        .eq("id", departmentId);
       if (e) throw e;
     },
     onSuccess: async () => {
@@ -259,7 +315,8 @@ export function DepartmentWorkspace() {
   };
 
   const busy = saveDraft.isPending || publish.isPending || unpublish.isPending;
-  const set = <K extends keyof DepartmentPage>(key: K, value: DepartmentPage[K]) => setPage((p) => ({ ...p, [key]: value }));
+  const set = <K extends keyof DepartmentPage>(key: K, value: DepartmentPage[K]) =>
+    setPage((p) => ({ ...p, [key]: value }));
   const onUpload = (url: string) => uploads.current.add(url);
 
   const configured: Record<SectionKey, boolean> = {
@@ -296,7 +353,11 @@ export function DepartmentWorkspace() {
   if (record.isError || !row)
     return (
       <AdminShell title="Department workspace" requires="content.write">
-        {record.isError ? <AdminDataError error={record.error} /> : <AdminError message="This department could not be found." />}
+        {record.isError ? (
+          <AdminDataError error={record.error} />
+        ) : (
+          <AdminError message="This department could not be found." />
+        )}
         <Button asChild variant="outline" className="mt-4">
           <Link to="/_admin/departments">Back to Departments</Link>
         </Button>
@@ -304,31 +365,60 @@ export function DepartmentWorkspace() {
     );
 
   const goto = (key: string) =>
-    void navigate({ to: "/_admin/departments/$departmentId/$section", params: { departmentId, section: key } });
+    void navigate({
+      to: "/_admin/departments/$departmentId/$section",
+      params: { departmentId, section: key },
+    });
   const index = SECTIONS.findIndex((s) => s.key === active);
 
   return (
-    <AdminShell title={identity.name || "Department"} description="Department workspace" requires="content.write">
+    <AdminShell
+      title={identity.name || "Department"}
+      description="Department workspace"
+      requires="content.write"
+    >
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <Link to="/_admin/departments" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+          <Link
+            to="/_admin/departments"
+            className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="size-4" /> Back to Departments
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <h2 className="text-2xl font-semibold">{identity.name || "Untitled department"}</h2>
-            <StatusBadge status={published ? "Published" : "Draft"} tone={published ? "positive" : "neutral"} />
-            {hasDraftChanges && published ? <span className="text-xs font-medium text-muted-foreground">Unpublished changes</span> : null}
-            {dirty ? <span className="text-xs font-medium text-brand-accent">Unsaved edits</span> : null}
+            <StatusBadge
+              status={published ? "Published" : "Draft"}
+              tone={published ? "positive" : "neutral"}
+            />
+            {hasDraftChanges && published ? (
+              <span className="text-xs font-medium text-muted-foreground">Unpublished changes</span>
+            ) : null}
+            {dirty ? (
+              <span className="text-xs font-medium text-brand-accent">Unsaved edits</span>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" disabled={!dirty || busy} onClick={cancel}>Cancel</Button>
-          <Button type="button" variant="outline" disabled={busy} onClick={() => saveDraft.mutate()}>
+          <Button type="button" variant="outline" disabled={!dirty || busy} onClick={cancel}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() => saveDraft.mutate()}
+          >
             {saveDraft.isPending ? "Saving…" : "Save Draft"}
           </Button>
           <Button asChild variant="outline">
-            <a href={`/departments/${row["slug"]}?preview=1`} target="_blank" rel="noreferrer" title={dirty ? "Save the draft first to preview your latest edits." : undefined}>
+            <a
+              href={`/departments/${row["slug"]}?preview=1`}
+              target="_blank"
+              rel="noreferrer"
+              title={dirty ? "Save the draft first to preview your latest edits." : undefined}
+            >
               <ExternalLink className="size-4" /> Preview
             </a>
           </Button>
@@ -339,7 +429,11 @@ export function DepartmentWorkspace() {
           ) : null}
         </div>
       </div>
-      {error ? <div className="mt-4"><AdminError message={error} /></div> : null}
+      {error ? (
+        <div className="mt-4">
+          <AdminError message={error} />
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="min-w-0">
@@ -351,11 +445,17 @@ export function DepartmentWorkspace() {
               onChange={(e) => goto(e.target.value)}
             >
               {SECTIONS.map((s, i) => (
-                <option key={s.key} value={s.key}>{`${String(i + 1).padStart(2, "0")} ${s.label}`}</option>
+                <option
+                  key={s.key}
+                  value={s.key}
+                >{`${String(i + 1).padStart(2, "0")} ${s.label}`}</option>
               ))}
             </select>
           </label>
-          <nav aria-label="Department sections" className="sticky top-24 hidden border border-border bg-background lg:block">
+          <nav
+            aria-label="Department sections"
+            className="sticky top-24 hidden border border-border bg-background lg:block"
+          >
             <ul>
               {SECTIONS.map((s, i) => {
                 const isActive = s.key === active;
@@ -368,12 +468,22 @@ export function DepartmentWorkspace() {
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "flex min-h-11 items-center gap-3 border-l-2 px-3 py-2 text-sm",
-                        isActive ? "border-brand-accent bg-secondary font-semibold text-foreground" : "border-transparent text-muted-foreground hover:bg-secondary/60",
+                        isActive
+                          ? "border-brand-accent bg-secondary font-semibold text-foreground"
+                          : "border-transparent text-muted-foreground hover:bg-secondary/60",
                       )}
                     >
-                      <span className="w-5 font-heading text-xs tabular-nums text-brand-accent">{String(i + 1).padStart(2, "0")}</span>
-                      <span className={cn("flex-1", off && "line-through opacity-60")}>{s.label}</span>
-                      {configured[s.key] ? <CheckCircle2 className="size-3.5 text-primary" aria-label="Configured" /> : <Circle className="size-3 opacity-30" aria-hidden />}
+                      <span className="w-5 font-heading text-xs tabular-nums text-brand-accent">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className={cn("flex-1", off && "line-through opacity-60")}>
+                        {s.label}
+                      </span>
+                      {configured[s.key] ? (
+                        <CheckCircle2 className="size-3.5 text-primary" aria-label="Configured" />
+                      ) : (
+                        <Circle className="size-3 opacity-30" aria-hidden />
+                      )}
                     </Link>
                   </li>
                 );
@@ -384,32 +494,101 @@ export function DepartmentWorkspace() {
 
         <div className="min-w-0">
           {active === "identity" ? (
-            <Panel title="Identity & Hero" description="Department details and the top of the public page. Name, slug and descriptions also appear on the Department Card.">
-              {!hasPageContent(row["page_draft"]) && !hasPageContent(row["page_published"]) && getDepartmentPresentation(row["slug"]) ? (
+            <Panel
+              title="Identity & Hero"
+              description="Department details and the top of the public page. Name, slug and descriptions also appear on the Department Card."
+            >
+              {!hasPageContent(row["page_draft"]) &&
+              !hasPageContent(row["page_published"]) &&
+              getDepartmentPresentation(row["slug"]) ? (
                 <div className="flex flex-col gap-3 border border-border bg-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm text-muted-foreground">This department's page currently shows its approved design text. Load that text here to edit it (images are not copied).</p>
-                  <Button type="button" variant="outline" onClick={() => { const next = pageFromPresentation(row["slug"], page); if (next) setPage(next); }}>
+                  <p className="text-sm text-muted-foreground">
+                    This department's page currently shows its approved design text. Load that text
+                    here to edit it (images are not copied).
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const next = pageFromPresentation(row["slug"], page);
+                      if (next) setPage(next);
+                    }}
+                  >
                     Load current page text
                   </Button>
                 </div>
               ) : null}
               <Grid>
-                <Field label="Department name" required><Input value={identity.name} onChange={(e) => setIdentity({ ...identity, name: e.target.value })} /></Field>
-                <Field label="Slug" help="Web address: /departments/slug"><Input value={identity.slug} onChange={(e) => setIdentity({ ...identity, slug: e.target.value.toLowerCase() })} /></Field>
-                <Field label="Short description" wide count={[identity.short_description.length, 180]}>
-                  <Textarea rows={2} value={identity.short_description} onChange={(e) => setIdentity({ ...identity, short_description: e.target.value })} />
+                <Field label="Department name" required>
+                  <Input
+                    value={identity.name}
+                    onChange={(e) => setIdentity({ ...identity, name: e.target.value })}
+                  />
                 </Field>
-                <Field label="Full description" wide help="Used as the About introduction when that section has no introduction of its own.">
-                  <Textarea rows={4} value={identity.description} onChange={(e) => setIdentity({ ...identity, description: e.target.value })} />
+                <Field label="Slug" help="Web address: /departments/slug">
+                  <Input
+                    value={identity.slug}
+                    onChange={(e) =>
+                      setIdentity({ ...identity, slug: e.target.value.toLowerCase() })
+                    }
+                  />
+                </Field>
+                <Field
+                  label="Short description"
+                  wide
+                  count={[identity.short_description.length, 180]}
+                >
+                  <Textarea
+                    rows={2}
+                    value={identity.short_description}
+                    onChange={(e) =>
+                      setIdentity({ ...identity, short_description: e.target.value })
+                    }
+                  />
+                </Field>
+                <Field
+                  label="Full description"
+                  wide
+                  help="Used as the About introduction when that section has no introduction of its own."
+                >
+                  <Textarea
+                    rows={4}
+                    value={identity.description}
+                    onChange={(e) => setIdentity({ ...identity, description: e.target.value })}
+                  />
                 </Field>
               </Grid>
-              <SubHeading title="Hero" toggle={<Toggle checked={page.hero.enabled} onChange={(v) => set("hero", { ...page.hero, enabled: v })} />} />
+              <SubHeading
+                title="Hero"
+                toggle={
+                  <Toggle
+                    checked={page.hero.enabled}
+                    onChange={(v) => set("hero", { ...page.hero, enabled: v })}
+                  />
+                }
+              />
               <Grid>
-                <Field label="Hero headline" wide help="One line per row. The last row is shown in navy.">
-                  <Textarea rows={4} value={page.hero.headline} onChange={(e) => set("hero", { ...page.hero, headline: e.target.value })} />
+                <Field
+                  label="Hero headline"
+                  wide
+                  help="One line per row. The last row is shown in navy."
+                >
+                  <Textarea
+                    rows={4}
+                    value={page.hero.headline}
+                    onChange={(e) => set("hero", { ...page.hero, headline: e.target.value })}
+                  />
                 </Field>
-                <Field label="Hero introduction" wide help="Leave empty to use the short description.">
-                  <Textarea rows={3} value={page.hero.intro} onChange={(e) => set("hero", { ...page.hero, intro: e.target.value })} />
+                <Field
+                  label="Hero introduction"
+                  wide
+                  help="Leave empty to use the short description."
+                >
+                  <Textarea
+                    rows={3}
+                    value={page.hero.intro}
+                    onChange={(e) => set("hero", { ...page.hero, intro: e.target.value })}
+                  />
                 </Field>
                 <ImageField
                   label="Hero image"
@@ -419,90 +598,232 @@ export function DepartmentWorkspace() {
                   onUpload={onUpload}
                 />
                 <Field label="Hero image alt text" wide count={[page.hero.image_alt.length, 160]}>
-                  <Input value={page.hero.image_alt} maxLength={160} onChange={(e) => set("hero", { ...page.hero, image_alt: e.target.value })} />
+                  <Input
+                    value={page.hero.image_alt}
+                    maxLength={160}
+                    onChange={(e) => set("hero", { ...page.hero, image_alt: e.target.value })}
+                  />
                 </Field>
               </Grid>
               <div className="grid gap-3 sm:grid-cols-3">
-                <Toggle label="Show Book Appointment" checked={page.hero.show_book} onChange={(v) => set("hero", { ...page.hero, show_book: v })} />
-                <Toggle label="Show Contact Hospital" checked={page.hero.show_contact} onChange={(v) => set("hero", { ...page.hero, show_contact: v })} />
-                <Toggle label="Show Meet Our Specialists" checked={page.hero.show_specialists} onChange={(v) => set("hero", { ...page.hero, show_specialists: v })} />
+                <Toggle
+                  label="Show Book Appointment"
+                  checked={page.hero.show_book}
+                  onChange={(v) => set("hero", { ...page.hero, show_book: v })}
+                />
+                <Toggle
+                  label="Show Contact Hospital"
+                  checked={page.hero.show_contact}
+                  onChange={(v) => set("hero", { ...page.hero, show_contact: v })}
+                />
+                <Toggle
+                  label="Show Meet Our Specialists"
+                  checked={page.hero.show_specialists}
+                  onChange={(v) => set("hero", { ...page.hero, show_specialists: v })}
+                />
               </div>
             </Panel>
           ) : null}
 
           {active === "about" ? (
-            <ListPanel title="About Department" itemName="highlight" emptyText="No highlights added." value={page.about} onChange={(v) => set("about", v)}
-              introHelp="Leave empty to use the department's full description." />
+            <ListPanel
+              title="About Department"
+              itemName="highlight"
+              emptyText="No highlights added."
+              value={page.about}
+              onChange={(v) => set("about", v)}
+              introHelp="Leave empty to use the department's full description."
+            />
           ) : null}
           {active === "care" ? (
-            <ListPanel title="Specialized Care" itemName="care area" emptyText="No care areas added." value={page.care} onChange={(v) => set("care", v)}
-              titleHelp="One line per row. Leave empty for “Specialized [Department] Care”." />
+            <ListPanel
+              title="Specialized Care"
+              itemName="care area"
+              emptyText="No care areas added."
+              value={page.care}
+              onChange={(v) => set("care", v)}
+              titleHelp="One line per row. Leave empty for “Specialized [Department] Care”."
+            />
           ) : null}
           {active === "conditions" ? (
-            <ListPanel title="Conditions We Treat" itemName="condition" nameLabel="Name" textOptional emptyText="No conditions added." value={page.conditions} onChange={(v) => set("conditions", v)} />
+            <ListPanel
+              title="Conditions We Treat"
+              itemName="condition"
+              nameLabel="Name"
+              textOptional
+              emptyText="No conditions added."
+              value={page.conditions}
+              onChange={(v) => set("conditions", v)}
+            />
           ) : null}
           {active === "specialists" ? (
-            <Panel title="Specialists" description="Links existing doctors to this department. Doctor profiles are edited in the Doctor workspace. Changes here apply immediately.">
-              <Toggle label="Show the specialists section" checked={page.specialists.enabled} onChange={(v) => set("specialists", { enabled: v })} />
+            <Panel
+              title="Specialists"
+              description="Links existing doctors to this department. Doctor profiles are edited in the Doctor workspace. Changes here apply immediately."
+            >
+              <Toggle
+                label="Show the specialists section"
+                checked={page.specialists.enabled}
+                onChange={(v) => set("specialists", { enabled: v })}
+              />
               <SpecialistsManager departmentId={departmentId} />
             </Panel>
           ) : null}
           {active === "facilities" ? (
-            <ListPanel title="Facilities & Technology" itemName="facility point" textOptional emptyText="No facilities added." value={page.facilities}
+            <ListPanel
+              title="Facilities & Technology"
+              itemName="facility point"
+              textOptional
+              emptyText="No facilities added."
+              value={page.facilities}
               onChange={(v) => set("facilities", { ...page.facilities, ...v })}
               extra={
                 <Grid>
-                  <ImageField label="Feature image" url={page.facilities.image_url} onChange={(url) => set("facilities", { ...page.facilities, image_url: url })} onUpload={onUpload} />
-                  <Field label="Feature image alt text" wide count={[page.facilities.image_alt.length, 160]}>
-                    <Input value={page.facilities.image_alt} maxLength={160} onChange={(e) => set("facilities", { ...page.facilities, image_alt: e.target.value })} />
+                  <ImageField
+                    label="Feature image"
+                    url={page.facilities.image_url}
+                    onChange={(url) => set("facilities", { ...page.facilities, image_url: url })}
+                    onUpload={onUpload}
+                  />
+                  <Field
+                    label="Feature image alt text"
+                    wide
+                    count={[page.facilities.image_alt.length, 160]}
+                  >
+                    <Input
+                      value={page.facilities.image_alt}
+                      maxLength={160}
+                      onChange={(e) =>
+                        set("facilities", { ...page.facilities, image_alt: e.target.value })
+                      }
+                    />
                   </Field>
                 </Grid>
               }
             />
           ) : null}
           {active === "approach" ? (
-            <ListPanel title="The Millennium Approach" itemName="principle" titleLabel="Main statement" emptyText="No principles added." value={page.approach} onChange={(v) => set("approach", v)}
-              titleHelp="One line per row. The last row is shown in navy." />
+            <ListPanel
+              title="The Millennium Approach"
+              itemName="principle"
+              titleLabel="Main statement"
+              emptyText="No principles added."
+              value={page.approach}
+              onChange={(v) => set("approach", v)}
+              titleHelp="One line per row. The last row is shown in navy."
+            />
           ) : null}
           {active === "faqs" ? (
-            <Panel title="FAQs" description="Links existing FAQs to this department. FAQ wording is edited in the FAQ area. Changes here apply immediately; the section is hidden when none are linked.">
-              <Toggle label="Show the FAQ section" checked={page.faqs.enabled} onChange={(v) => set("faqs", { enabled: v })} />
+            <Panel
+              title="FAQs"
+              description="Links existing FAQs to this department. FAQ wording is edited in the FAQ area. Changes here apply immediately; the section is hidden when none are linked."
+            >
+              <Toggle
+                label="Show the FAQ section"
+                checked={page.faqs.enabled}
+                onChange={(v) => set("faqs", { enabled: v })}
+              />
               <LinkManager kind="faq" departmentId={departmentId} />
             </Panel>
           ) : null}
           {active === "media" ? (
-            <Panel title="Media" description="Links existing Media & Content items to this department. Changes here apply immediately; the section is hidden when none are linked.">
-              <Toggle label="Show the media section" checked={page.media.enabled} onChange={(v) => set("media", { enabled: v })} />
+            <Panel
+              title="Media"
+              description="Links existing Media & Content items to this department. Changes here apply immediately; the section is hidden when none are linked."
+            >
+              <Toggle
+                label="Show the media section"
+                checked={page.media.enabled}
+                onChange={(v) => set("media", { enabled: v })}
+              />
               <LinkManager kind="media" departmentId={departmentId} />
             </Panel>
           ) : null}
-          {active === "seo" ? <SeoPanel page={page} identity={identity} cardImage={row["card_image_url"]} onChange={(v) => set("seo", v)} onUpload={onUpload} /> : null}
+          {active === "seo" ? (
+            <SeoPanel
+              page={page}
+              identity={identity}
+              cardImage={row["card_image_url"]}
+              onChange={(v) => set("seo", v)}
+              onUpload={onUpload}
+            />
+          ) : null}
           {active === "publishing" ? (
-            <Panel title="Publishing" description="Saving a draft never changes the public page. Publishing copies the saved content to the website.">
+            <Panel
+              title="Publishing"
+              description="Saving a draft never changes the public page. Publishing copies the saved content to the website."
+            >
               <dl className="grid gap-4 border border-border p-4 sm:grid-cols-3">
                 <Meta label="Current status" value={published ? "Published" : "Draft"} />
                 <Meta label="Last saved" value={formatDate(row["page_draft_saved_at"])} />
                 <Meta label="Last published" value={formatDate(row["page_published_at"])} />
               </dl>
-              {hasDraftChanges ? <p className="text-sm text-muted-foreground">The saved draft differs from the published page.</p> : null}
+              {hasDraftChanges ? (
+                <p className="text-sm text-muted-foreground">
+                  The saved draft differs from the published page.
+                </p>
+              ) : null}
               <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" disabled={busy} onClick={() => saveDraft.mutate()}>Save Draft</Button>
-                <Button asChild variant="outline"><a href={`/departments/${row["slug"]}?preview=1`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /> Preview</a></Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => saveDraft.mutate()}
+                >
+                  Save Draft
+                </Button>
+                <Button asChild variant="outline">
+                  <a
+                    href={`/departments/${row["slug"]}?preview=1`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExternalLink className="size-4" /> Preview
+                  </a>
+                </Button>
                 {canPublish ? (
                   <>
-                    <Button type="button" disabled={busy} onClick={() => publish.mutate()}><Send className="size-4" /> Publish</Button>
-                    {published ? <Button type="button" variant="outline" className="text-destructive" disabled={busy} onClick={() => unpublish.mutate()}>Unpublish</Button> : null}
+                    <Button type="button" disabled={busy} onClick={() => publish.mutate()}>
+                      <Send className="size-4" /> Publish
+                    </Button>
+                    {published ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="text-destructive"
+                        disabled={busy}
+                        onClick={() => unpublish.mutate()}
+                      >
+                        Unpublish
+                      </Button>
+                    ) : null}
                   </>
                 ) : (
-                  <p className="self-center text-sm text-muted-foreground">Your role can save drafts. Publishing is done by an editor or admin.</p>
+                  <p className="self-center text-sm text-muted-foreground">
+                    Your role can save drafts. Publishing is done by an editor or admin.
+                  </p>
                 )}
               </div>
             </Panel>
           ) : null}
 
           <div className="mt-8 flex justify-between gap-3 border-t border-border pt-4">
-            <Button type="button" variant="ghost" disabled={index <= 0} onClick={() => goto(SECTIONS[index - 1]!.key)}>Previous</Button>
-            <Button type="button" variant="ghost" disabled={index >= SECTIONS.length - 1} onClick={() => goto(SECTIONS[index + 1]!.key)}>Next</Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={index <= 0}
+              onClick={() => goto(SECTIONS[index - 1]!.key)}
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={index >= SECTIONS.length - 1}
+              onClick={() => goto(SECTIONS[index + 1]!.key)}
+            >
+              Next
+            </Button>
           </div>
         </div>
       </div>
@@ -518,18 +839,30 @@ function formatDate(v: unknown) {
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
       <dd className="mt-1 font-medium">{value}</dd>
     </div>
   );
 }
 
-function Panel({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+function Panel({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
   return (
     <section className="grid gap-5">
       <header className="border-b border-border pb-4">
         <h3 className="text-xl font-semibold">{title}</h3>
-        {description ? <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
+        {description ? (
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+        ) : null}
       </header>
       {children}
     </section>
@@ -549,12 +882,38 @@ function Grid({ children }: { children: ReactNode }) {
   return <div className="grid gap-4 md:grid-cols-2">{children}</div>;
 }
 
-function Field({ label, help, required, wide, count, children }: { label: string; help?: string | undefined; required?: boolean; wide?: boolean; count?: [number, number]; children: ReactNode }) {
+function Field({
+  label,
+  help,
+  required,
+  wide,
+  count,
+  children,
+}: {
+  label: string;
+  help?: string | undefined;
+  required?: boolean;
+  wide?: boolean;
+  count?: [number, number];
+  children: ReactNode;
+}) {
   return (
     <div className={cn("grid gap-1.5", wide && "md:col-span-2")}>
       <div className="flex items-baseline justify-between gap-3">
-        <Label>{label}{required ? <span className="text-brand-accent"> *</span> : null}</Label>
-        {count ? <span className={cn("text-xs tabular-nums", count[0] > count[1] ? "text-destructive" : "text-muted-foreground")}>{count[0]}/{count[1]}</span> : null}
+        <Label>
+          {label}
+          {required ? <span className="text-brand-accent"> *</span> : null}
+        </Label>
+        {count ? (
+          <span
+            className={cn(
+              "text-xs tabular-nums",
+              count[0] > count[1] ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            {count[0]}/{count[1]}
+          </span>
+        ) : null}
       </div>
       {children}
       {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
@@ -562,7 +921,15 @@ function Field({ label, help, required, wide, count, children }: { label: string
   );
 }
 
-function Toggle({ label, checked, onChange }: { label?: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="inline-flex min-h-10 cursor-pointer items-center gap-2.5 text-sm font-medium">
       <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} />
@@ -605,46 +972,130 @@ function ListPanel({
     setItems(next);
   };
   return (
-    <Panel title={title} description="Only enabled items with a title appear on the public page. The section is hidden when it has no content.">
+    <Panel
+      title={title}
+      description="Only enabled items with a title appear on the public page. The section is hidden when it has no content."
+    >
       <Toggle checked={value.enabled} onChange={(v) => onChange({ ...value, enabled: v })} />
       <Grid>
-        <Field label="Section label"><Input value={value.label} onChange={(e) => onChange({ ...value, label: e.target.value })} /></Field>
+        <Field label="Section label">
+          <Input
+            value={value.label}
+            onChange={(e) => onChange({ ...value, label: e.target.value })}
+          />
+        </Field>
         <Field label={titleLabel} help={titleHelp}>
-          <Textarea rows={2} value={value.title} onChange={(e) => onChange({ ...value, title: e.target.value })} />
+          <Textarea
+            rows={2}
+            value={value.title}
+            onChange={(e) => onChange({ ...value, title: e.target.value })}
+          />
         </Field>
         <Field label="Introduction" wide help={introHelp}>
-          <Textarea rows={3} value={value.intro} onChange={(e) => onChange({ ...value, intro: e.target.value })} />
+          <Textarea
+            rows={3}
+            value={value.intro}
+            onChange={(e) => onChange({ ...value, intro: e.target.value })}
+          />
         </Field>
       </Grid>
       {extra}
-      <SubHeading title={`${itemName.charAt(0).toUpperCase()}${itemName.slice(1)}s (${items.length})`} />
+      <SubHeading
+        title={`${itemName.charAt(0).toUpperCase()}${itemName.slice(1)}s (${items.length})`}
+      />
       {items.length ? (
         <ol className="grid border-t border-border">
           {items.map((item, i) => (
-            <li key={item.id} className={cn("grid gap-3 border-b border-border py-4 md:grid-cols-[2rem_minmax(0,1fr)_auto]", !item.enabled && "opacity-60")}>
-              <span className="font-heading text-sm font-semibold tabular-nums text-brand-accent">{String(i + 1).padStart(2, "0")}</span>
+            <li
+              key={item.id}
+              className={cn(
+                "grid gap-3 border-b border-border py-4 md:grid-cols-[2rem_minmax(0,1fr)_auto]",
+                !item.enabled && "opacity-60",
+              )}
+            >
+              <span className="font-heading text-sm font-semibold tabular-nums text-brand-accent">
+                {String(i + 1).padStart(2, "0")}
+              </span>
               <div className="grid gap-2">
-                <Input aria-label={`${itemName} ${i + 1} ${nameLabel.toLowerCase()}`} placeholder={nameLabel} value={item.title}
-                  onChange={(e) => setItems(items.map((x) => (x.id === item.id ? { ...x, title: e.target.value } : x)))} />
-                <Textarea aria-label={`${itemName} ${i + 1} description`} rows={2} placeholder={textOptional ? "Short description (optional)" : "Short description"} value={item.text}
-                  onChange={(e) => setItems(items.map((x) => (x.id === item.id ? { ...x, text: e.target.value } : x)))} />
+                <Input
+                  aria-label={`${itemName} ${i + 1} ${nameLabel.toLowerCase()}`}
+                  placeholder={nameLabel}
+                  value={item.title}
+                  onChange={(e) =>
+                    setItems(
+                      items.map((x) => (x.id === item.id ? { ...x, title: e.target.value } : x)),
+                    )
+                  }
+                />
+                <Textarea
+                  aria-label={`${itemName} ${i + 1} description`}
+                  rows={2}
+                  placeholder={textOptional ? "Short description (optional)" : "Short description"}
+                  value={item.text}
+                  onChange={(e) =>
+                    setItems(
+                      items.map((x) => (x.id === item.id ? { ...x, text: e.target.value } : x)),
+                    )
+                  }
+                />
               </div>
               <div className="flex flex-wrap items-start gap-1 md:flex-col md:items-end">
-                <Toggle label={item.enabled ? "Enabled" : "Disabled"} checked={item.enabled} onChange={(v) => setItems(items.map((x) => (x.id === item.id ? { ...x, enabled: v } : x)))} />
+                <Toggle
+                  label={item.enabled ? "Enabled" : "Disabled"}
+                  checked={item.enabled}
+                  onChange={(v) =>
+                    setItems(items.map((x) => (x.id === item.id ? { ...x, enabled: v } : x)))
+                  }
+                />
                 <div className="flex gap-1">
-                  <Button type="button" size="icon" variant="ghost" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp className="size-4" /></Button>
-                  <Button type="button" size="icon" variant="ghost" aria-label="Move down" disabled={i === items.length - 1} onClick={() => move(i, 1)}><ArrowDown className="size-4" /></Button>
-                  <Button type="button" size="icon" variant="ghost" aria-label={`Remove ${itemName}`} className="text-destructive" onClick={() => setItems(items.filter((x) => x.id !== item.id))}><Trash2 className="size-4" /></Button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Move up"
+                    disabled={i === 0}
+                    onClick={() => move(i, -1)}
+                  >
+                    <ArrowUp className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Move down"
+                    disabled={i === items.length - 1}
+                    onClick={() => move(i, 1)}
+                  >
+                    <ArrowDown className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    aria-label={`Remove ${itemName}`}
+                    className="text-destructive"
+                    onClick={() => setItems(items.filter((x) => x.id !== item.id))}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
                 </div>
               </div>
             </li>
           ))}
         </ol>
       ) : (
-        <p className="border border-dashed border-border p-5 text-sm text-muted-foreground">{emptyText}</p>
+        <p className="border border-dashed border-border p-5 text-sm text-muted-foreground">
+          {emptyText}
+        </p>
       )}
       <div>
-        <Button type="button" variant="outline" onClick={() => setItems([...items, { id: newItemId(), title: "", text: "", enabled: true }])}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() =>
+            setItems([...items, { id: newItemId(), title: "", text: "", enabled: true }])
+          }
+        >
           <Plus className="size-4" /> Add {itemName}
         </Button>
       </div>
@@ -652,20 +1103,36 @@ function ListPanel({
   );
 }
 
-function ImageField({ label, url, onChange, onUpload, fallbackNote }: { label: string; url: string; onChange: (url: string) => void; onUpload: (url: string) => void; fallbackNote?: string }) {
+function ImageField({
+  label,
+  url,
+  onChange,
+  onUpload,
+  fallbackNote,
+}: {
+  label: string;
+  url: string;
+  onChange: (url: string) => void;
+  onUpload: (url: string) => void;
+  fallbackNote?: string;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const upload = async (file?: File) => {
     if (!file) return;
-    if (!allowedImageTypes.includes(file.type)) return setMessage("Please upload a JPG, PNG, or WebP image.");
-    if (file.size > maxImageBytes) return setMessage("Image is too large. Please upload a smaller image (up to 5 MB).");
+    if (!allowedImageTypes.includes(file.type))
+      return setMessage("Please upload a JPG, PNG, or WebP image.");
+    if (file.size > maxImageBytes)
+      return setMessage("Image is too large. Please upload a smaller image (up to 5 MB).");
     setMessage(null);
     setBusy(true);
     try {
       const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
       const path = `${imageFolder}/${crypto.randomUUID()}/page.${ext}`;
-      const { error } = await supabase.storage.from(imageBucket).upload(path, file, { contentType: file.type, upsert: false });
+      const { error } = await supabase.storage
+        .from(imageBucket)
+        .upload(path, file, { contentType: file.type, upsert: false });
       if (error) throw error;
       const next = `${imageEndpoint}?path=${encodeURIComponent(path)}`;
       const check = await fetch(next, { cache: "no-store" });
@@ -687,55 +1154,154 @@ function ImageField({ label, url, onChange, onUpload, fallbackNote }: { label: s
       <Label>{label}</Label>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="grid h-28 w-44 shrink-0 place-items-center overflow-hidden border border-border bg-secondary">
-          {url ? <img src={url} alt="" className="size-full object-cover" /> : <ImagePlus className="size-6 text-muted-foreground" aria-hidden />}
+          {url ? (
+            <img src={url} alt="" className="size-full object-cover" />
+          ) : (
+            <ImagePlus className="size-6 text-muted-foreground" aria-hidden />
+          )}
         </div>
         <div className="grid gap-2">
-          <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => void upload(e.target.files?.[0])} aria-label={`Upload ${label.toLowerCase()}`} />
+          <input
+            ref={input}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            onChange={(e) => void upload(e.target.files?.[0])}
+            aria-label={`Upload ${label.toLowerCase()}`}
+          />
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" disabled={busy} onClick={() => input.current?.click()}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => input.current?.click()}
+            >
               <Upload className="size-4" /> {busy ? "Uploading…" : url ? "Replace" : "Upload"}
             </Button>
-            {url ? <Button type="button" variant="ghost" className="text-destructive" onClick={() => onChange("")}><Trash2 className="size-4" /> Remove</Button> : null}
+            {url ? (
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive"
+                onClick={() => onChange("")}
+              >
+                <Trash2 className="size-4" /> Remove
+              </Button>
+            ) : null}
           </div>
-          <p className="text-xs text-muted-foreground">JPG, PNG or WebP, up to 5 MB. The previous image is deleted only after a successful save.{fallbackNote ? ` ${fallbackNote}` : ""}</p>
-          {message ? <p className="text-xs text-destructive" role="alert">{message}</p> : null}
+          <p className="text-xs text-muted-foreground">
+            JPG, PNG or WebP, up to 5 MB. The previous image is deleted only after a successful
+            save.{fallbackNote ? ` ${fallbackNote}` : ""}
+          </p>
+          {message ? (
+            <p className="text-xs text-destructive" role="alert">
+              {message}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
   );
 }
 
-function SeoPanel({ page, identity, cardImage, onChange, onUpload }: { page: DepartmentPage; identity: Identity; cardImage: string | null; onChange: (v: DepartmentPage["seo"]) => void; onUpload: (url: string) => void }) {
+function SeoPanel({
+  page,
+  identity,
+  cardImage,
+  onChange,
+  onUpload,
+}: {
+  page: DepartmentPage;
+  identity: Identity;
+  cardImage: string | null;
+  onChange: (v: DepartmentPage["seo"]) => void;
+  onUpload: (url: string) => void;
+}) {
   const seo = page.seo;
   const title = seo.title || `${identity.name} | The Millennium Hospital`;
   const description = seo.description || identity.short_description || identity.description;
   const checks: { ok: boolean; text: string }[] = [
-    { ok: title.length >= 30 && title.length <= 60, text: `SEO title is ${title.length} characters (recommended 30–60)${seo.title ? "" : " — using the default"}.` },
-    { ok: description.length >= 70 && description.length <= 160, text: `Meta description is ${description.length} characters (recommended 70–160)${seo.description ? "" : " — using the default"}.` },
-    { ok: Boolean(seo.canonical_url), text: seo.canonical_url ? "Canonical URL is set." : "No canonical URL set." },
-    { ok: Boolean(seo.og_image_url || page.hero.image_url || cardImage), text: seo.og_image_url ? "OG image is set." : page.hero.image_url || cardImage ? "No OG image set — the hero or card image is used." : "No OG image available." },
-    { ok: seo.index, text: seo.index ? "Search engines may index this page." : "This page asks search engines not to index it." },
+    {
+      ok: title.length >= 30 && title.length <= 60,
+      text: `SEO title is ${title.length} characters (recommended 30–60)${seo.title ? "" : " — using the default"}.`,
+    },
+    {
+      ok: description.length >= 70 && description.length <= 160,
+      text: `Meta description is ${description.length} characters (recommended 70–160)${seo.description ? "" : " — using the default"}.`,
+    },
+    {
+      ok: Boolean(seo.canonical_url),
+      text: seo.canonical_url ? "Canonical URL is set." : "No canonical URL set.",
+    },
+    {
+      ok: Boolean(seo.og_image_url || page.hero.image_url || cardImage),
+      text: seo.og_image_url
+        ? "OG image is set."
+        : page.hero.image_url || cardImage
+          ? "No OG image set — the hero or card image is used."
+          : "No OG image available.",
+    },
+    {
+      ok: seo.index,
+      text: seo.index
+        ? "Search engines may index this page."
+        : "This page asks search engines not to index it.",
+    },
   ];
   return (
-    <Panel title="SEO" description="Leave fields empty to use sensible defaults from the department details.">
+    <Panel
+      title="SEO"
+      description="Leave fields empty to use sensible defaults from the department details."
+    >
       <Grid>
         <Field label="SEO title" wide count={[seo.title.length, 60]}>
-          <Input value={seo.title} placeholder={`${identity.name} | The Millennium Hospital`} onChange={(e) => onChange({ ...seo, title: e.target.value })} />
+          <Input
+            value={seo.title}
+            placeholder={`${identity.name} | The Millennium Hospital`}
+            onChange={(e) => onChange({ ...seo, title: e.target.value })}
+          />
         </Field>
         <Field label="Meta description" wide count={[seo.description.length, 160]}>
-          <Textarea rows={3} value={seo.description} placeholder={identity.short_description || identity.description} onChange={(e) => onChange({ ...seo, description: e.target.value })} />
+          <Textarea
+            rows={3}
+            value={seo.description}
+            placeholder={identity.short_description || identity.description}
+            onChange={(e) => onChange({ ...seo, description: e.target.value })}
+          />
         </Field>
-        <Field label="Canonical URL" wide help="Full https address of this page on the live website.">
-          <Input value={seo.canonical_url} placeholder="https://" onChange={(e) => onChange({ ...seo, canonical_url: e.target.value.trim() })} />
+        <Field
+          label="Canonical URL"
+          wide
+          help="Full https address of this page on the live website."
+        >
+          <Input
+            value={seo.canonical_url}
+            placeholder="https://"
+            onChange={(e) => onChange({ ...seo, canonical_url: e.target.value.trim() })}
+          />
         </Field>
-        <ImageField label="OG image (social sharing)" url={seo.og_image_url} onChange={(url) => onChange({ ...seo, og_image_url: url })} onUpload={onUpload} fallbackNote="Without one, the hero or card image is used." />
+        <ImageField
+          label="OG image (social sharing)"
+          url={seo.og_image_url}
+          onChange={(url) => onChange({ ...seo, og_image_url: url })}
+          onUpload={onUpload}
+          fallbackNote="Without one, the hero or card image is used."
+        />
       </Grid>
-      <Toggle label="Allow search engines to index this page" checked={seo.index} onChange={(v) => onChange({ ...seo, index: v })} />
+      <Toggle
+        label="Allow search engines to index this page"
+        checked={seo.index}
+        onChange={(v) => onChange({ ...seo, index: v })}
+      />
       <SubHeading title="Checks" />
       <ul className="grid gap-2">
         {checks.map((c) => (
           <li key={c.text} className="flex items-start gap-2 text-sm">
-            {c.ok ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" /> : <Circle className="mt-0.5 size-4 shrink-0 text-brand-accent" />}
+            {c.ok ? (
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+            ) : (
+              <Circle className="mt-0.5 size-4 shrink-0 text-brand-accent" />
+            )}
             <span className={c.ok ? "" : "text-foreground"}>{c.text}</span>
           </li>
         ))}
@@ -746,7 +1312,14 @@ function SeoPanel({ page, identity, cardImage, onChange, onUpload }: { page: Dep
 
 /* ---------- Relationship managers (existing records only) ---------- */
 
-type LinkRow = { id: string; order: number; title: string; sub: string; image: string | null; status: string };
+type LinkRow = {
+  id: string;
+  order: number;
+  title: string;
+  sub: string;
+  image: string | null;
+  status: string;
+};
 
 function useReorder(table: string, keyColumn: string, departmentId: string, refresh: () => void) {
   return async (rows: LinkRow[], i: number, d: -1 | 1) => {
@@ -754,7 +1327,13 @@ function useReorder(table: string, keyColumn: string, departmentId: string, refr
     const [x] = next.splice(i, 1);
     next.splice(i + d, 0, x!);
     const results = await Promise.all(
-      next.map((r, idx) => db.from(table).update({ display_order: idx + 1 }).eq("department_id", departmentId).eq(keyColumn, r.id)),
+      next.map((r, idx) =>
+        db
+          .from(table)
+          .update({ display_order: idx + 1 })
+          .eq("department_id", departmentId)
+          .eq(keyColumn, r.id),
+      ),
     );
     const failed = results.find((r: { error: unknown }) => r.error);
     if (failed) toast.error(userFacingDataError(failed.error));
@@ -762,15 +1341,40 @@ function useReorder(table: string, keyColumn: string, departmentId: string, refr
   };
 }
 
-function LinkedList({ rows, empty, onMove, onRemove, removeLabel, busy }: { rows: LinkRow[]; empty: ReactNode; onMove: (i: number, d: -1 | 1) => void; onRemove: (id: string) => void; removeLabel: string; busy: boolean }) {
-  if (!rows.length) return <div className="border border-dashed border-border p-5 text-sm text-muted-foreground">{empty}</div>;
+function LinkedList({
+  rows,
+  empty,
+  onMove,
+  onRemove,
+  removeLabel,
+  busy,
+}: {
+  rows: LinkRow[];
+  empty: ReactNode;
+  onMove: (i: number, d: -1 | 1) => void;
+  onRemove: (id: string) => void;
+  removeLabel: string;
+  busy: boolean;
+}) {
+  if (!rows.length)
+    return (
+      <div className="border border-dashed border-border p-5 text-sm text-muted-foreground">
+        {empty}
+      </div>
+    );
   return (
     <ol className="grid border-t border-border">
       {rows.map((r, i) => (
         <li key={r.id} className="flex flex-wrap items-center gap-3 border-b border-border py-3">
-          <span className="w-6 font-heading text-sm tabular-nums text-brand-accent">{String(i + 1).padStart(2, "0")}</span>
+          <span className="w-6 font-heading text-sm tabular-nums text-brand-accent">
+            {String(i + 1).padStart(2, "0")}
+          </span>
           <div className="grid size-12 shrink-0 place-items-center overflow-hidden bg-secondary">
-            {r.image ? <img src={r.image} alt="" className="size-full object-cover" loading="lazy" /> : <UserRound className="size-5 text-muted-foreground" aria-hidden />}
+            {r.image ? (
+              <img src={r.image} alt="" className="size-full object-cover" loading="lazy" />
+            ) : (
+              <UserRound className="size-5 text-muted-foreground" aria-hidden />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-medium">{r.title}</p>
@@ -778,9 +1382,37 @@ function LinkedList({ rows, empty, onMove, onRemove, removeLabel, busy }: { rows
           </div>
           <StatusBadge status={r.status} tone={r.status === "Published" ? "positive" : "neutral"} />
           <div className="flex gap-1">
-            <Button type="button" size="icon" variant="ghost" aria-label="Move up" disabled={busy || i === 0} onClick={() => onMove(i, -1)}><ArrowUp className="size-4" /></Button>
-            <Button type="button" size="icon" variant="ghost" aria-label="Move down" disabled={busy || i === rows.length - 1} onClick={() => onMove(i, 1)}><ArrowDown className="size-4" /></Button>
-            <Button type="button" size="icon" variant="ghost" aria-label={removeLabel} className="text-destructive" disabled={busy} onClick={() => onRemove(r.id)}><Trash2 className="size-4" /></Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label="Move up"
+              disabled={busy || i === 0}
+              onClick={() => onMove(i, -1)}
+            >
+              <ArrowUp className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label="Move down"
+              disabled={busy || i === rows.length - 1}
+              onClick={() => onMove(i, 1)}
+            >
+              <ArrowDown className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label={removeLabel}
+              className="text-destructive"
+              disabled={busy}
+              onClick={() => onRemove(r.id)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
           </div>
         </li>
       ))}
@@ -788,15 +1420,44 @@ function LinkedList({ rows, empty, onMove, onRemove, removeLabel, busy }: { rows
   );
 }
 
-function Picker({ options, placeholder, onAdd, busy, label }: { options: { id: string; label: string }[]; placeholder: string; onAdd: (id: string) => void; busy: boolean; label: string }) {
+function Picker({
+  options,
+  placeholder,
+  onAdd,
+  busy,
+  label,
+}: {
+  options: { id: string; label: string }[];
+  placeholder: string;
+  onAdd: (id: string) => void;
+  busy: boolean;
+  label: string;
+}) {
   const [value, setValue] = useState("");
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
-      <select aria-label={label} className="h-10 min-w-0 flex-1 border border-input bg-background px-3 text-sm" value={value} onChange={(e) => setValue(e.target.value)}>
+      <select
+        aria-label={label}
+        className="h-10 min-w-0 flex-1 border border-input bg-background px-3 text-sm"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      >
         <option value="">{options.length ? placeholder : "Nothing left to link"}</option>
-        {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+        {options.map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.label}
+          </option>
+        ))}
       </select>
-      <Button type="button" variant="outline" disabled={!value || busy} onClick={() => { onAdd(value); setValue(""); }}>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={!value || busy}
+        onClick={() => {
+          onAdd(value);
+          setValue("");
+        }}
+      >
         <Plus className="size-4" /> {label}
       </Button>
     </div>
@@ -810,8 +1471,15 @@ function SpecialistsManager({ departmentId }: { departmentId: string }) {
     queryKey: key,
     queryFn: async () => {
       const [links, doctors] = await Promise.all([
-        db.from("doctor_departments").select("doctor_id, display_order, is_primary").eq("department_id", departmentId).order("display_order"),
-        db.from("doctors").select("id, name, photo_url, designation, specialty, published").order("name"),
+        db
+          .from("doctor_departments")
+          .select("doctor_id, display_order, is_primary")
+          .eq("department_id", departmentId)
+          .order("display_order"),
+        db
+          .from("doctors")
+          .select("id, name, photo_url, designation, specialty, published")
+          .order("name"),
       ]);
       if (links.error) throw links.error;
       if (doctors.error) throw doctors.error;
@@ -854,10 +1522,15 @@ function SpecialistsManager({ departmentId }: { departmentId: string }) {
         empty={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span>No specialists are currently linked to this department.</span>
-            <Button asChild variant="outline" size="sm"><Link to="/_admin/doctors">Manage Doctors</Link></Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/_admin/doctors">Manage Doctors</Link>
+            </Button>
           </div>
         }
-        onMove={(i, d) => { setBusy(true); void reorder(rows, i, d).finally(() => setBusy(false)); }}
+        onMove={(i, d) => {
+          setBusy(true);
+          void reorder(rows, i, d).finally(() => setBusy(false));
+        }}
         onRemove={(id) => setPendingRemove(id)}
       />
       {pendingRemove ? (
@@ -865,15 +1538,40 @@ function SpecialistsManager({ departmentId }: { departmentId: string }) {
           label="link"
           description={`${byId.get(pendingRemove)?.name ?? "This doctor"} will no longer appear under this department. The doctor profile itself is not changed.`}
           busy={busy}
-          onConfirm={() => void run(() => db.from("doctor_departments").delete().eq("department_id", departmentId).eq("doctor_id", pendingRemove), "Doctor removed from department.").then(() => setPendingRemove(null))}
+          onConfirm={() =>
+            void run(
+              () =>
+                db
+                  .from("doctor_departments")
+                  .delete()
+                  .eq("department_id", departmentId)
+                  .eq("doctor_id", pendingRemove),
+              "Doctor removed from department.",
+            ).then(() => setPendingRemove(null))
+          }
         />
       ) : null}
       <Picker
         label="Link Existing Doctor"
         placeholder="Choose a doctor…"
         busy={busy}
-        options={data.data.doctors.filter((d) => !linked.has(d.id)).map((d) => ({ id: d.id, label: d.name }))}
-        onAdd={(id) => void run(() => db.from("doctor_departments").insert({ doctor_id: id, department_id: departmentId, is_primary: false, display_order: rows.length + 1 }), "Doctor linked to department.")}
+        options={data.data.doctors
+          .filter((d) => !linked.has(d.id))
+          .map((d) => ({ id: d.id, label: d.name }))}
+        onAdd={(id) =>
+          void run(
+            () =>
+              db
+                .from("doctor_departments")
+                .insert({
+                  doctor_id: id,
+                  department_id: departmentId,
+                  is_primary: false,
+                  display_order: rows.length + 1,
+                }),
+            "Doctor linked to department.",
+          )
+        }
       />
     </div>
   );
@@ -882,15 +1580,41 @@ function SpecialistsManager({ departmentId }: { departmentId: string }) {
 function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; departmentId: string }) {
   const cfg =
     kind === "faq"
-      ? { table: "department_faqs", key: "faq_id", source: "faqs", select: "id, question, published", title: (r: any) => r.question, sub: () => "", image: () => null, label: "Link Existing FAQ", noun: "FAQ", empty: "No FAQs linked. The FAQ section is hidden on the public page." }
-      : { table: "media_departments", key: "media_id", source: "media_items", select: "id, title, media_type, thumbnail_url, published", title: (r: any) => r.title, sub: (r: any) => String(r.media_type ?? "").replace(/^./, (c: string) => c.toUpperCase()), image: (r: any) => r.thumbnail_url ?? null, label: "Link Existing Media", noun: "media item", empty: "No media linked. The Media section is hidden on the public page." };
+      ? {
+          table: "department_faqs",
+          key: "faq_id",
+          source: "faqs",
+          select: "id, question, published",
+          title: (r: any) => r.question,
+          sub: () => "",
+          image: () => null,
+          label: "Link Existing FAQ",
+          noun: "FAQ",
+          empty: "No FAQs linked. The FAQ section is hidden on the public page.",
+        }
+      : {
+          table: "media_departments",
+          key: "media_id",
+          source: "media_items",
+          select: "id, title, media_type, thumbnail_url, published",
+          title: (r: any) => r.title,
+          sub: (r: any) => String(r.media_type ?? "").replace(/^./, (c: string) => c.toUpperCase()),
+          image: (r: any) => r.thumbnail_url ?? null,
+          label: "Link Existing Media",
+          noun: "media item",
+          empty: "No media linked. The Media section is hidden on the public page.",
+        };
   const queryClient = useQueryClient();
   const qk = ["admin-department-links", kind, departmentId];
   const data = useQuery({
     queryKey: qk,
     queryFn: async () => {
       const [links, all] = await Promise.all([
-        db.from(cfg.table).select(`${cfg.key}, display_order`).eq("department_id", departmentId).order("display_order"),
+        db
+          .from(cfg.table)
+          .select(`${cfg.key}, display_order`)
+          .eq("department_id", departmentId)
+          .order("display_order"),
         db.from(cfg.source).select(cfg.select).order("display_order"),
       ]);
       if (links.error) throw links.error;
@@ -907,7 +1631,14 @@ function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; department
   const rows: LinkRow[] = data.data.links
     .map((l) => byId.get(l[cfg.key]))
     .filter(Boolean)
-    .map((r, i) => ({ id: r.id, order: i, title: cfg.title(r), sub: cfg.sub(r), image: cfg.image(r), status: r.published ? "Published" : "Draft" }));
+    .map((r, i) => ({
+      id: r.id,
+      order: i,
+      title: cfg.title(r),
+      sub: cfg.sub(r),
+      image: cfg.image(r),
+      status: r.published ? "Published" : "Draft",
+    }));
   const linked = new Set(rows.map((r) => r.id));
   const run = async (fn: () => Promise<{ error: unknown }>, ok: string) => {
     setBusy(true);
@@ -920,22 +1651,46 @@ function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; department
   return (
     <div className="grid gap-4">
       {rows.some((r) => r.status !== "Published") ? (
-        <p className="text-xs text-muted-foreground">Draft items stay hidden on the public page until they are published in their own area.</p>
+        <p className="text-xs text-muted-foreground">
+          Draft items stay hidden on the public page until they are published in their own area.
+        </p>
       ) : null}
       <LinkedList
         rows={rows}
         busy={busy}
         removeLabel={`Remove ${cfg.noun}`}
         empty={cfg.empty}
-        onMove={(i, d) => { setBusy(true); void reorder(rows, i, d).finally(() => setBusy(false)); }}
-        onRemove={(id) => void run(() => db.from(cfg.table).delete().eq("department_id", departmentId).eq(cfg.key, id), `${cfg.noun.charAt(0).toUpperCase()}${cfg.noun.slice(1)} unlinked.`)}
+        onMove={(i, d) => {
+          setBusy(true);
+          void reorder(rows, i, d).finally(() => setBusy(false));
+        }}
+        onRemove={(id) =>
+          void run(
+            () => db.from(cfg.table).delete().eq("department_id", departmentId).eq(cfg.key, id),
+            `${cfg.noun.charAt(0).toUpperCase()}${cfg.noun.slice(1)} unlinked.`,
+          )
+        }
       />
       <Picker
         label={cfg.label}
         placeholder={`Choose ${kind === "faq" ? "an FAQ" : "media"}…`}
         busy={busy}
-        options={data.data.all.filter((r) => !linked.has(r.id)).map((r) => ({ id: r.id, label: `${cfg.title(r)}${r.published ? "" : " (draft)"}` }))}
-        onAdd={(id) => void run(() => db.from(cfg.table).insert({ department_id: departmentId, [cfg.key]: id, display_order: rows.length + 1 }), `${cfg.noun.charAt(0).toUpperCase()}${cfg.noun.slice(1)} linked.`)}
+        options={data.data.all
+          .filter((r) => !linked.has(r.id))
+          .map((r) => ({ id: r.id, label: `${cfg.title(r)}${r.published ? "" : " (draft)"}` }))}
+        onAdd={(id) =>
+          void run(
+            () =>
+              db
+                .from(cfg.table)
+                .insert({
+                  department_id: departmentId,
+                  [cfg.key]: id,
+                  display_order: rows.length + 1,
+                }),
+            `${cfg.noun.charAt(0).toUpperCase()}${cfg.noun.slice(1)} linked.`,
+          )
+        }
       />
     </div>
   );
