@@ -59,7 +59,7 @@ export function DepartmentCard({ department }: { department: Department }) {
             <span className="grid size-14 place-items-center rounded-full bg-background text-primary shadow-[var(--shadow-sm)]"><Layers /></span>
           </div>
         )}
-        <span className="absolute inset-x-0 bottom-0 h-1 bg-accent" aria-hidden="true" />
+        <span className="absolute inset-x-0 bottom-0 h-1 bg-brand-accent" aria-hidden="true" />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="text-lg font-semibold text-foreground">{department.name}</h3>

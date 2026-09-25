@@ -150,7 +150,7 @@ function AvailableContentManager({ type }: { type: ContentType }) {
                 to="/_admin/doctors/$doctorId/$section"
                 params={{ doctorId: "new", section: "profile" }}
               >
-                <Plus className="size-4" /> {type.key === "departments" ? "Add Department" : `New ${type.singular}`}
+                <Plus className="size-4" /> New {type.singular}
               </Link>
             </Button>
           ) : (
