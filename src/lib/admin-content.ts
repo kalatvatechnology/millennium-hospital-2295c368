@@ -542,6 +542,7 @@ export async function saveRecord(
     entityId: id || data?.id,
     summary: `${id ? "Updated" : "Created"} ${type.singular}: ${values[type.titleField] ?? ""}`,
   });
+  return (data?.id as string | undefined) ?? id;
 }
 
 export async function deleteRecord(type: ContentType, id: string, title?: string) {
