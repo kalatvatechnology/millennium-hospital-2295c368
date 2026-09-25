@@ -169,10 +169,11 @@ function ContentWorkspace() {
           values[field.name] !== baseline[field.name] ? managedImagePath(field, values[field.name]) : null,
         ]),
       );
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
-        queryClient.invalidateQueries({ queryKey: ["admin-content-record", type.table, recordId] }),
-      ]);
+      // The record no longer exists: drop its cached query instead of refetching it (which 406s and retries).
+      const recordKey = ["admin-content-record", type.table, recordId];
+      await queryClient.cancelQueries({ queryKey: recordKey });
+      queryClient.removeQueries({ queryKey: recordKey });
+      void queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] });
       void navigate({ to: returnTo });
     },
     onError: (cause: Error) => setError(userFacingDataError(cause)),
