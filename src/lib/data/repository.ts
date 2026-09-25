@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { backendFeatures, usesProductionContract } from "./backend";
 import { siteConfig } from "@/config/site";
+import { hasPageContent, parseDepartmentPage } from "@/lib/department-page";
 import { classifyDataError, DataAccessError } from "./errors";
 import {
   mapDepartment,
@@ -59,20 +60,43 @@ export async function getDepartment(slug: string, preview = false) {
   const department = one(await (preview ? base : published(base)).maybeSingle());
   if (!department) return null;
   if (!usesProductionContract) {
-    const [doctorResult, serviceResult] = await Promise.all([
+    const [doctorResult, serviceResult, faqResult, mediaResult] = await Promise.all([
       db
         .from("doctor_departments")
         .select(
-          "doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name)))",
+          "display_order, doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name)))",
         )
-        .eq("department_id", department["id"]),
+        .eq("department_id", department["id"])
+        .order("display_order"),
       db
         .from("professional_service_departments")
         .select("professional_services(*)")
         .eq("department_id", department["id"]),
+      db
+        .from("department_faqs")
+        .select("display_order, faqs(*)")
+        .eq("department_id", department["id"])
+        .order("display_order"),
+      db
+        .from("media_departments")
+        .select("display_order, media_items(*)")
+        .eq("department_id", department["id"])
+        .order("display_order"),
     ]);
+    const pageSource = preview ? department["page_draft"] : department["page_published"];
     return {
       department: mapDepartment(department),
+      page: hasPageContent(pageSource) ? parseDepartmentPage(pageSource) : null,
+      faqs: (faqResult.error ? [] : rows(faqResult))
+        .map((row) => row["faqs"])
+        .filter(Boolean)
+        .map(mapFaq)
+        .filter((item) => item.status === "published"),
+      media: (mediaResult.error ? [] : rows(mediaResult))
+        .map((row) => row["media_items"])
+        .filter(Boolean)
+        .map(mapMedia)
+        .filter((item) => item.status === "published"),
       doctors: rows(doctorResult)
         .map((row) => row["doctors"])
         .filter(Boolean)
@@ -92,6 +116,9 @@ export async function getDepartment(slug: string, preview = false) {
   const summary = mapDepartment(department);
   return {
     department: summary,
+    page: null as ReturnType<typeof parseDepartmentPage> | null,
+    faqs: [] as Faq[],
+    media: [] as MediaItem[],
     doctors: rows(doctorLinks)
       .map((row) => mapDoctor(row["doctors"] ?? {}, summary))
       .filter((item) => item.status === "published"),
