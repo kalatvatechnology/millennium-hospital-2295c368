@@ -221,7 +221,7 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
           <div className={`${wrap} grid gap-6 py-12 sm:py-16 lg:grid-cols-[0.3fr_0.7fr] lg:gap-10`}>
             <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
               <BigNumber n={num()} />
-              <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>{v.about.label}</p>
+              <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>{v.about.label === "About the department" ? <>About the<br className="hidden lg:block" /> department</> : v.about.label}</p>
             </div>
             <div className="dept-reveal">
               <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{v.about.title || `About ${department.name}`}</h2>
@@ -279,9 +279,9 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
                 {v.conditions.intro ? <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">{v.conditions.intro}</p> : null}
               </div>
               <ul className="flex flex-wrap items-baseline gap-x-3 gap-y-1 sm:gap-x-4" aria-label={`Conditions treated by ${department.name}`}>
-                {v.conditions.items.map((c, i) => (
+                {v.conditions.items.map((c, i, all) => (
                   <li key={`${c}-${i}`} className="font-heading text-[1.9rem] font-medium leading-[1.25] tracking-[-0.02em] text-foreground transition-colors hover:text-primary sm:text-5xl xl:text-[3.6rem]">
-                    {c}{i < v.conditions.items.length - 1 ? <span className="ml-3 font-light text-brand-accent sm:ml-4" aria-hidden>/</span> : null}
+                    {c}{i < all.length - 1 ? <span className="ml-3 font-light text-brand-accent sm:ml-4" aria-hidden>/</span> : null}
                   </li>
                 ))}
               </ul>
