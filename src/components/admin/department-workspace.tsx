@@ -1,4 +1,14 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { Link, useBlocker, useNavigate, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -1104,10 +1114,16 @@ function Field({
   count?: [number, number];
   children: ReactNode;
 }) {
+  const fieldId = useId();
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<{ id?: string }>, {
+        id: (children.props as { id?: string }).id ?? fieldId,
+      })
+    : children;
   return (
     <div className={cn("grid gap-1.5", wide && "md:col-span-2")}>
       <div className="flex items-baseline justify-between gap-3">
-        <Label>
+        <Label htmlFor={fieldId}>
           {label}
           {required ? <span className="text-brand-accent"> *</span> : null}
         </Label>
@@ -1122,7 +1138,7 @@ function Field({
           </span>
         ) : null}
       </div>
-      {children}
+      {control}
       {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
     </div>
   );
