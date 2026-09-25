@@ -76,7 +76,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <span className="h-px w-6 bg-brand-accent" aria-hidden />
               <span className="text-primary">{department.name}</span>
             </nav>
-            <h1 className="mt-6 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-6xl lg:text-[3.4rem] xl:text-[4.25rem]">
+            <h1 className="mt-6 min-w-0 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-6xl lg:text-[3.4rem] xl:text-[4.25rem]">
               {p ? p.heroLines.map((l, i) => (
                 <span key={l} className={`block ${i === p.heroLines.length - 1 ? "text-primary" : ""}`}>{l}</span>
               )) : department.name}
