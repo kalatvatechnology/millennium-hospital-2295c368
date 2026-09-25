@@ -121,7 +121,7 @@ function ContentWorkspace() {
     mutationFn: () => {
       const payload = contentPayload(type, values, canPublish);
       // Uploaded image media: the image itself is the media link.
-      if (type.key === "media" && payload["media_type"] === "image" && !String(payload["url"] ?? "").trim())
+      if (type.key === "media" && payload["media_type"] === "image" && !String(payload["url"] ?? "").trim() && payload["thumbnail_url"])
         payload["url"] = payload["thumbnail_url"];
       return saveRecord(type, isNew ? null : recordId, payload);
     },
