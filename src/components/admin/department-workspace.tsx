@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminSession } from "@/hooks/use-admin-session";
-import { userFacingDataError } from "@/lib/data/errors";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
 import {
   hasPageContent,
@@ -36,6 +35,7 @@ import {
   type DepartmentPage,
   type ListSection,
   type PageItem,
+  type DepartmentLinks,
 } from "@/lib/department-page";
 import { cn } from "@/lib/utils";
 
@@ -82,16 +82,20 @@ async function removeImages(urls: string[]) {
   if (error) console.error("Department image cleanup failed", { paths, error });
 }
 
-function saveErrorMessage(cause: unknown) {
+class ValidationError extends Error {}
+
+function saveErrorMessage(cause: unknown, fallback: string) {
+  if (cause instanceof ValidationError) return cause.message;
   const raw = cause as { code?: string; message?: string; details?: string };
   const text = `${raw?.message ?? ""} ${raw?.details ?? ""}`;
   if ((raw?.code === "23505" || /duplicate key/i.test(text)) && /slug/i.test(text))
-    return "This web address is already being used by another department. Please choose a different one.";
+    return "Another department is already using this web address.";
   if (/permission to publish/i.test(text))
-    return "Your role can save drafts, but publishing is done by an editor or admin.";
+    return "Your role can save drafts, but publishing and unpublishing are done by an editor or admin.";
   if (/short_description_length/i.test(text))
     return "Short description must be 180 characters or fewer.";
-  return userFacingDataError(cause);
+  console.error(fallback, cause);
+  return fallback;
 }
 
 function validate(identity: Identity, page: DepartmentPage): string | null {
@@ -178,6 +182,24 @@ export function DepartmentWorkspace() {
     },
   });
 
+  // Current relationship-table links, used once to seed pages saved before staged links existed.
+  const legacyLinks = useQuery({
+    queryKey: ["admin-department-legacy-links", departmentId],
+    queryFn: async (): Promise<DepartmentLinks> => {
+      const [d, f, m] = await Promise.all([
+        db.from("doctor_departments").select("doctor_id").eq("department_id", departmentId).order("display_order"),
+        db.from("department_faqs").select("faq_id").eq("department_id", departmentId).order("display_order"),
+        db.from("media_departments").select("media_id").eq("department_id", departmentId).order("display_order"),
+      ]);
+      for (const r of [d, f, m]) if (r.error) throw r.error;
+      return {
+        doctors: (d.data as any[]).map((r) => r.doctor_id),
+        faqs: (f.data as any[]).map((r) => r.faq_id),
+        media: (m.data as any[]).map((r) => r.media_id),
+      };
+    },
+  });
+
   const [identity, setIdentity] = useState<Identity>({
     name: "",
     slug: "",
@@ -202,10 +224,11 @@ export function DepartmentWorkspace() {
     };
     const source = hasPageContent(row["page_draft"]) ? row["page_draft"] : row["page_published"];
     const nextPage = parseDepartmentPage(source ?? {});
+    if (!nextPage.links) nextPage.links = legacyLinks.data ?? null;
     setIdentity(nextIdentity);
     setPage(nextPage);
     setBaseline({ identity: structuredClone(nextIdentity), page: structuredClone(nextPage) });
-  }, [record.data]);
+  }, [record.data, legacyLinks.data]);
 
   const dirty = useMemo(
     () => (baseline ? JSON.stringify({ identity, page }) !== JSON.stringify(baseline) : false),
@@ -234,7 +257,7 @@ export function DepartmentWorkspace() {
   const persist = async (mode: "draft" | "publish") => {
     setError(null);
     const problem = validate(identity, page);
-    if (problem) throw new Error(problem);
+    if (problem) throw new ValidationError(problem);
     const now = new Date().toISOString();
     const payload: Record<string, unknown> = {
       name: identity.name.trim(),
@@ -279,7 +302,7 @@ export function DepartmentWorkspace() {
       await refresh();
       toast.success("Department draft saved successfully.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause)),
+    onError: (cause) => setError(saveErrorMessage(cause, "Unable to save department draft.")),
   });
   const publish = useMutation({
     mutationFn: () => persist("publish"),
@@ -287,7 +310,7 @@ export function DepartmentWorkspace() {
       await refresh();
       toast.success("Department published successfully.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause)),
+    onError: (cause) => setError(saveErrorMessage(cause, "Unable to publish department.")),
   });
   const unpublish = useMutation({
     mutationFn: async () => {
@@ -301,7 +324,7 @@ export function DepartmentWorkspace() {
       await refresh();
       toast.success("Department unpublished. It is no longer visible on the website.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause)),
+    onError: (cause) => setError(saveErrorMessage(cause, "Unable to unpublish department.")),
   });
 
   const cancel = () => {
@@ -318,6 +341,11 @@ export function DepartmentWorkspace() {
   const set = <K extends keyof DepartmentPage>(key: K, value: DepartmentPage[K]) =>
     setPage((p) => ({ ...p, [key]: value }));
   const onUpload = (url: string) => uploads.current.add(url);
+  const setLinks = (key: keyof DepartmentLinks, value: string[]) =>
+    setPage((p) => ({
+      ...p,
+      links: { ...(p.links ?? { doctors: [], faqs: [], media: [] }), [key]: value },
+    }));
 
   const configured: Record<SectionKey, boolean> = {
     identity: Boolean(identity.name && page.hero.headline),
@@ -498,6 +526,16 @@ export function DepartmentWorkspace() {
               title="Identity & Hero"
               description="Department details and the top of the public page. Name, slug and descriptions also appear on the Department Card."
             >
+              <div role="note" className="border border-border bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+                <p>
+                  <strong className="text-foreground">Department identity &amp; card data</strong>{" "}
+                  (name, slug, short and full description) goes live as soon as you save.
+                </p>
+                <p className="mt-1">
+                  <strong className="text-foreground">Page content</strong> (hero, sections,
+                  specialists, FAQs, media, SEO) follows Save Draft → Preview → Publish.
+                </p>
+              </div>
               {!hasPageContent(row["page_draft"]) &&
               !hasPageContent(row["page_published"]) &&
               getDepartmentPresentation(row["slug"]) ? (
@@ -659,14 +697,14 @@ export function DepartmentWorkspace() {
           {active === "specialists" ? (
             <Panel
               title="Specialists"
-              description="Links existing doctors to this department. Doctor profiles are edited in the Doctor workspace. Changes here apply immediately."
+              description="Choose existing doctors for this department page. Doctor profiles are edited in the Doctor workspace. Changes are saved with the draft and appear on the public page only after Publish."
             >
               <Toggle
                 label="Show the specialists section"
                 checked={page.specialists.enabled}
                 onChange={(v) => set("specialists", { enabled: v })}
               />
-              <SpecialistsManager departmentId={departmentId} />
+              <SpecialistsManager ids={(page.links ?? { doctors: [], faqs: [], media: [] }).doctors} onChange={(v) => setLinks("doctors", v)} />
             </Panel>
           ) : null}
           {active === "facilities" ? (
@@ -716,27 +754,27 @@ export function DepartmentWorkspace() {
           {active === "faqs" ? (
             <Panel
               title="FAQs"
-              description="Links existing FAQs to this department. FAQ wording is edited in the FAQ area. Changes here apply immediately; the section is hidden when none are linked."
+              description="Choose existing FAQs for this department page. FAQ wording is edited in the FAQ area. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
             >
               <Toggle
                 label="Show the FAQ section"
                 checked={page.faqs.enabled}
                 onChange={(v) => set("faqs", { enabled: v })}
               />
-              <LinkManager kind="faq" departmentId={departmentId} />
+              <LinkManager kind="faq" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).faqs} onChange={(v) => setLinks("faqs", v)} />
             </Panel>
           ) : null}
           {active === "media" ? (
             <Panel
               title="Media"
-              description="Links existing Media & Content items to this department. Changes here apply immediately; the section is hidden when none are linked."
+              description="Choose existing Media & Content items for this department page. Removing an item never deletes it. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
             >
               <Toggle
                 label="Show the media section"
                 checked={page.media.enabled}
                 onChange={(v) => set("media", { enabled: v })}
               />
-              <LinkManager kind="media" departmentId={departmentId} />
+              <LinkManager kind="media" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).media} onChange={(v) => setLinks("media", v)} />
             </Panel>
           ) : null}
           {active === "seo" ? (
@@ -1143,7 +1181,8 @@ function ImageField({
       onUpload(next);
       onChange(next);
     } catch (cause) {
-      setMessage(userFacingDataError(cause));
+      console.error("Department image upload failed", cause);
+      setMessage("Image upload failed. Please try again.");
     } finally {
       setBusy(false);
       if (input.current) input.current.value = "";
@@ -1321,25 +1360,12 @@ type LinkRow = {
   status: string;
 };
 
-function useReorder(table: string, keyColumn: string, departmentId: string, refresh: () => void) {
-  return async (rows: LinkRow[], i: number, d: -1 | 1) => {
-    const next = [...rows];
-    const [x] = next.splice(i, 1);
-    next.splice(i + d, 0, x!);
-    const results = await Promise.all(
-      next.map((r, idx) =>
-        db
-          .from(table)
-          .update({ display_order: idx + 1 })
-          .eq("department_id", departmentId)
-          .eq(keyColumn, r.id),
-      ),
-    );
-    const failed = results.find((r: { error: unknown }) => r.error);
-    if (failed) toast.error(userFacingDataError(failed.error));
-    refresh();
-  };
-}
+const move = (list: string[], i: number, d: -1 | 1) => {
+  const next = [...list];
+  const [x] = next.splice(i, 1);
+  next.splice(i + d, 0, x!);
+  return next;
+};
 
 function LinkedList({
   rows,
@@ -1464,37 +1490,25 @@ function Picker({
   );
 }
 
-function SpecialistsManager({ departmentId }: { departmentId: string }) {
-  const queryClient = useQueryClient();
-  const key = ["admin-department-doctors", departmentId];
+/** Staged selection of existing doctors. Saved with the draft; live only after Publish. */
+function SpecialistsManager({ ids, onChange }: { ids: string[]; onChange: (ids: string[]) => void }) {
   const data = useQuery({
-    queryKey: key,
+    queryKey: ["admin-department-doctor-options"],
     queryFn: async () => {
-      const [links, doctors] = await Promise.all([
-        db
-          .from("doctor_departments")
-          .select("doctor_id, display_order, is_primary")
-          .eq("department_id", departmentId)
-          .order("display_order"),
-        db
-          .from("doctors")
-          .select("id, name, photo_url, designation, specialty, published")
-          .order("name"),
-      ]);
-      if (links.error) throw links.error;
-      if (doctors.error) throw doctors.error;
-      return { links: links.data as any[], doctors: doctors.data as any[] };
+      const { data, error } = await db
+        .from("doctors")
+        .select("id, name, photo_url, designation, specialty, published")
+        .order("name");
+      if (error) throw error;
+      return data as any[];
     },
   });
-  const [busy, setBusy] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<string | null>(null);
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: key });
-  const reorder = useReorder("doctor_departments", "doctor_id", departmentId, refresh);
   if (data.isPending) return <p className="text-sm text-muted-foreground">Loading specialists…</p>;
   if (data.isError) return <AdminDataError error={data.error} />;
-  const byId = new Map(data.data.doctors.map((d) => [d.id, d]));
-  const rows: LinkRow[] = data.data.links
-    .map((l) => byId.get(l.doctor_id))
+  const byId = new Map(data.data.map((d) => [d.id, d]));
+  const rows: LinkRow[] = ids
+    .map((id) => byId.get(id))
     .filter(Boolean)
     .map((d, i) => ({
       id: d.id,
@@ -1504,85 +1518,60 @@ function SpecialistsManager({ departmentId }: { departmentId: string }) {
       image: d.photo_url,
       status: d.published ? "Published" : "Draft",
     }));
-  const linked = new Set(rows.map((r) => r.id));
-  const run = async (fn: () => Promise<{ error: unknown }>, ok: string) => {
-    setBusy(true);
-    const { error } = await fn();
-    setBusy(false);
-    if (error) toast.error(userFacingDataError(error));
-    else toast.success(ok);
-    refresh();
-  };
+  const linked = new Set(ids);
   return (
     <div className="grid gap-4">
       <LinkedList
         rows={rows}
-        busy={busy}
-        removeLabel="Remove doctor from department"
+        busy={false}
+        removeLabel="Remove doctor from this page"
         empty={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span>No specialists are currently linked to this department.</span>
+            <span>No specialists are selected for this department page.</span>
             <Button asChild variant="outline" size="sm">
               <Link to="/_admin/doctors">Manage Doctors</Link>
             </Button>
           </div>
         }
-        onMove={(i, d) => {
-          setBusy(true);
-          void reorder(rows, i, d).finally(() => setBusy(false));
-        }}
+        onMove={(i, d) => onChange(move(ids, i, d))}
         onRemove={(id) => setPendingRemove(id)}
       />
       {pendingRemove ? (
         <InlineDelete
           label="link"
-          description={`${byId.get(pendingRemove)?.name ?? "This doctor"} will no longer appear under this department. The doctor profile itself is not changed.`}
-          busy={busy}
-          onConfirm={() =>
-            void run(
-              () =>
-                db
-                  .from("doctor_departments")
-                  .delete()
-                  .eq("department_id", departmentId)
-                  .eq("doctor_id", pendingRemove),
-              "Doctor removed from department.",
-            ).then(() => setPendingRemove(null))
-          }
+          description={`${byId.get(pendingRemove)?.name ?? "This doctor"} will be removed from this department page when the draft is saved and published. The doctor profile itself is not changed.`}
+          onConfirm={() => {
+            onChange(ids.filter((x) => x !== pendingRemove));
+            setPendingRemove(null);
+          }}
         />
       ) : null}
       <Picker
         label="Link Existing Doctor"
         placeholder="Choose a doctor…"
-        busy={busy}
-        options={data.data.doctors
+        busy={false}
+        options={data.data
           .filter((d) => !linked.has(d.id))
-          .map((d) => ({ id: d.id, label: d.name }))}
-        onAdd={(id) =>
-          void run(
-            () =>
-              db
-                .from("doctor_departments")
-                .insert({
-                  doctor_id: id,
-                  department_id: departmentId,
-                  is_primary: false,
-                  display_order: rows.length + 1,
-                }),
-            "Doctor linked to department.",
-          )
-        }
+          .map((d) => ({ id: d.id, label: `${d.name}${d.published ? "" : " (draft)"}` }))}
+        onAdd={(id) => onChange([...ids, id])}
       />
     </div>
   );
 }
 
-function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; departmentId: string }) {
+/** Staged selection of existing FAQs or media. Removing never deletes the underlying record. */
+function LinkManager({
+  kind,
+  ids,
+  onChange,
+}: {
+  kind: "faq" | "media";
+  ids: string[];
+  onChange: (ids: string[]) => void;
+}) {
   const cfg =
     kind === "faq"
       ? {
-          table: "department_faqs",
-          key: "faq_id",
           source: "faqs",
           select: "id, question, published",
           title: (r: any) => r.question,
@@ -1590,11 +1579,9 @@ function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; department
           image: () => null,
           label: "Link Existing FAQ",
           noun: "FAQ",
-          empty: "No FAQs linked. The FAQ section is hidden on the public page.",
+          empty: "No FAQs selected. The FAQ section is hidden on the public page.",
         }
       : {
-          table: "media_departments",
-          key: "media_id",
           source: "media_items",
           select: "id, title, media_type, thumbnail_url, published",
           title: (r: any) => r.title,
@@ -1602,34 +1589,21 @@ function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; department
           image: (r: any) => r.thumbnail_url ?? null,
           label: "Link Existing Media",
           noun: "media item",
-          empty: "No media linked. The Media section is hidden on the public page.",
+          empty: "No media selected. The Media section is hidden on the public page.",
         };
-  const queryClient = useQueryClient();
-  const qk = ["admin-department-links", kind, departmentId];
   const data = useQuery({
-    queryKey: qk,
+    queryKey: ["admin-department-link-options", kind],
     queryFn: async () => {
-      const [links, all] = await Promise.all([
-        db
-          .from(cfg.table)
-          .select(`${cfg.key}, display_order`)
-          .eq("department_id", departmentId)
-          .order("display_order"),
-        db.from(cfg.source).select(cfg.select).order("display_order"),
-      ]);
-      if (links.error) throw links.error;
-      if (all.error) throw all.error;
-      return { links: links.data as any[], all: all.data as any[] };
+      const { data, error } = await db.from(cfg.source).select(cfg.select).order("display_order");
+      if (error) throw error;
+      return data as any[];
     },
   });
-  const [busy, setBusy] = useState(false);
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: qk });
-  const reorder = useReorder(cfg.table, cfg.key, departmentId, refresh);
   if (data.isPending) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (data.isError) return <AdminDataError error={data.error} />;
-  const byId = new Map(data.data.all.map((r) => [r.id, r]));
-  const rows: LinkRow[] = data.data.links
-    .map((l) => byId.get(l[cfg.key]))
+  const byId = new Map(data.data.map((r) => [r.id, r]));
+  const rows: LinkRow[] = ids
+    .map((id) => byId.get(id))
     .filter(Boolean)
     .map((r, i) => ({
       id: r.id,
@@ -1639,15 +1613,7 @@ function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; department
       image: cfg.image(r),
       status: r.published ? "Published" : "Draft",
     }));
-  const linked = new Set(rows.map((r) => r.id));
-  const run = async (fn: () => Promise<{ error: unknown }>, ok: string) => {
-    setBusy(true);
-    const { error } = await fn();
-    setBusy(false);
-    if (error) toast.error(userFacingDataError(error));
-    else toast.success(ok);
-    refresh();
-  };
+  const linked = new Set(ids);
   return (
     <div className="grid gap-4">
       {rows.some((r) => r.status !== "Published") ? (
@@ -1657,40 +1623,20 @@ function LinkManager({ kind, departmentId }: { kind: "faq" | "media"; department
       ) : null}
       <LinkedList
         rows={rows}
-        busy={busy}
-        removeLabel={`Remove ${cfg.noun}`}
+        busy={false}
+        removeLabel={`Remove ${cfg.noun} from this page`}
         empty={cfg.empty}
-        onMove={(i, d) => {
-          setBusy(true);
-          void reorder(rows, i, d).finally(() => setBusy(false));
-        }}
-        onRemove={(id) =>
-          void run(
-            () => db.from(cfg.table).delete().eq("department_id", departmentId).eq(cfg.key, id),
-            `${cfg.noun.charAt(0).toUpperCase()}${cfg.noun.slice(1)} unlinked.`,
-          )
-        }
+        onMove={(i, d) => onChange(move(ids, i, d))}
+        onRemove={(id) => onChange(ids.filter((x) => x !== id))}
       />
       <Picker
         label={cfg.label}
         placeholder={`Choose ${kind === "faq" ? "an FAQ" : "media"}…`}
-        busy={busy}
-        options={data.data.all
+        busy={false}
+        options={data.data
           .filter((r) => !linked.has(r.id))
           .map((r) => ({ id: r.id, label: `${cfg.title(r)}${r.published ? "" : " (draft)"}` }))}
-        onAdd={(id) =>
-          void run(
-            () =>
-              db
-                .from(cfg.table)
-                .insert({
-                  department_id: departmentId,
-                  [cfg.key]: id,
-                  display_order: rows.length + 1,
-                }),
-            `${cfg.noun.charAt(0).toUpperCase()}${cfg.noun.slice(1)} linked.`,
-          )
-        }
+        onAdd={(id) => onChange([...ids, id])}
       />
     </div>
   );

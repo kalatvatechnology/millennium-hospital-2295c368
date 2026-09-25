@@ -60,46 +60,58 @@ export async function getDepartment(slug: string, preview = false) {
   const department = one(await (preview ? base : published(base)).maybeSingle());
   if (!department) return null;
   if (!usesProductionContract) {
-    const [doctorResult, serviceResult, faqResult, mediaResult] = await Promise.all([
-      db
-        .from("doctor_departments")
-        .select(
-          "display_order, doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name)))",
-        )
-        .eq("department_id", department["id"])
-        .order("display_order"),
+    const pageSource = preview ? department["page_draft"] : department["page_published"];
+    const page = hasPageContent(pageSource) ? parseDepartmentPage(pageSource) : null;
+    // Staged links (draft for preview, published copy for the public page) decide which
+    // existing doctors/FAQs/media appear. Older pages fall back to the relationship tables.
+    const links = page?.links ?? null;
+    const doctorSelect =
+      "*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name))";
+    const byIds = async (table: string, select: string, idList: string[]) => {
+      if (!idList.length) return [] as Row[];
+      const result = await db.from(table).select(select).in("id", idList);
+      const found = new Map(rows(result).map((row) => [row["id"], row]));
+      return idList.map((id) => found.get(id)).filter(Boolean) as Row[];
+    };
+    const [doctorRows, serviceResult, faqRows, mediaRows] = await Promise.all([
+      links
+        ? byIds("doctors", doctorSelect, links.doctors)
+        : db
+            .from("doctor_departments")
+            .select(`display_order, doctors(${doctorSelect})`)
+            .eq("department_id", department["id"])
+            .order("display_order")
+            .then((r: any) => rows(r).map((row) => row["doctors"]).filter(Boolean) as Row[]),
       db
         .from("professional_service_departments")
         .select("professional_services(*)")
         .eq("department_id", department["id"]),
-      db
-        .from("department_faqs")
-        .select("display_order, faqs(*)")
-        .eq("department_id", department["id"])
-        .order("display_order"),
-      db
-        .from("media_departments")
-        .select("display_order, media_items(*)")
-        .eq("department_id", department["id"])
-        .order("display_order"),
+      links
+        ? byIds("faqs", "*", links.faqs).catch((): Row[] => [])
+        : db
+            .from("department_faqs")
+            .select("display_order, faqs(*)")
+            .eq("department_id", department["id"])
+            .order("display_order")
+            .then((r: any) => (r.error ? [] : rows(r)).map((row) => row["faqs"]).filter(Boolean) as Row[]),
+      links
+        ? byIds("media_items", "*", links.media).catch((): Row[] => [])
+        : db
+            .from("media_departments")
+            .select("display_order, media_items(*)")
+            .eq("department_id", department["id"])
+            .order("display_order")
+            .then(
+              (r: any) =>
+                (r.error ? [] : rows(r)).map((row) => row["media_items"]).filter(Boolean) as Row[],
+            ),
     ]);
-    const pageSource = preview ? department["page_draft"] : department["page_published"];
     return {
       department: mapDepartment(department),
-      page: hasPageContent(pageSource) ? parseDepartmentPage(pageSource) : null,
-      faqs: (faqResult.error ? [] : rows(faqResult))
-        .map((row) => row["faqs"])
-        .filter(Boolean)
-        .map(mapFaq)
-        .filter((item) => item.status === "published"),
-      media: (mediaResult.error ? [] : rows(mediaResult))
-        .map((row) => row["media_items"])
-        .filter(Boolean)
-        .map(mapMedia)
-        .filter((item) => item.status === "published"),
-      doctors: rows(doctorResult)
-        .map((row) => row["doctors"])
-        .filter(Boolean)
+      page,
+      faqs: (faqRows as Row[]).map((r) => mapFaq(r)).filter((item) => item.status === "published"),
+      media: (mediaRows as Row[]).map((r) => mapMedia(r)).filter((item) => item.status === "published"),
+      doctors: (doctorRows as Row[])
         .map((row) => mapDoctor(row))
         .filter((doctor) => doctor.status === "published"),
       services: rows(serviceResult)
