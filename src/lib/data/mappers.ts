@@ -192,6 +192,7 @@ export function mapMedia(row: Row): MediaItem {
     description: text(row["description"]),
     url: required(row["url"], "#"),
     thumbnail_url: text(row["thumbnail_url"]),
+    alt_text: text(row["alt_text"]),
     media_type: mediaType,
     show_on_home: row["show_on_homepage"] === true || row["show_on_home"] === true,
     display_order: number(row["display_order"]),

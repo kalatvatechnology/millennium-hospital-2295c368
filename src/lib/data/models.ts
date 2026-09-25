@@ -150,6 +150,7 @@ export type MediaItem = {
   description: string | null;
   url: string;
   thumbnail_url: string | null;
+  alt_text?: string | null;
   media_type: MediaPlatform;
   show_on_home: boolean;
   display_order: number | null;
