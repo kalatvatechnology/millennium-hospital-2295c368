@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminSession } from "@/hooks/use-admin-session";
-import { userFacingDataError } from "@/lib/data/errors";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
 import {
   hasPageContent,
