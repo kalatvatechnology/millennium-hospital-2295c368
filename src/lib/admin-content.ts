@@ -302,7 +302,6 @@ export const contentTypes: ContentType[] = [
           { value: "youtube", label: "YouTube video" },
           { value: "reel", label: "Reel" },
           { value: "podcast", label: "Podcast" },
-          { value: "article", label: "Article" },
         ],
       },
       {
