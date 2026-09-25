@@ -39,7 +39,15 @@ export type DepartmentPage = {
     og_image_url: string;
     index: boolean;
   };
+  /**
+   * Ordered IDs of existing doctors / FAQs / media shown on this page. Staged with the
+   * draft and copied on Publish, so relationship edits never change the live page early.
+   * `null` means the page predates staged links and falls back to the relationship tables.
+   */
+  links: DepartmentLinks | null;
 };
+
+export type DepartmentLinks = { doctors: string[]; faqs: string[]; media: string[] };
 
 const str = (v: unknown) => (typeof v === "string" ? v : "");
 const bool = (v: unknown, fallback: boolean) => (typeof v === "boolean" ? v : fallback);
@@ -110,7 +118,18 @@ export function parseDepartmentPage(value: unknown): DepartmentPage {
       og_image_url: str(seo["og_image_url"]),
       index: bool(seo["index"], true),
     },
+    links: parseLinks(r["links"]),
   };
+}
+
+function ids(v: unknown): string[] {
+  return Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string"))] : [];
+}
+
+function parseLinks(v: unknown): DepartmentLinks | null {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+  const r = v as Record<string, unknown>;
+  return { doctors: ids(r["doctors"]), faqs: ids(r["faqs"]), media: ids(r["media"]) };
 }
 
 /** True when the department has CMS content saved (draft or published object is non-empty). */
