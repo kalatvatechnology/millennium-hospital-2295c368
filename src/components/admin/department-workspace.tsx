@@ -9,7 +9,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { Link, useBlocker, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useBlocker, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -378,6 +378,45 @@ export function DepartmentWorkspace() {
   const set = <K extends keyof DepartmentPage>(key: K, value: DepartmentPage[K]) =>
     setPage((p) => ({ ...p, [key]: value }));
   const onUpload = (url: string) => uploads.current.add(url);
+  // Returning from "+ Add FAQ" / "+ Add Media": link the newly created library record to this
+  // department's draft. Only the link is saved; the live page changes only after Publish.
+  const { linkNew, linkKind } = useSearch({ from: "/_admin/departments/$departmentId/$section" });
+  const linking = useRef(false);
+  useEffect(() => {
+    if (!linkNew || !linkKind || !baseline || dirty || linking.current) return;
+    linking.current = true;
+    const current = baseline.page.links ?? { doctors: [], faqs: [], media: [] };
+    const nextPage: DepartmentPage = {
+      ...baseline.page,
+      links: current[linkKind].includes(linkNew)
+        ? current
+        : { ...current, [linkKind]: [...current[linkKind], linkNew] },
+    };
+    void (async () => {
+      const { error: linkError } = await db
+        .from("departments")
+        .update({ page_draft: nextPage, page_draft_saved_at: new Date().toISOString() })
+        .eq("id", departmentId);
+      if (linkError) {
+        setError(saveErrorMessage(linkError, "The item was saved to the library but could not be linked. Use Link Existing to add it."));
+      } else {
+        setPage(nextPage);
+        setBaseline({ identity: baseline.identity, page: structuredClone(nextPage) });
+        await queryClient.invalidateQueries({ queryKey: ["admin-department-link-options"] });
+        await refresh();
+        toast.success(`Linked to this department's draft. Publish to show it on the website.`);
+      }
+      linking.current = false;
+      void navigate({
+        to: "/_admin/departments/$departmentId/$section",
+        params: { departmentId, section: active },
+        search: {},
+        replace: true,
+      });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkNew, linkKind, baseline, dirty]);
+
   const setLinks = (key: keyof DepartmentLinks, value: string[]) =>
     setPage((p) => ({
       ...p,
@@ -593,6 +632,7 @@ export function DepartmentWorkspace() {
             percentage={completion.percentage}
             missing={completion.missing}
             onNavigate={goto}
+            departmentId={departmentId}
           />
           {active === "identity" ? (
             <Panel
@@ -827,26 +867,28 @@ export function DepartmentWorkspace() {
           {active === "faqs" ? (
             <Panel
               title="FAQs"
-              description="Choose existing FAQs for this department page. FAQ wording is edited in the FAQ area. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
+              description="Add a new FAQ or link one from the central FAQ library. New FAQs are saved to the library and linked here automatically. Removing only unlinks it from this department. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
             >
               <Toggle
                 label="Show the FAQ section"
                 checked={page.faqs.enabled}
                 onChange={(v) => set("faqs", { enabled: v })}
               />
+              <AddNewLink kind="faqs" departmentId={departmentId} dirty={dirty} />
               <LinkManager kind="faq" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).faqs} onChange={(v) => setLinks("faqs", v)} />
             </Panel>
           ) : null}
           {active === "media" ? (
             <Panel
               title="Media"
-              description="Choose existing Media & Content items for this department page. Removing an item never deletes it. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
+              description="Add new media (image upload, YouTube, Reels or podcast) or select from the central Media Library. New media is saved to the library and linked here automatically. Removing only unlinks it; the media item is never deleted. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
             >
               <Toggle
                 label="Show the media section"
                 checked={page.media.enabled}
                 onChange={(v) => set("media", { enabled: v })}
               />
+              <AddNewLink kind="media" departmentId={departmentId} dirty={dirty} />
               <LinkManager kind="media" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).media} onChange={(v) => setLinks("media", v)} />
             </Panel>
           ) : null}
@@ -1001,12 +1043,14 @@ function CompletionCard({
   percentage,
   missing,
   onNavigate,
+  departmentId,
 }: {
+  departmentId: string;
   percentage: number;
   missing: ReturnType<typeof getDepartmentCompletion>["missing"];
   onNavigate: (section: string) => void;
 }) {
-  const visible = missing.slice(0, 4);
+  const visible = [...missing.slice(0, 4), ...missing.slice(4).filter((i) => i.section === "faqs" || i.section === "media")];
   return (
     <section aria-labelledby="profile-readiness" className="mb-6 border border-border bg-background p-4 shadow-[var(--shadow-sm)] sm:p-5">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
@@ -1040,6 +1084,22 @@ function CompletionCard({
                   {item.priority === "required" ? "Required" : "Recommended"}
                 </span>
               </Button>
+              {item.section === "faqs" || item.section === "media" ? (
+                <div className="flex flex-wrap gap-2 px-2 pb-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link
+                      to="/_admin/content/$contentType/$recordId"
+                      params={{ contentType: item.section, recordId: "new" }}
+                      search={{ department: departmentId, section: item.section }}
+                    >
+                      <Plus className="size-4" aria-hidden /> {item.section === "faqs" ? "Add FAQ" : "Add Media"}
+                    </Link>
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => onNavigate(item.section)}>
+                    {item.section === "faqs" ? "Link Existing FAQ" : "Select from Media Library"}
+                  </Button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -1744,6 +1804,30 @@ function SpecialistsManager({ ids, onChange }: { ids: string[]; onChange: (ids: 
   );
 }
 
+/** Opens the full-page library editor; on save it returns here and links the new record. */
+function AddNewLink({ kind, departmentId, dirty }: { kind: "faqs" | "media"; departmentId: string; dirty: boolean }) {
+  return (
+    <div className="grid gap-2">
+      <div>
+        <Button asChild>
+          <Link
+            to="/_admin/content/$contentType/$recordId"
+            params={{ contentType: kind, recordId: "new" }}
+            search={{ department: departmentId, section: kind }}
+          >
+            <Plus className="size-4" aria-hidden /> {kind === "faqs" ? "Add FAQ" : "Add Media"}
+          </Link>
+        </Button>
+      </div>
+      {dirty ? (
+        <p className="text-xs text-muted-foreground">
+          Save your draft first — opening the editor leaves this workspace and unsaved changes would be lost.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 /** Staged selection of existing FAQs or media. Removing never deletes the underlying record. */
 function LinkManager({
   kind,
@@ -1772,7 +1856,7 @@ function LinkManager({
           title: (r: any) => r.title,
           sub: (r: any) => String(r.media_type ?? "").replace(/^./, (c: string) => c.toUpperCase()),
           image: (r: any) => r.thumbnail_url ?? null,
-          label: "Link Existing Media",
+          label: "Select from Media Library",
           noun: "media item",
           empty: "No media selected. The Media section is hidden on the public page.",
         };

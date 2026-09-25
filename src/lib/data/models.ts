@@ -143,13 +143,14 @@ export type Facility = {
   status: ContentStatus;
 };
 
-export type MediaPlatform = "reel" | "youtube" | "podcast" | "article";
+export type MediaPlatform = "reel" | "youtube" | "podcast" | "article" | "image";
 export type MediaItem = {
   id: string;
   title: string;
   description: string | null;
   url: string;
   thumbnail_url: string | null;
+  alt_text?: string | null;
   media_type: MediaPlatform;
   show_on_home: boolean;
   display_order: number | null;

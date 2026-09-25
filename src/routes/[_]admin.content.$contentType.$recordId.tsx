@@ -46,6 +46,10 @@ export const Route = createFileRoute("/_admin/content/$contentType/$recordId")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { department?: string | undefined; section?: string | undefined } => ({
+    department: typeof search["department"] === "string" ? search["department"] : undefined,
+    section: typeof search["section"] === "string" ? search["section"] : undefined,
+  }),
   component: ContentWorkspace,
 });
 
@@ -73,6 +77,17 @@ function ContentWorkspace() {
   const returnTo = listRoutes[contentType as keyof typeof listRoutes];
   if (!returnTo) throw notFound();
   const isNew = recordId === "new";
+  // Opened from a Department workspace: return there and link the new record automatically.
+  const { department, section: departmentSection } = Route.useSearch();
+  const fromDepartment = isNew && department && (contentType === "faqs" || contentType === "media");
+  const goBack = (linkNew?: string) =>
+    fromDepartment
+      ? navigate({
+          to: "/_admin/departments/$departmentId/$section",
+          params: { departmentId: department!, section: departmentSection ?? (contentType === "faqs" ? "faqs" : "media") },
+          search: linkNew ? { linkNew, linkKind: contentType === "faqs" ? "faqs" : "media" } : {},
+        })
+      : navigate({ to: returnTo });
   const canPublish = can("content.publish");
   const [values, setValues] = useState<Record<string, any>>(() => emptyContentValues(type));
   const [baseline, setBaseline] = useState<Record<string, any>>(() => emptyContentValues(type));
@@ -103,9 +118,14 @@ function ContentWorkspace() {
     if (cleanupError) console.error("Department image cleanup failed", { paths: targets, cleanupError });
   };
   const save = useMutation({
-    mutationFn: () =>
-      saveRecord(type, isNew ? null : recordId, contentPayload(type, values, canPublish)),
-    onSuccess: async () => {
+    mutationFn: () => {
+      const payload = contentPayload(type, values, canPublish);
+      // Uploaded image media: the image itself is the media link.
+      if (type.key === "media" && payload["media_type"] === "image" && !String(payload["url"] ?? "").trim() && payload["thumbnail_url"])
+        payload["url"] = payload["thumbnail_url"];
+      return saveRecord(type, isNew ? null : recordId, payload);
+    },
+    onSuccess: async (savedId) => {
       // Only after the database update succeeded: remove the exact file this record used before.
       await cleanupImages(
         imageFields.map((field) =>
@@ -117,8 +137,12 @@ function ContentWorkspace() {
         queryClient.invalidateQueries({ queryKey: ["admin-content-record", type.table, recordId] }),
         queryClient.invalidateQueries({ queryKey: [type.table] }),
       ]);
-      toast.success(`${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`);
-      void navigate({ to: returnTo });
+      toast.success(
+        fromDepartment
+          ? `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved to the library and linked to this department.`
+          : `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`,
+      );
+      void goBack(savedId ?? undefined);
     },
     onError: (cause: Error) => {
       type ErrLike = { code?: string; message?: string; details?: string };
@@ -159,7 +183,17 @@ function ContentWorkspace() {
       description={type.description}
       requires="content.write"
     >
-      <WorkspaceLayout backLink={<Link to={returnTo}>Back to {type.label}</Link>}>
+      <WorkspaceLayout
+        backLink={
+          fromDepartment ? (
+            <Link to="/_admin/departments/$departmentId/$section" params={{ departmentId: department!, section: departmentSection ?? (contentType === "faqs" ? "faqs" : "media") }}>
+              Back to department
+            </Link>
+          ) : (
+            <Link to={returnTo}>Back to {type.label}</Link>
+          )
+        }
+      >
         <WorkspaceSection
           title="Content"
           description="Changes remain here until you save. Cancel restores the last saved version."
@@ -207,7 +241,7 @@ function ContentWorkspace() {
               );
               setValues(structuredClone(baseline));
               setError(null);
-              if (isNew) void navigate({ to: returnTo });
+              if (isNew) void goBack();
             }}
             onSave={() => {
               for (const field of type.fields) {
@@ -217,6 +251,14 @@ function ContentWorkspace() {
                   return setError(`${field.label} must be ${field.maxLength} characters or fewer.`);
                 const message = raw ? field.validate?.(raw) : null;
                 if (message) return setError(message);
+              }
+              if (type.key === "media") {
+                const kind = String(values["media_type"] ?? values["platform"] ?? "");
+                if (kind === "image") {
+                  if (!values["thumbnail_url"]) return setError("Upload an image for Image media.");
+                  if ("alt_text" in values && !String(values["alt_text"] ?? "").trim())
+                    return setError("Image alt text is required for Image media.");
+                } else if (!String(values["url"] ?? "").trim()) return setError("Link is required.");
               }
               setError(null);
               save.mutate();
