@@ -209,7 +209,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {p ? (
         <section className="bg-foreground">
           <div className="relative">
-            <div className="group relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:aspect-[21/8.5]">
+            <div className="group relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:aspect-auto lg:h-[max(32rem,40.48vw)]">
               <img src={p.facilityImage} alt="Hospital clinical corridor with imaging and rehabilitation areas" className="size-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]" loading="lazy" width={1600} height={1008} />
               <div className="absolute inset-0 hidden bg-gradient-to-r from-foreground/85 via-foreground/40 to-transparent lg:block" aria-hidden />
             </div>
