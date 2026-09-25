@@ -1008,9 +1008,12 @@ function CompletionCard({
         </div>
         <p className="shrink-0 text-lg font-semibold text-primary">{percentage}% complete</p>
       </div>
-      <div className="mt-4 h-2 overflow-hidden bg-secondary" aria-hidden>
-        <div className="h-full bg-primary transition-[width]" style={{ width: `${percentage}%` }} />
-      </div>
+      <progress
+        className="mt-4 h-2 w-full accent-primary"
+        value={percentage}
+        max={100}
+        aria-label={`Department profile is ${percentage}% complete`}
+      />
       {visible.length ? (
         <ul className="mt-4 grid gap-1 sm:grid-cols-2">
           {visible.map((item) => (
