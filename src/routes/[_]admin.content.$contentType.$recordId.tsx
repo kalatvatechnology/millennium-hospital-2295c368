@@ -95,10 +95,23 @@ function ContentWorkspace() {
       setBaseline(structuredClone(next));
     }
   }, [isNew, record.data, type]);
+  const imageFields = type.fields.filter((field) => field.type === "image");
+  const cleanupImages = async (paths: (string | null)[]) => {
+    const targets = paths.filter((path): path is string => Boolean(path));
+    if (!targets.length) return;
+    const { error: cleanupError } = await supabase.storage.from(imageBucket).remove(targets);
+    if (cleanupError) console.error("Department image cleanup failed", { paths: targets, cleanupError });
+  };
   const save = useMutation({
     mutationFn: () =>
       saveRecord(type, isNew ? null : recordId, contentPayload(type, values, canPublish)),
     onSuccess: async () => {
+      // Only after the database update succeeded: remove the exact file this record used before.
+      await cleanupImages(
+        imageFields.map((field) =>
+          values[field.name] !== baseline[field.name] ? managedImagePath(field, baseline[field.name]) : null,
+        ),
+      );
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
         queryClient.invalidateQueries({ queryKey: ["admin-content-record", type.table, recordId] }),
@@ -112,6 +125,12 @@ function ContentWorkspace() {
   const remove = useMutation({
     mutationFn: () => deleteRecord(type, recordId, String(values[type.titleField] ?? "")),
     onSuccess: async () => {
+      // Only after the database update succeeded: remove the exact file this record used before.
+      await cleanupImages(
+        imageFields.map((field) =>
+          values[field.name] !== baseline[field.name] ? managedImagePath(field, baseline[field.name]) : null,
+        ),
+      );
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
         queryClient.invalidateQueries({ queryKey: ["admin-content-record", type.table, recordId] }),
@@ -166,6 +185,12 @@ function ContentWorkspace() {
             busy={save.isPending}
             disabled={record.isPending}
             onCancel={() => {
+              // Discard unsaved uploads (never the saved image).
+              void cleanupImages(
+                imageFields.map((field) =>
+                  values[field.name] !== baseline[field.name] ? managedImagePath(field, values[field.name]) : null,
+                ),
+              );
               setValues(structuredClone(baseline));
               setError(null);
               if (isNew) void navigate({ to: returnTo });
@@ -275,6 +300,18 @@ function FieldControl({
 
 const imageBucket = "doctor-profile-images";
 const imageEndpoint = "/api/public/doctor-profile-image";
+function managedImagePath(field: Field, value: unknown): string | null {
+  if (!value || typeof value !== "string") return null;
+  try {
+    const parsed = new URL(value, "https://millennium.invalid");
+    if (parsed.pathname !== imageEndpoint) return null;
+    const path = parsed.searchParams.get("path");
+    const folder = field.imageFolder ?? "content";
+    return path && path.startsWith(`${folder}/`) && !path.includes("..") ? path : null;
+  } catch {
+    return null;
+  }
+}
 const allowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
 const maxImageBytes = 5 * 1024 * 1024;
 
