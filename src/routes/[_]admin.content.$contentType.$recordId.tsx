@@ -169,12 +169,13 @@ function ContentWorkspace() {
           values[field.name] !== baseline[field.name] ? managedImagePath(field, values[field.name]) : null,
         ]),
       );
-      // The record no longer exists: drop its cached query instead of refetching it (which 406s and retries).
+      // The record no longer exists: never refetch it (that 406s and retries). Leave the page first,
+      // then drop its cached query so nothing can load it again.
       const recordKey = ["admin-content-record", type.table, recordId];
       await queryClient.cancelQueries({ queryKey: recordKey });
-      queryClient.removeQueries({ queryKey: recordKey });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] });
-      void navigate({ to: returnTo });
+      await navigate({ to: returnTo });
+      queryClient.removeQueries({ queryKey: recordKey });
     },
     onError: (cause: Error) => setError(userFacingDataError(cause)),
   });
