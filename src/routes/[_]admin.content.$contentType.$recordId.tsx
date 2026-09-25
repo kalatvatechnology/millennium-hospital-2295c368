@@ -125,11 +125,12 @@ function ContentWorkspace() {
   const remove = useMutation({
     mutationFn: () => deleteRecord(type, recordId, String(values[type.titleField] ?? "")),
     onSuccess: async () => {
-      // Only after the database update succeeded: remove the exact file this record used before.
+      // Only after the record is deleted: remove its saved image and any unsaved upload.
       await cleanupImages(
-        imageFields.map((field) =>
-          values[field.name] !== baseline[field.name] ? managedImagePath(field, baseline[field.name]) : null,
-        ),
+        imageFields.flatMap((field) => [
+          managedImagePath(field, baseline[field.name]),
+          values[field.name] !== baseline[field.name] ? managedImagePath(field, values[field.name]) : null,
+        ]),
       );
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
