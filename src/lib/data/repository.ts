@@ -68,10 +68,10 @@ export async function getDepartment(slug: string, preview = false) {
     const doctorSelect =
       "*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_departments(departments!doctor_departments_department_id_fkey(id,name,slug)), doctor_specializations(enabled,display_order,department_specializations(name))";
     const byIds = async (table: string, select: string, idList: string[]) => {
-      if (!idList.length) return [] as Record<string, any>[];
+      if (!idList.length) return [] as Row[];
       const result = await db.from(table).select(select).in("id", idList);
       const found = new Map(rows(result).map((row) => [row["id"], row]));
-      return idList.map((id) => found.get(id)).filter(Boolean) as Record<string, any>[];
+      return idList.map((id) => found.get(id)).filter(Boolean) as Row[];
     };
     const [doctorRows, serviceResult, faqRows, mediaRows] = await Promise.all([
       links
@@ -81,28 +81,29 @@ export async function getDepartment(slug: string, preview = false) {
             .select(`display_order, doctors(${doctorSelect})`)
             .eq("department_id", department["id"])
             .order("display_order")
-            .then((r) => rows(r).map((row) => row["doctors"]).filter(Boolean)),
+            .then((r: any) => rows(r).map((row) => row["doctors"]).filter(Boolean) as Row[]),
       db
         .from("professional_service_departments")
         .select("professional_services(*)")
         .eq("department_id", department["id"]),
       links
-        ? byIds("faqs", "*", links.faqs).catch(() => [])
+        ? byIds("faqs", "*", links.faqs).catch((): Row[] => [])
         : db
             .from("department_faqs")
             .select("display_order, faqs(*)")
             .eq("department_id", department["id"])
             .order("display_order")
-            .then((r) => (r.error ? [] : rows(r)).map((row) => row["faqs"]).filter(Boolean)),
+            .then((r: any) => (r.error ? [] : rows(r)).map((row) => row["faqs"]).filter(Boolean) as Row[]),
       links
-        ? byIds("media_items", "*", links.media).catch(() => [])
+        ? byIds("media_items", "*", links.media).catch((): Row[] => [])
         : db
             .from("media_departments")
             .select("display_order, media_items(*)")
             .eq("department_id", department["id"])
             .order("display_order")
-            .then((r) =>
-              (r.error ? [] : rows(r)).map((row) => row["media_items"]).filter(Boolean),
+            .then(
+              (r: any) =>
+                (r.error ? [] : rows(r)).map((row) => row["media_items"]).filter(Boolean) as Row[],
             ),
     ]);
     return {
