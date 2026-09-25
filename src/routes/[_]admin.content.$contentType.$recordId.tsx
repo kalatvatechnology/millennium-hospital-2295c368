@@ -231,7 +231,7 @@ function ContentWorkspace() {
           ) : null}
           <WorkspaceSaveBar
             busy={save.isPending}
-            disabled={record.isPending}
+            disabled={!isNew && record.isPending}
             onCancel={() => {
               // Discard unsaved uploads (never the saved image).
               void cleanupImages(
