@@ -47,6 +47,13 @@ export function getDepartmentCompletion({
   published: boolean;
 }) {
   const links = page.links ?? { doctors: [], faqs: [], media: [] };
+  const listItemsHaveTitles = [
+    page.about,
+    page.care,
+    page.conditions,
+    page.facilities,
+    page.approach,
+  ].every((section) => section.items.every((item) => item.title.trim()));
   const items: CompletionItem[] = [
     {
       label: "Department name missing",
@@ -61,6 +68,41 @@ export function getDepartmentCompletion({
       priority: "required",
       complete: validSlug(identity.slug),
       applicable: true,
+    },
+    {
+      label: "Short description exceeds 180 characters",
+      section: "identity",
+      priority: "required",
+      complete: identity.short_description.length <= 180,
+      applicable: true,
+    },
+    {
+      label: "Hero image alt text missing",
+      section: "identity",
+      priority: "required",
+      complete: !page.hero.image_url || Boolean(page.hero.image_alt.trim()),
+      applicable: Boolean(page.hero.image_url),
+    },
+    {
+      label: "Facilities image alt text missing",
+      section: "facilities",
+      priority: "required",
+      complete: !page.facilities.image_url || Boolean(page.facilities.image_alt.trim()),
+      applicable: Boolean(page.facilities.image_url),
+    },
+    {
+      label: "A content item title is missing",
+      section: "about",
+      priority: "required",
+      complete: listItemsHaveTitles,
+      applicable: true,
+    },
+    {
+      label: "Canonical URL must use HTTPS",
+      section: "seo",
+      priority: "required",
+      complete: !page.seo.canonical_url || page.seo.canonical_url.startsWith("https://"),
+      applicable: Boolean(page.seo.canonical_url),
     },
     {
       label: "Short description recommended",

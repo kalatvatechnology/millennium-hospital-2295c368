@@ -62,3 +62,4 @@
 - [x] Refine the Doctor Workspace Hero & Statistics interface without changing data or behavior
 - [x] Restore existing specialization icons in Staff Preview and public doctor profiles without data or permission changes
 - [x] Refine the shared specialization card with an unboxed icon-and-heading row across Preview and public profiles
+- [x] Upgrade the Department CMS workspace shell, completion guidance, save states, responsive navigation, and unsaved-change protection without changing V1 behavior

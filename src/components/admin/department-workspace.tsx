@@ -1009,7 +1009,7 @@ function CompletionCard({
         <p className="shrink-0 text-lg font-semibold text-primary">{percentage}% complete</p>
       </div>
       <progress
-        className="mt-4 h-2 w-full accent-primary"
+        className="mt-4 h-2 w-full appearance-none overflow-hidden bg-secondary accent-primary [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-secondary [&::-webkit-progress-value]:bg-primary"
         value={percentage}
         max={100}
         aria-label={`Department profile is ${percentage}% complete`}
