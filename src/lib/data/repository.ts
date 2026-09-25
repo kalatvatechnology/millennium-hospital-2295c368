@@ -109,9 +109,9 @@ export async function getDepartment(slug: string, preview = false) {
     return {
       department: mapDepartment(department),
       page,
-      faqs: faqRows.map(mapFaq).filter((item) => item.status === "published"),
-      media: mediaRows.map(mapMedia).filter((item) => item.status === "published"),
-      doctors: doctorRows
+      faqs: (faqRows as Row[]).map((r) => mapFaq(r)).filter((item) => item.status === "published"),
+      media: (mediaRows as Row[]).map((r) => mapMedia(r)).filter((item) => item.status === "published"),
+      doctors: (doctorRows as Row[])
         .map((row) => mapDoctor(row))
         .filter((doctor) => doctor.status === "published"),
       services: rows(serviceResult)
