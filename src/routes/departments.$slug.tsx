@@ -309,7 +309,7 @@ function Specialist({ doctor }: { doctor: DoctorWithDepartment }) {
 function DepartmentFaqs({ departmentName, index }: { departmentName: string; index: () => string }) {
   const faqs = useQuery(faqQuery);
   const [open, setOpen] = useState<string | null>(null);
-  const items = (faqs.data ?? []).filter((f) => f.category?.toLowerCase() === departmentName.toLowerCase());
+  const items = (faqs.data?.faqs ?? []).filter((f) => f.category?.toLowerCase() === departmentName.toLowerCase());
   if (!items.length) return null;
   return (
     <section className="bg-background">
