@@ -1,13 +1,25 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import { Link, useBlocker, useNavigate, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
+  AlertCircle,
   CheckCircle2,
   Circle,
+  Clock3,
   ExternalLink,
   ImagePlus,
   Plus,
@@ -26,6 +38,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdminSession } from "@/hooks/use-admin-session";
+import {
+  getDepartmentCompletion,
+  type CompletionState,
+} from "@/lib/department-completion";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
 import {
   hasPageContent,
@@ -62,6 +78,7 @@ const SECTIONS = [
 type SectionKey = (typeof SECTIONS)[number]["key"];
 
 type Identity = { name: string; slug: string; short_description: string; description: string };
+type SaveState = "saved" | "unsaved" | "saving" | "failed";
 
 function managedPath(url: string | null | undefined): string | null {
   if (!url) return null;
@@ -211,6 +228,7 @@ export function DepartmentWorkspace() {
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
   const uploads = useRef(new Set<string>());
 
   useEffect(() => {
@@ -234,6 +252,18 @@ export function DepartmentWorkspace() {
     () => (baseline ? JSON.stringify({ identity, page }) !== JSON.stringify(baseline) : false),
     [identity, page, baseline],
   );
+
+  const blocker = useBlocker({
+    shouldBlockFn: ({ current, next }) => {
+      if (!dirty) return false;
+      const workspacePrefix = `/_admin/departments/${departmentId}/`;
+      return !(
+        current.pathname.startsWith(workspacePrefix) && next.pathname.startsWith(workspacePrefix)
+      );
+    },
+    enableBeforeUnload: dirty,
+    withResolver: true,
+  });
 
   // Unsaved uploads are removed when leaving the workspace.
   useEffect(() => {
@@ -297,12 +327,18 @@ export function DepartmentWorkspace() {
     ]);
 
   const saveDraft = useMutation({
-    mutationFn: () => persist("draft"),
+    mutationFn: () => {
+      setSaveFailed(false);
+      return persist("draft");
+    },
     onSuccess: async () => {
       await refresh();
       toast.success("Department draft saved successfully.");
     },
-    onError: (cause) => setError(saveErrorMessage(cause, "Unable to save department draft.")),
+    onError: (cause) => {
+      setSaveFailed(true);
+      setError(saveErrorMessage(cause, "Unable to save department draft."));
+    },
   });
   const publish = useMutation({
     mutationFn: () => persist("publish"),
@@ -335,6 +371,7 @@ export function DepartmentWorkspace() {
     setIdentity(structuredClone(baseline.identity));
     setPage(structuredClone(baseline.page));
     setError(null);
+    setSaveFailed(false);
   };
 
   const busy = saveDraft.isPending || publish.isPending || unpublish.isPending;
@@ -347,19 +384,6 @@ export function DepartmentWorkspace() {
       links: { ...(p.links ?? { doctors: [], faqs: [], media: [] }), [key]: value },
     }));
 
-  const configured: Record<SectionKey, boolean> = {
-    identity: Boolean(identity.name && page.hero.headline),
-    about: Boolean(page.about.intro || identity.description || page.about.items.length),
-    care: page.care.items.length > 0,
-    conditions: page.conditions.items.length > 0,
-    specialists: false,
-    facilities: page.facilities.items.length > 0 || Boolean(page.facilities.intro),
-    approach: page.approach.items.length > 0,
-    faqs: false,
-    media: false,
-    seo: Boolean(page.seo.title && page.seo.description),
-    publishing: published,
-  };
   const enabled: Partial<Record<SectionKey, boolean>> = {
     identity: page.hero.enabled,
     about: page.about.enabled,
@@ -371,6 +395,19 @@ export function DepartmentWorkspace() {
     faqs: page.faqs.enabled,
     media: page.media.enabled,
   };
+  const completion = getDepartmentCompletion({
+    identity,
+    page,
+    cardImage: row?.["card_image_url"] ?? null,
+    published,
+  });
+  const saveState: SaveState = saveDraft.isPending
+    ? "saving"
+    : saveFailed
+      ? "failed"
+      : dirty
+        ? "unsaved"
+        : "saved";
 
   if (record.isPending)
     return (
@@ -405,8 +442,8 @@ export function DepartmentWorkspace() {
       description="Department workspace"
       requires="content.write"
     >
-      {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-center lg:justify-between">
+      <div className="border-b border-border bg-background pb-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
         <div className="min-w-0">
           <Link
             to="/_admin/departments"
@@ -414,8 +451,10 @@ export function DepartmentWorkspace() {
           >
             <ArrowLeft className="size-4" /> Back to Departments
           </Link>
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <h2 className="text-2xl font-semibold">{identity.name || "Untitled department"}</h2>
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2.5">
+            <h2 className="min-w-0 truncate text-xl font-semibold sm:text-2xl">
+              {identity.name || "Untitled department"}
+            </h2>
             <StatusBadge
               status={published ? "Published" : "Draft"}
               tone={published ? "positive" : "neutral"}
@@ -423,12 +462,23 @@ export function DepartmentWorkspace() {
             {hasDraftChanges && published ? (
               <span className="text-xs font-medium text-muted-foreground">Unpublished changes</span>
             ) : null}
-            {dirty ? (
-              <span className="text-xs font-medium text-brand-accent">Unsaved edits</span>
-            ) : null}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <SaveStateLabel state={saveState} />
+            <span>Last saved {formatDate(row["page_draft_saved_at"])}</span>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div
+          className="grid size-14 shrink-0 place-items-center border border-border bg-secondary text-center sm:size-16"
+          aria-label={`${completion.percentage}% profile readiness`}
+        >
+          <strong className="text-base font-semibold text-primary sm:text-lg">
+            {completion.percentage}%
+          </strong>
+          <span className="sr-only">complete</span>
+        </div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
           <Button type="button" variant="outline" disabled={!dirty || busy} onClick={cancel}>
             Cancel
           </Button>
@@ -450,7 +500,17 @@ export function DepartmentWorkspace() {
               <ExternalLink className="size-4" /> Preview
             </a>
           </Button>
-          {canPublish ? (
+          {canPublish ? published ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="text-destructive"
+              disabled={busy}
+              onClick={() => unpublish.mutate()}
+            >
+              {unpublish.isPending ? "Unpublishing…" : "Unpublish"}
+            </Button>
+          ) : (
             <Button type="button" disabled={busy} onClick={() => publish.mutate()}>
               <Send className="size-4" /> {publish.isPending ? "Publishing…" : "Publish"}
             </Button>
@@ -463,12 +523,13 @@ export function DepartmentWorkspace() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside className="min-w-0">
-          <label className="lg:hidden">
-            <span className="sr-only">Section</span>
+          <div className="grid gap-3 lg:hidden">
+            <label>
+            <span className="text-xs font-semibold uppercase text-muted-foreground">Current section</span>
             <select
-              className="h-11 w-full border border-input bg-background px-3 text-sm"
+              className="mt-1.5 h-11 w-full border border-input bg-background px-3 text-sm font-medium"
               value={active}
               onChange={(e) => goto(e.target.value)}
             >
@@ -479,10 +540,21 @@ export function DepartmentWorkspace() {
                 >{`${String(i + 1).padStart(2, "0")} ${s.label}`}</option>
               ))}
             </select>
-          </label>
+            </label>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border border-border bg-secondary p-3">
+              <p className="min-w-0 text-sm font-medium">
+                {completion.sectionStates[active] === "complete"
+                  ? "This section is complete"
+                  : completion.sectionStates[active] === "optional"
+                    ? "This section is optional"
+                    : "This section needs attention"}
+              </p>
+              <SectionStatus state={completion.sectionStates[active]} showLabel={false} />
+            </div>
+          </div>
           <nav
             aria-label="Department sections"
-            className="sticky top-24 hidden border border-border bg-background lg:block"
+            className="sticky top-24 hidden overflow-hidden border border-border bg-background shadow-[var(--shadow-sm)] lg:block"
           >
             <ul>
               {SECTIONS.map((s, i) => {
@@ -504,14 +576,10 @@ export function DepartmentWorkspace() {
                       <span className="w-5 font-heading text-xs tabular-nums text-brand-accent">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className={cn("flex-1", off && "line-through opacity-60")}>
+                       <span className={cn("min-w-0 flex-1", off && "opacity-60")}>
                         {s.label}
                       </span>
-                      {configured[s.key] ? (
-                        <CheckCircle2 className="size-3.5 text-primary" aria-label="Configured" />
-                      ) : (
-                        <Circle className="size-3 opacity-30" aria-hidden />
-                      )}
+                       <SectionStatus state={completion.sectionStates[s.key]} showLabel={false} />
                     </Link>
                   </li>
                 );
@@ -521,6 +589,11 @@ export function DepartmentWorkspace() {
         </aside>
 
         <div className="min-w-0">
+          <CompletionCard
+            percentage={completion.percentage}
+            missing={completion.missing}
+            onNavigate={goto}
+          />
           {active === "identity" ? (
             <Panel
               title="Identity & Hero"
@@ -865,7 +938,113 @@ export function DepartmentWorkspace() {
           </div>
         </div>
       </div>
+      {blocker.status === "blocked" ? (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="leave-workspace-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-foreground/35 p-4"
+        >
+          <div className="w-full max-w-md border border-border bg-background p-5 shadow-[var(--shadow-lg)]">
+            <h2 id="leave-workspace-title" className="text-lg font-semibold">
+              You have unsaved changes
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Leave without saving? Your changes in this Department workspace will be lost.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => blocker.reset?.()}>
+                Stay
+              </Button>
+              <Button type="button" variant="destructive" onClick={() => blocker.proceed?.()}>
+                Leave
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AdminShell>
+  );
+}
+
+function SaveStateLabel({ state }: { state: SaveState }) {
+  const content = {
+    saved: { label: "Saved", icon: CheckCircle2, className: "text-success-foreground" },
+    unsaved: { label: "Unsaved changes", icon: AlertCircle, className: "text-brand-accent" },
+    saving: { label: "Saving…", icon: Clock3, className: "text-primary" },
+    failed: { label: "Save failed", icon: AlertCircle, className: "text-destructive" },
+  }[state];
+  const Icon = content.icon;
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 font-semibold", content.className)} role="status">
+      <Icon className="size-3.5 shrink-0" aria-hidden /> {content.label}
+    </span>
+  );
+}
+
+function SectionStatus({ state, showLabel = true }: { state: CompletionState; showLabel?: boolean }) {
+  const content = {
+    complete: { label: "Complete", icon: CheckCircle2, className: "text-success-foreground" },
+    attention: { label: "Needs attention", icon: AlertCircle, className: "text-brand-accent" },
+    optional: { label: "Optional", icon: Circle, className: "text-muted-foreground" },
+  }[state];
+  const Icon = content.icon;
+  return (
+    <span className={cn("inline-flex shrink-0 items-center gap-1 text-xs font-medium", content.className)}>
+      <Icon className="size-4 shrink-0" aria-hidden />
+      {showLabel ? content.label : <span className="sr-only">{content.label}</span>}
+    </span>
+  );
+}
+
+function CompletionCard({
+  percentage,
+  missing,
+  onNavigate,
+}: {
+  percentage: number;
+  missing: ReturnType<typeof getDepartmentCompletion>["missing"];
+  onNavigate: (section: string) => void;
+}) {
+  const visible = missing.slice(0, 4);
+  return (
+    <section aria-labelledby="profile-readiness" className="mb-6 border border-border bg-background p-4 shadow-[var(--shadow-sm)] sm:p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+        <div className="min-w-0">
+          <h3 id="profile-readiness" className="font-semibold">Department profile</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {missing.length ? `${missing.length} item${missing.length === 1 ? "" : "s"} need attention` : "All profile checks are complete"}
+          </p>
+        </div>
+        <p className="shrink-0 text-lg font-semibold text-primary">{percentage}% complete</p>
+      </div>
+      <progress
+        className="mt-4 h-2 w-full appearance-none overflow-hidden bg-secondary accent-primary [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-secondary [&::-webkit-progress-value]:bg-primary"
+        value={percentage}
+        max={100}
+        aria-label={`Department profile is ${percentage}% complete`}
+      />
+      {visible.length ? (
+        <ul className="mt-4 grid gap-1 sm:grid-cols-2">
+          {visible.map((item) => (
+            <li key={`${item.section}-${item.label}`}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-auto min-h-10 w-full justify-start whitespace-normal px-2 py-2 text-left text-sm"
+                onClick={() => onNavigate(item.section)}
+              >
+                <AlertCircle className="size-4 shrink-0 text-brand-accent" aria-hidden />
+                <span className="min-w-0 flex-1">{item.label}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {item.priority === "required" ? "Required" : "Recommended"}
+                </span>
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
   );
 }
 
@@ -935,10 +1114,16 @@ function Field({
   count?: [number, number];
   children: ReactNode;
 }) {
+  const fieldId = useId();
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<{ id?: string }>, {
+        id: (children.props as { id?: string }).id ?? fieldId,
+      })
+    : children;
   return (
     <div className={cn("grid gap-1.5", wide && "md:col-span-2")}>
       <div className="flex items-baseline justify-between gap-3">
-        <Label>
+        <Label htmlFor={fieldId}>
           {label}
           {required ? <span className="text-brand-accent"> *</span> : null}
         </Label>
@@ -953,7 +1138,7 @@ function Field({
           </span>
         ) : null}
       </div>
-      {children}
+      {control}
       {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
     </div>
   );
