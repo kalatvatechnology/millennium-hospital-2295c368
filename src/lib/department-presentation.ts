@@ -8,6 +8,8 @@ import orthoFacility from "@/assets/dept-ortho-facility.jpg";
  */
 export type DepartmentPresentation = {
   headline: [string, string];
+  /** Hero headline lines, broken intentionally for the editorial layout. */
+  heroLines: string[];
   lead: string;
   introHeading: string;
   highlights: { title: string; text: string }[];
@@ -22,6 +24,7 @@ export type DepartmentPresentation = {
 
 const orthopedics: DepartmentPresentation = {
   headline: ["Advanced care for", "bones, joints & movement."],
+  heroLines: ["Advanced care for", "bones,", "joints &", "movement."],
   lead: "Comprehensive orthopedic care focused on diagnosis, treatment, recovery and long-term mobility.",
   introHeading: "Orthopedic care designed around movement, recovery and quality of life.",
   highlights: [
