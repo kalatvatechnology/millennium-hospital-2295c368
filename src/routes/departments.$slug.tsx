@@ -85,7 +85,7 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
             <div className="mt-8 hidden flex-wrap gap-3 lg:flex"><HeroActions /></div>
           </div>
           <figure className="dept-reveal relative mx-4 sm:mx-8 lg:m-0">
-            <div className="group relative aspect-[4/5] overflow-hidden bg-secondary sm:aspect-[16/12] lg:absolute lg:inset-0 lg:aspect-auto">
+            <div className="group relative aspect-[6/7] overflow-hidden bg-secondary sm:aspect-[16/12] lg:absolute lg:inset-0 lg:aspect-auto">
               {heroImage ? (
                 <img src={heroImage} alt={heroAlt} className="size-full object-cover object-[center_28%] transition-transform duration-[1200ms] group-hover:scale-[1.02]" width={1280} height={1536} />
               ) : (
@@ -115,9 +115,9 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{p?.introHeading ?? `About ${department.name}`}</h2>
               <p className="mt-5 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{about}</p>
               {p ? (
-                <dl className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4">
+                <dl className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4">
                   {p.highlights.map((h, i) => (
-                    <div key={h.title} className={`border-t border-border py-5 sm:pr-6 lg:border-l lg:border-t-0 lg:py-1 lg:pl-6 ${i === 0 ? "lg:border-l-0 lg:pl-0" : ""}`}>
+                    <div key={h.title} className={`border-t border-border py-5 sm:pr-6 xl:border-l xl:border-t-0 xl:py-1 xl:pl-6 ${i === 0 ? "xl:border-l-0 xl:pl-0" : ""}`}>
                       <span className="block h-0.5 w-6 bg-brand-accent" aria-hidden />
                       <dt className="mt-4 font-heading text-base font-semibold text-foreground">{h.title}</dt>
                       <dd className="mt-2 text-sm leading-6 text-muted-foreground">{h.text}</dd>
