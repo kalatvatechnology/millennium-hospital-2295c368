@@ -24,7 +24,7 @@ export type DepartmentPresentation = {
 
 const orthopedics: DepartmentPresentation = {
   headline: ["Advanced care for", "bones, joints & movement."],
-  heroLines: ["Advanced care for", "bones,", "joints &", "movement."],
+  heroLines: ["Advanced", "care for", "bones, joints", "& movement."],
   lead: "Comprehensive orthopedic care focused on diagnosis, treatment, recovery and long-term mobility.",
   introHeading: "Orthopedic care designed around movement, recovery and quality of life.",
   highlights: [

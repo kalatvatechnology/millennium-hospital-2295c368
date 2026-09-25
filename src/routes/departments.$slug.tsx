@@ -69,20 +69,20 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
     <div className="dept-page overflow-x-clip">
       {/* 01 HERO */}
       <section className="relative bg-background">
-        <div className="mx-auto grid max-w-[1440px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:min-h-[44rem]">
-          <div className="dept-reveal flex flex-col justify-center px-4 pb-8 pt-10 sm:px-8 sm:pt-14 lg:py-20 lg:pl-[max(2.5rem,calc((100vw-1240px)/2+2.5rem))] lg:pr-12">
+        <div className="mx-auto grid max-w-[1440px] lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:min-h-[36rem]">
+          <div className="dept-reveal flex flex-col justify-center px-4 pb-6 pt-8 sm:px-8 sm:pt-10 lg:py-14 lg:pl-[max(2.5rem,calc((100vw-1240px)/2+2.5rem))] lg:pr-10">
             <nav aria-label="Breadcrumb" className={`${eyebrow} flex items-center gap-3 text-muted-foreground`}>
               <Link to="/departments" className="hover:text-primary">Departments</Link>
               <span className="h-px w-6 bg-brand-accent" aria-hidden />
               <span className="text-primary">{department.name}</span>
             </nav>
-            <h1 className="mt-8 font-heading text-[2.6rem] font-semibold uppercase leading-[0.98] tracking-[-0.02em] text-foreground sm:text-6xl xl:text-[5.1rem]">
+            <h1 className="mt-6 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-6xl lg:text-[3.4rem] xl:text-[4.25rem]">
               {p ? p.heroLines.map((l, i) => (
-                <span key={l} className={`block ${i === 0 ? "mb-2 text-[0.42em] tracking-[0.12em] text-muted-foreground" : i === p.heroLines.length - 1 ? "text-primary" : ""}`}>{l}</span>
+                <span key={l} className={`block ${i === p.heroLines.length - 1 ? "text-primary" : ""}`}>{l}</span>
               )) : department.name}
             </h1>
-            {lead ? <p className="mt-8 max-w-[30rem] border-l-2 border-brand-accent pl-5 text-lg leading-8 text-muted-foreground">{lead}</p> : null}
-            <div className="mt-10 hidden flex-wrap gap-3 lg:flex"><HeroActions /></div>
+            {lead ? <p className="mt-6 max-w-[30rem] border-l-2 border-brand-accent pl-5 text-lg leading-8 text-muted-foreground">{lead}</p> : null}
+            <div className="mt-8 hidden flex-wrap gap-3 lg:flex"><HeroActions /></div>
           </div>
           <figure className="dept-reveal relative mx-4 sm:mx-8 lg:m-0">
             <div className="group relative aspect-[4/5] overflow-hidden bg-secondary sm:aspect-[16/12] lg:absolute lg:inset-0 lg:aspect-auto">
@@ -99,25 +99,25 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
               <span className="font-heading text-sm font-semibold">Dept. / {department.name}</span>
             </figcaption>
           </figure>
-          <div className="flex flex-col gap-3 px-4 pb-12 pt-6 sm:flex-row sm:px-8 lg:hidden"><HeroActions /></div>
+          <div className="flex flex-col gap-3 px-4 pb-8 pt-5 sm:flex-row sm:px-8 lg:hidden"><HeroActions /></div>
         </div>
       </section>
 
       {/* 02 ABOUT */}
       {about ? (
         <section className="bg-background">
-          <div className={`${wrap} grid gap-10 py-20 sm:py-28 lg:grid-cols-[0.34fr_0.66fr]`}>
+          <div className={`${wrap} grid gap-6 py-14 sm:py-20 lg:grid-cols-[0.3fr_0.7fr] lg:gap-10`}>
             <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
               <BigNumber n="01" />
               <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>About the<br className="hidden lg:block" /> department</p>
             </div>
             <div className="dept-reveal">
               <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{p?.introHeading ?? `About ${department.name}`}</h2>
-              <p className="mt-7 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{about}</p>
+              <p className="mt-5 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{about}</p>
               {p ? (
-                <dl className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4">
+                <dl className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4">
                   {p.highlights.map((h, i) => (
-                    <div key={h.title} className={`border-t border-border py-6 sm:pr-6 lg:border-l lg:border-t-0 lg:py-1 lg:pl-6 ${i === 0 ? "lg:border-l-0 lg:pl-0" : ""}`}>
+                    <div key={h.title} className={`border-t border-border py-5 sm:pr-6 lg:border-l lg:border-t-0 lg:py-1 lg:pl-6 ${i === 0 ? "lg:border-l-0 lg:pl-0" : ""}`}>
                       <span className="block h-0.5 w-6 bg-brand-accent" aria-hidden />
                       <dt className="mt-4 font-heading text-base font-semibold text-foreground">{h.title}</dt>
                       <dd className="mt-2 text-sm leading-6 text-muted-foreground">{h.text}</dd>
@@ -133,15 +133,15 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {/* 03 SPECIALIZED CARE */}
       {p ? (
         <section className="bg-secondary">
-          <div className={`${wrap} grid gap-12 py-20 sm:py-28 lg:grid-cols-[0.4fr_0.6fr] lg:gap-20`}>
+          <div className={`${wrap} grid gap-8 py-14 sm:py-20 lg:grid-cols-[0.4fr_0.6fr] lg:gap-16`}>
             <div className="lg:sticky lg:top-28 lg:self-start">
               <Label n="02" text="Specialized care" />
-              <h2 className="mt-6 text-3xl font-semibold leading-[1.1] sm:text-[2.75rem]">Specialized<br />{department.name} Care</h2>
-              <p className="mt-6 max-w-md text-base leading-7 text-muted-foreground">{p.careIntro}</p>
+              <h2 className="mt-4 text-3xl font-semibold leading-[1.1] sm:text-[2.75rem]">Specialized<br />{department.name} Care</h2>
+              <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">{p.careIntro}</p>
             </div>
             <ol className="border-t border-foreground/20">
               {p.careAreas.map((a, i) => (
-                <li key={a.title} className="group relative grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 border-b border-foreground/20 py-6 transition-colors hover:bg-background/70 sm:grid-cols-[4.5rem_1fr_auto] sm:py-7">
+                <li key={a.title} className="group relative grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 border-b border-foreground/20 py-5 transition-colors hover:bg-background/70 sm:grid-cols-[4.5rem_1fr_auto] sm:py-5">
                   <span className="absolute left-0 top-0 h-full w-0.5 origin-top scale-y-0 bg-brand-accent transition-transform duration-300 group-hover:scale-y-100" aria-hidden />
                   <span className="pl-2 font-heading text-sm font-semibold tabular-nums text-brand-accent sm:pl-4">{String(i + 1).padStart(2, "0")}</span>
                   <div className="transition-transform duration-300 group-hover:translate-x-1.5">
@@ -159,11 +159,11 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {/* 04 CONDITIONS — signature typographic spread */}
       {p ? (
         <section className="bg-background">
-          <div className={`${wrap} py-20 sm:py-32`}>
-            <div className="grid gap-10 lg:grid-cols-[0.28fr_0.72fr] lg:gap-12">
+          <div className={`${wrap} py-14 sm:py-20`}>
+            <div className="grid gap-6 lg:grid-cols-[0.28fr_0.72fr] lg:gap-12">
               <div>
                 <Label n="03" text="Conditions" />
-                <h2 className="mt-6 font-heading text-2xl font-semibold uppercase leading-tight tracking-[0.04em] text-primary sm:text-3xl">Conditions<br />we treat</h2>
+                <h2 className="mt-4 font-heading text-2xl font-semibold uppercase leading-tight tracking-[0.04em] text-primary sm:text-3xl">Conditions<br />we treat</h2>
               </div>
               <ul className="flex flex-wrap items-baseline gap-x-3 gap-y-1 sm:gap-x-4" aria-label={`Conditions treated by ${department.name}`}>
                 {p.conditions.map((c, i) => (
@@ -179,18 +179,18 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
 
       {/* 05 SPECIALISTS */}
       <section id="specialists" className="scroll-mt-24 bg-primary text-primary-foreground">
-        <div className={`${wrap} py-20 sm:py-28`}>
-          <div className="grid gap-12 lg:grid-cols-[0.4fr_0.6fr] lg:gap-16">
+        <div className={`${wrap} ${doctors.length ? "py-16 sm:py-24" : "py-12 sm:py-16"}`}>
+          <div className={`grid lg:grid-cols-[0.4fr_0.6fr] ${doctors.length ? "gap-10 lg:gap-16" : "gap-6 lg:items-end lg:gap-16"}`}>
             <div>
               <Label n="04" text="Our specialists" dark />
-              <h2 className="mt-6 font-heading text-4xl font-semibold uppercase leading-[1.02] tracking-[-0.01em] sm:text-5xl">Meet our<br />{department.name}<br />specialists</h2>
-              <p className="mt-6 max-w-sm leading-7 text-primary-foreground/75">Clinicians in this department, connected to their full Millennium Hospital profiles.</p>
-              <Link to="/doctors" className="group mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
-                All doctors <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              <h2 className="mt-4 font-heading text-3xl font-semibold uppercase leading-[1.02] tracking-[-0.01em] sm:text-5xl">Meet our<br />{department.name}<br />specialists</h2>
+              <p className="mt-4 max-w-sm leading-7 text-primary-foreground/75">Clinicians in this department, connected to their full Millennium Hospital profiles.</p>
+              <Link to="/doctors" className="group mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
+                View all doctors <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
             {doctors.length ? <SpecialistShowcase doctors={doctors} /> : (
-              <div className="self-end border-t border-primary-foreground/25 pt-8">
+              <div className="border-t border-primary-foreground/25 pt-6">
                 <div className="flex items-start gap-5">
                   <UserRound className="mt-1 size-6 shrink-0 text-primary-foreground/60" aria-hidden />
                   <div>
@@ -208,20 +208,20 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
       {p ? (
         <section className="bg-foreground">
           <div className="relative">
-            <div className="group relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:aspect-[21/9]">
+            <div className="group relative aspect-[4/3] overflow-hidden sm:aspect-[16/9] lg:aspect-[21/8.5]">
               <img src={p.facilityImage} alt="Hospital clinical corridor with imaging and rehabilitation areas" className="size-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]" loading="lazy" width={1600} height={1008} />
               <div className="absolute inset-0 hidden bg-gradient-to-r from-foreground/85 via-foreground/40 to-transparent lg:block" aria-hidden />
             </div>
-            <div className="bg-background px-4 py-14 sm:px-8 lg:absolute lg:inset-y-0 lg:left-[max(2.5rem,calc((100vw-1240px)/2+2.5rem))] lg:flex lg:max-w-md lg:flex-col lg:justify-center lg:bg-transparent lg:p-0 lg:text-primary-foreground">
+            <div className="bg-background px-4 py-10 sm:px-8 lg:absolute lg:inset-y-0 lg:left-[max(2.5rem,calc((100vw-1240px)/2+2.5rem))] lg:flex lg:max-w-md lg:flex-col lg:justify-center lg:bg-transparent lg:p-0 lg:text-primary-foreground">
               <Label n="05" text="Facilities" darkLg />
-              <h2 className="mt-6 font-heading text-3xl font-semibold uppercase leading-[1.05] sm:text-[2.6rem]">Advanced facilities<br />&amp; technology</h2>
-              <p className="mt-6 leading-7 text-muted-foreground lg:text-primary-foreground/80">{p.facilityText}</p>
-              <ul className="mt-8 space-y-3">
+              <h2 className="mt-4 font-heading text-3xl font-semibold uppercase leading-[1.05] sm:text-[2.6rem]">Advanced facilities<br />&amp; technology</h2>
+              <p className="mt-4 leading-7 text-muted-foreground lg:text-primary-foreground/80">{p.facilityText}</p>
+              <ul className="mt-6 space-y-2.5">
                 {p.facilityPoints.map((f) => (
                   <li key={f} className="flex items-center gap-4 text-sm font-semibold"><span className="h-px w-6 bg-brand-accent" aria-hidden />{f}</li>
                 ))}
               </ul>
-              <Link to="/facilities" className="group mt-9 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary lg:text-primary-foreground">
+              <Link to="/facilities" className="group mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary lg:text-primary-foreground">
                 Explore hospital facilities <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
@@ -231,19 +231,19 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
 
       {/* 07 THE MILLENNIUM APPROACH */}
       <section className="bg-secondary">
-        <div className={`${wrap} py-20 sm:py-28`}>
-          <div className="grid gap-8 lg:grid-cols-[0.5fr_0.5fr] lg:items-end">
+        <div className={`${wrap} py-14 sm:py-20`}>
+          <div className="grid gap-6 lg:grid-cols-[0.5fr_0.5fr] lg:items-end">
             <div>
               <Label n="06" text="The Millennium approach" />
-              <h2 className="mt-6 font-heading text-4xl font-semibold uppercase leading-[1] tracking-[-0.01em] sm:text-6xl">Care,<br />coordinated<br /><span className="text-primary">around you.</span></h2>
+              <h2 className="mt-4 font-heading text-4xl font-semibold uppercase leading-[1] tracking-[-0.01em] sm:text-[3.4rem]">Care,<br />coordinated<br /><span className="text-primary">around you.</span></h2>
             </div>
             <p className="max-w-md leading-7 text-muted-foreground lg:justify-self-end">{department.name} is part of a wider multi-specialty hospital, so care can draw on colleagues across departments when you need it.</p>
           </div>
-          <ol className="mt-16 grid border-t border-foreground/20 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-10 grid border-t border-foreground/20 sm:grid-cols-2 lg:grid-cols-4">
             {APPROACH.map(([t, d], i) => (
-              <li key={t} className="border-b border-foreground/20 py-8 sm:pr-8 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0">
+              <li key={t} className="border-b border-foreground/20 py-6 sm:pr-8 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0">
                 <span className="font-heading text-sm font-semibold text-brand-accent">{String(i + 1).padStart(2, "0")}</span>
-                <p className="mt-6 font-heading text-xl font-semibold">{t}</p>
+                <p className="mt-4 font-heading text-xl font-semibold">{t}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{d}</p>
               </li>
             ))}
@@ -256,12 +256,12 @@ function DepartmentView({ department, doctors }: { department: Dept; doctors: Do
 
       {/* 09 CTA */}
       <section className="relative bg-sidebar text-sidebar-foreground">
-        <span className="absolute left-1/2 top-0 h-16 w-px -translate-x-1/2 bg-brand-accent" aria-hidden />
-        <div className={`${wrap} py-24 text-center sm:py-32`}>
+        <span className="absolute left-1/2 top-0 h-10 w-px -translate-x-1/2 bg-brand-accent" aria-hidden />
+        <div className={`${wrap} py-16 text-center sm:py-[5.5rem]`}>
           <p className={`${eyebrow} text-sidebar-foreground/65`}>Appointments</p>
-          <h2 className="mx-auto mt-6 max-w-3xl font-heading text-4xl font-semibold uppercase leading-[1.02] sm:text-6xl">Ready to take<br />the next step?</h2>
-          <p className="mx-auto mt-6 max-w-md text-lg text-sidebar-foreground/80">Speak with our {lower} care team.</p>
-          <div className="mx-auto mt-10 flex max-w-md flex-col justify-center gap-3 sm:max-w-none sm:flex-row">
+          <h2 className="mx-auto mt-4 max-w-3xl font-heading text-4xl font-semibold uppercase leading-[1.02] sm:text-6xl">Ready to take<br />the next step?</h2>
+          <p className="mx-auto mt-4 max-w-md text-lg text-sidebar-foreground/80">Speak with our {lower} care team.</p>
+          <div className="mx-auto mt-8 flex max-w-md flex-col justify-center gap-3 sm:max-w-none sm:flex-row">
             <Button asChild size="lg" className="min-h-12 bg-brand-accent px-7 text-brand-accent-foreground hover:bg-brand-accent/90">
               <Link to="/contact"><CalendarDays /> Book an Appointment</Link>
             </Button>
@@ -289,7 +289,7 @@ function HeroActions() {
 }
 
 function BigNumber({ n }: { n: string }) {
-  return <span className="font-heading text-6xl font-semibold leading-none tracking-[-0.04em] text-primary/15 sm:text-8xl lg:text-[8.5rem]" aria-hidden>{n}</span>;
+  return <span className="font-heading text-6xl font-semibold leading-none tracking-[-0.04em] text-primary/15 sm:text-7xl lg:text-[6.5rem]" aria-hidden>{n}</span>;
 }
 
 function Label({ n, text, dark = false, darkLg = false }: { n: string; text: string; dark?: boolean; darkLg?: boolean }) {
@@ -343,7 +343,7 @@ function DepartmentFaqs({ departmentName }: { departmentName: string }) {
   if (!items.length) return null;
   return (
     <section className="bg-background">
-      <div className={`${wrap} grid gap-10 py-20 sm:py-28 lg:grid-cols-[0.34fr_0.66fr]`}>
+      <div className={`${wrap} grid gap-6 py-14 sm:py-20 lg:grid-cols-[0.34fr_0.66fr] lg:gap-10`}>
         <div>
           <Label n="07" text="Questions" />
           <h2 className="mt-6 text-3xl font-semibold sm:text-4xl">Frequently asked questions</h2>
