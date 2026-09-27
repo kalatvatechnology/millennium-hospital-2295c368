@@ -64,3 +64,42 @@ export async function removeUnreferencedDepartmentImages(paths: string[]) {
   const { error } = await supabase.storage.from(BUCKET).remove(unused);
   if (error) console.error("Department image cleanup failed", { paths: unused, error });
 }
+
+// Pending (uploaded but not yet saved) department images, remembered per department in this
+// browser so they can still be cleaned up after a reload, a cancelled edit or a department delete.
+const pendingKey = (departmentId: string) => `department-pending-uploads:${departmentId}`;
+
+export function readPendingUploads(departmentId: string): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(pendingKey(departmentId)) ?? "[]");
+    return Array.isArray(raw) ? raw.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addPendingUpload(departmentId: string, url: string) {
+  if (typeof window === "undefined") return;
+  const next = [...new Set([...readPendingUploads(departmentId), url])];
+  window.localStorage.setItem(pendingKey(departmentId), JSON.stringify(next));
+}
+
+export function clearPendingUploads(departmentId: string) {
+  if (typeof window !== "undefined") window.localStorage.removeItem(pendingKey(departmentId));
+}
+
+/** Storage paths of this department's pending uploads. */
+export function pendingUploadPaths(departmentId: string): string[] {
+  const out = new Set<string>();
+  collectPaths(readPendingUploads(departmentId), out);
+  return [...out];
+}
+
+/** Removes pending uploads that no saved record references, then forgets them. */
+export async function cleanupPendingUploads(departmentId: string) {
+  const paths = pendingUploadPaths(departmentId);
+  if (!paths.length) return;
+  clearPendingUploads(departmentId);
+  await removeUnreferencedDepartmentImages(paths);
+}
