@@ -1295,6 +1295,7 @@ function Field({
   required,
   wide,
   count,
+  className,
   children,
 }: {
   label: string;
@@ -1302,6 +1303,7 @@ function Field({
   required?: boolean;
   wide?: boolean;
   count?: [number, number];
+  className?: string;
   children: ReactNode;
 }) {
   const fieldId = useId();
@@ -1311,7 +1313,7 @@ function Field({
       })
     : children;
   return (
-    <div className={cn("grid gap-1.5", wide && "md:col-span-2")}>
+    <div className={cn("grid gap-1.5", wide && "md:col-span-2", className)}>
       <div className="flex items-baseline justify-between gap-3">
         <Label htmlFor={fieldId}>
           {label}
