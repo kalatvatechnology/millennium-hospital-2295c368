@@ -1257,7 +1257,7 @@ function SubHeading({ title, toggle }: { title: string; toggle?: ReactNode }) {
   );
 }
 
-export function Group({
+function Group({
   title,
   description,
   action,
@@ -1284,11 +1284,11 @@ export function Group({
   );
 }
 
-export function Grid({ children }: { children: ReactNode }) {
+function Grid({ children }: { children: ReactNode }) {
   return <div className="grid gap-x-5 gap-y-4 md:grid-cols-2">{children}</div>;
 }
 
-export function Field({
+function Field({
   label,
   help,
   required,
@@ -1350,7 +1350,7 @@ function Toggle({
   );
 }
 
-export function ListPanel({
+function ListPanel({
   title,
   itemName,
   emptyText,
@@ -1603,7 +1603,7 @@ export function ListPanel({
   );
 }
 
-export function ImageField({
+function ImageField({
   label,
   url,
   onChange,
