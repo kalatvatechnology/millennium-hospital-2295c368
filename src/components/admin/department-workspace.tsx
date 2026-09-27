@@ -35,6 +35,7 @@ import {
   Pencil,
   Upload,
   UserRound,
+  CircleHelp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin/admin-shell";
@@ -1852,6 +1853,7 @@ function LinkedList({
   busy,
   renderAction,
   refined,
+  icon,
 }: {
   renderAction?: ((id: string) => ReactNode) | undefined;
   rows: LinkRow[];
@@ -1861,6 +1863,8 @@ function LinkedList({
   removeLabel: string;
   busy: boolean;
   refined?: boolean;
+  /** Refined list only: "faq" shows a fixed-size FAQ icon and lets the question wrap. */
+  icon?: "faq" | undefined;
 }) {
   if (!rows.length)
     return (
@@ -1880,15 +1884,25 @@ function LinkedList({
               <span className="w-6 shrink-0 font-heading text-sm font-semibold tabular-nums text-brand-accent">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-secondary">
-                {r.image ? (
-                  <img src={r.image} alt="" className="size-full object-cover" loading="lazy" />
-                ) : (
-                  <UserRound className="size-5 text-muted-foreground" aria-hidden />
-                )}
-              </div>
+              {icon === "faq" ? (
+                <div className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-secondary">
+                  <CircleHelp className="size-5 text-muted-foreground" aria-hidden />
+                </div>
+              ) : (
+                <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-secondary">
+                  {r.image ? (
+                    <img src={r.image} alt="" className="size-full object-cover" loading="lazy" />
+                  ) : (
+                    <UserRound className="size-5 text-muted-foreground" aria-hidden />
+                  )}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
-                <p className="truncate font-heading font-semibold text-foreground">{r.title}</p>
+                <p
+                  className={`font-heading font-semibold text-foreground ${icon === "faq" ? "line-clamp-2 break-words" : "truncate"}`}
+                >
+                  {r.title}
+                </p>
                 {r.sub ? <p className="truncate text-sm text-muted-foreground">{r.sub}</p> : null}
               </div>
             </div>
@@ -2182,6 +2196,8 @@ function LinkManager({
         </p>
       ) : null}
       <LinkedList
+        refined={kind === "faq"}
+        icon={kind === "faq" ? "faq" : undefined}
         rows={rows}
         busy={false}
         removeLabel={`Remove ${cfg.noun} from this page`}
