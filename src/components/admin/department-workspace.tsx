@@ -860,6 +860,7 @@ export function DepartmentWorkspace() {
               value={page.about}
               onChange={(v) => set("about", v)}
               introHelp="Leave empty to use the department's full description."
+              refined
             />
           ) : null}
           {active === "care" ? (
@@ -1356,6 +1357,7 @@ function ListPanel({
   introHelp,
   textOptional,
   extra,
+  refined,
 }: {
   title: string;
   itemName: string;
@@ -1368,6 +1370,8 @@ function ListPanel({
   introHelp?: string;
   textOptional?: boolean;
   extra?: ReactNode;
+  /** About Department only: grouped public-content fields and structured highlight rows. */
+  refined?: boolean;
 }) {
   const items = value.items;
   const setItems = (next: PageItem[]) => onChange({ ...value, items: next });
@@ -1383,6 +1387,8 @@ function ListPanel({
       description="Only enabled items with a title appear on the public page. The section is hidden when it has no content."
     >
       <Toggle checked={value.enabled} onChange={(v) => onChange({ ...value, enabled: v })} />
+      {refined ? (
+        <Group title="Public content" description="Label, title and introduction shown at the top of this section.">
       <Grid>
         <Field label="Section label">
           <Input
@@ -1405,11 +1411,94 @@ function ListPanel({
           />
         </Field>
       </Grid>
+        </Group>
+      ) : (
+        <>
+      <Grid>
+        <Field label="Section label">
+          <Input
+            value={value.label}
+            onChange={(e) => onChange({ ...value, label: e.target.value })}
+          />
+        </Field>
+        <Field label={titleLabel} help={titleHelp}>
+          <Textarea
+            rows={2}
+            value={value.title}
+            onChange={(e) => onChange({ ...value, title: e.target.value })}
+          />
+        </Field>
+        <Field label="Introduction" wide help={introHelp}>
+          <Textarea
+            rows={3}
+            value={value.intro}
+            onChange={(e) => onChange({ ...value, intro: e.target.value })}
+          />
+        </Field>
+      </Grid>
+        </>
+      )}
       {extra}
       <SubHeading
         title={`${itemName.charAt(0).toUpperCase()}${itemName.slice(1)}s (${items.length})`}
       />
-      {items.length ? (
+      {refined && items.length ? (
+        <ol className="grid overflow-hidden rounded-lg border border-border bg-card">
+          {items.map((item, i) => {
+            const patch = (patch: Partial<PageItem>) => setItems(items.map((x) => (x.id === item.id ? { ...x, ...patch } : x)));
+            return (
+              <li
+                key={item.id}
+                className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3 gap-y-3 border-b border-border p-4 last:border-b-0 sm:p-5"
+              >
+                <span className="pt-2 font-heading text-sm font-semibold tabular-nums text-brand-accent">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className={cn("grid min-w-0 gap-3", !item.enabled && "opacity-60")}>
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4">
+                    <Input
+                      aria-label={`${itemName} ${i + 1} ${nameLabel.toLowerCase()}`}
+                      placeholder={nameLabel}
+                      value={item.title}
+                      onChange={(e) => patch({ title: e.target.value })}
+                    />
+                    <Toggle
+                      label={item.enabled ? "Enabled" : "Disabled"}
+                      checked={item.enabled}
+                      onChange={(v) => patch({ enabled: v })}
+                    />
+                  </div>
+                  <Textarea
+                    aria-label={`${itemName} ${i + 1} description`}
+                    rows={2}
+                    placeholder={textOptional ? "Short description (optional)" : "Short description"}
+                    value={item.text}
+                    onChange={(e) => patch({ text: e.target.value })}
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Button type="button" size="sm" variant="outline" className="h-9 gap-1.5 px-3" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
+                      <ArrowUp className="size-4" /> Up
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" className="h-9 gap-1.5 px-3" aria-label="Move down" disabled={i === items.length - 1} onClick={() => move(i, 1)}>
+                      <ArrowDown className="size-4" /> Down
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="ml-auto size-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Remove ${itemName}`}
+                      onClick={() => setItems(items.filter((x) => x.id !== item.id))}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      ) : items.length ? (
         <ol className="grid border-t border-border">
           {items.map((item, i) => (
             <li
