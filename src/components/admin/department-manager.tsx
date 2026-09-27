@@ -136,7 +136,7 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ))}
       </dl>
 
-      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-background p-3 sm:p-4 [&>div:first-child]:basis-full md:[&>div:first-child]:basis-0 [&>div:not(:first-child)]:min-w-36 [&>div:not(:first-child)]:flex-1 md:[&>div:not(:first-child)]:max-w-44 md:[&>div:not(:first-child)]:flex-none [&_label]:text-xs [&_label]:font-medium [&_label]:text-muted-foreground">
+      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-background p-3 sm:p-4 [&>div:first-child]:basis-full lg:[&>div:first-child]:basis-0 [&>div:not(:first-child)]:min-w-36 [&>div:not(:first-child)]:flex-1 lg:[&>div:not(:first-child)]:max-w-44 lg:[&>div:not(:first-child)]:flex-none [&_label]:text-xs [&_label]:font-medium [&_label]:text-muted-foreground">
         <SearchField value={search} onChange={reset(setSearch)} placeholder="Search departments" />
         <FilterSelect label="Status" value={status} onChange={reset(setStatus)} options={[
           { value: "all", label: "All" },
@@ -257,7 +257,7 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
           {countsReady ? (
             <span className="text-right leading-none">
               <span className="text-xl font-semibold tabular-nums text-foreground">{insight.percentage}%</span>
-              <span className="ml-1 text-xs text-muted-foreground">complete</span>
+              <span className="ml-1 hidden text-xs text-muted-foreground lg:inline">complete</span>
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">Calculating…</span>
