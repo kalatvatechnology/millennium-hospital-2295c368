@@ -23,7 +23,6 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
-import { Route as TmpSpecialistsRouteImport } from './routes/tmp-specialists'
 import { Route as AdminIndexRouteImport } from './routes/[_]admin.index'
 import { Route as AdminAuditLogsRouteImport } from './routes/[_]admin.audit-logs'
 import { Route as AdminBlogRouteImport } from './routes/[_]admin.blog'
@@ -149,11 +148,6 @@ const ServicesRoute = ServicesRouteImport.update({
 const TermsAndConditionsRoute = TermsAndConditionsRouteImport.update({
   id: '/terms-and-conditions',
   path: '/terms-and-conditions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TmpSpecialistsRoute = TmpSpecialistsRouteImport.update({
-  id: '/tmp-specialists',
-  path: '/tmp-specialists',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -461,7 +455,6 @@ export interface FileRoutesByFullPath {
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
-  '/tmp-specialists': typeof TmpSpecialistsRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/blog': typeof AdminBlogRouteWithChildren
   '/_admin/blog-comments': typeof AdminBlogCommentsRouteWithChildren
@@ -528,7 +521,6 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
-  '/tmp-specialists': typeof TmpSpecialistsRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
   '/_admin/enquiries': typeof AdminEnquiriesRoute
@@ -598,7 +590,6 @@ export interface FileRoutesById {
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
-  '/tmp-specialists': typeof TmpSpecialistsRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/blog': typeof AdminBlogRouteWithChildren
   '/_admin/blog-comments': typeof AdminBlogCommentsRouteWithChildren
@@ -673,7 +664,6 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
-    | '/tmp-specialists'
     | '/_admin/audit-logs'
     | '/_admin/blog'
     | '/_admin/blog-comments'
@@ -740,7 +730,6 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/reviews'
     | '/terms-and-conditions'
-    | '/tmp-specialists'
     | '/_admin/audit-logs'
     | '/_admin/dashboard'
     | '/_admin/enquiries'
@@ -809,7 +798,6 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
-    | '/tmp-specialists'
     | '/_admin/audit-logs'
     | '/_admin/blog'
     | '/_admin/blog-comments'
@@ -883,7 +871,6 @@ export interface RootRouteChildren {
   ReviewsRoute: typeof ReviewsRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   TermsAndConditionsRoute: typeof TermsAndConditionsRoute
-  TmpSpecialistsRoute: typeof TmpSpecialistsRoute
   ApiPublicDoctorProfileImageRoute: typeof ApiPublicDoctorProfileImageRoute
   ApiPublicDoctorVcardRoute: typeof ApiPublicDoctorVcardRoute
 }
@@ -986,13 +973,6 @@ declare module '@tanstack/react-router' {
       path: '/terms-and-conditions'
       fullPath: '/terms-and-conditions'
       preLoaderRoute: typeof TermsAndConditionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tmp-specialists': {
-      id: '/tmp-specialists'
-      path: '/tmp-specialists'
-      fullPath: '/tmp-specialists'
-      preLoaderRoute: typeof TmpSpecialistsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_admin/': {
@@ -1626,7 +1606,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewsRoute: ReviewsRoute,
   ServicesRoute: ServicesRouteWithChildren,
   TermsAndConditionsRoute: TermsAndConditionsRoute,
-  TmpSpecialistsRoute: TmpSpecialistsRoute,
   ApiPublicDoctorProfileImageRoute: ApiPublicDoctorProfileImageRoute,
   ApiPublicDoctorVcardRoute: ApiPublicDoctorVcardRoute,
 }
