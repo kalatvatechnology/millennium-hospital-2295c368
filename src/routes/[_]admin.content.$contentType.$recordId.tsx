@@ -79,7 +79,8 @@ function ContentWorkspace() {
   const isNew = recordId === "new";
   // Opened from a Department workspace: return there and link the new record automatically.
   const { department, section: departmentSection } = Route.useSearch();
-  const fromDepartment = isNew && department && (contentType === "faqs" || contentType === "media");
+  // Department FAQs are owned by their department, so editing one also returns to that department.
+  const fromDepartment = Boolean(department) && (contentType === "faqs" || (isNew && contentType === "media"));
   const goBack = (linkNew?: string) =>
     fromDepartment
       ? navigate({
@@ -123,6 +124,8 @@ function ContentWorkspace() {
       // Uploaded image media: the image itself is the media link.
       if (type.key === "media" && payload["media_type"] === "image" && !String(payload["url"] ?? "").trim() && payload["thumbnail_url"])
         payload["url"] = payload["thumbnail_url"];
+      // New FAQ created inside a Department workspace belongs to that department (not hospital-wide).
+      if (type.key === "faqs" && isNew && department) payload["department_id"] = department;
       return saveRecord(type, isNew ? null : recordId, payload);
     },
     onSuccess: async (savedId) => {
@@ -138,11 +141,13 @@ function ContentWorkspace() {
         queryClient.invalidateQueries({ queryKey: [type.table] }),
       ]);
       toast.success(
-        fromDepartment
+        fromDepartment && type.key === "faqs"
+          ? "FAQ saved to this department."
+          : fromDepartment
           ? `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved to the library and linked to this department.`
           : `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`,
       );
-      void goBack(savedId ?? undefined);
+      void goBack(isNew ? (savedId ?? undefined) : undefined);
     },
     onError: (cause: Error) => {
       type ErrLike = { code?: string; message?: string; details?: string };
@@ -174,7 +179,8 @@ function ContentWorkspace() {
       const recordKey = ["admin-content-record", type.table, recordId];
       await queryClient.cancelQueries({ queryKey: recordKey });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] });
-      await navigate({ to: returnTo });
+      void queryClient.invalidateQueries({ queryKey: ["admin-department-link-options"] });
+      await (fromDepartment ? goBack() : navigate({ to: returnTo }));
       queryClient.removeQueries({ queryKey: recordKey });
     },
     onError: (cause: Error) => setError(userFacingDataError(cause)),
