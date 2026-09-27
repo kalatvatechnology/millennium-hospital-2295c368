@@ -42,6 +42,14 @@ const status = (row: Row): ContentStatus => {
 };
 const required = (value: unknown, fallback: string): string => text(value) ?? fallback;
 
+function publishedOgImage(row: Row): string | null {
+  const page = row["page_published"];
+  if (!page || typeof page !== "object" || Array.isArray(page)) return null;
+  const seo = (page as Row)["seo"];
+  if (!seo || typeof seo !== "object" || Array.isArray(seo)) return null;
+  return text((seo as Row)["og_image_url"]);
+}
+
 export function mapDepartment(row: Row): Department {
   return {
     id: required(row["id"], ""),
@@ -49,7 +57,9 @@ export function mapDepartment(row: Row): Department {
     slug: required(row["slug"], ""),
     description: text(row["description"]),
     short_description: text(row["short_description"]),
-    card_image_url: text(row["card_image_url"]),
+    // Global rule: the published SEO → OG Image is the department card image;
+    // falls back to the stored card image (or the placeholder) when absent.
+    card_image_url: publishedOgImage(row) ?? text(row["card_image_url"]),
     card_image_alt: text(row["card_image_alt"]),
     display_order: number(row["display_order"]),
     status: status(row),
