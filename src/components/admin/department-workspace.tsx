@@ -940,6 +940,7 @@ export function DepartmentWorkspace() {
               title="The Millennium Approach"
               itemName="principle"
               titleLabel="Main statement"
+              refined
               emptyText="No principles added."
               value={page.approach}
               onChange={(v) => set("approach", v)}
@@ -1403,7 +1404,7 @@ function ListPanel({
         </Field>
         <Field label={titleLabel} help={titleHelp}>
           <Textarea
-            rows={2}
+            rows={titleLabel === "Main statement" ? 4 : 2}
             value={value.title}
             onChange={(e) => onChange({ ...value, title: e.target.value })}
           />
