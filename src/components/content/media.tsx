@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ExternalLink, Headphones, Image as ImageIcon, PlayCircle } from "lucide-react";
+import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, ExternalLink, Headphones, Image as ImageIcon, PlayCircle } from "lucide-react";
 import type { MediaItem } from "@/lib/queries";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
@@ -48,11 +48,37 @@ export function mediaEmbedUrl(item: MediaItem): string | null {
   return null;
 }
 
-function Thumb({ item }: { item: MediaItem }) {
+/** Portrait when it is a reel, an Instagram link or a YouTube Short; otherwise landscape. */
+export function isVerticalMedia(item: MediaItem): boolean {
+  if (item.media_type === "reel") return true;
+  try {
+    const u = new URL(item.url);
+    const host = u.hostname.replace(/^www\.|^m\./, "");
+    return host === "instagram.com" || (host === "youtube.com" && u.pathname.startsWith("/shorts/"));
+  } catch {
+    return false;
+  }
+}
+
+export function mediaPlatform(item: MediaItem): string {
+  try {
+    const host = new URL(item.url).hostname.replace(/^www\.|^m\./, "");
+    if (host.includes("instagram")) return "Instagram";
+    if (host.includes("youtu")) return "YouTube";
+    if (host.includes("vimeo")) return "Vimeo";
+    if (host.includes("facebook") || host === "fb.watch") return "Facebook";
+    if (host.includes("spotify")) return "Spotify";
+  } catch {
+    /* ignore */
+  }
+  return typeLabel[item.media_type];
+}
+
+function Thumb({ item, vertical }: { item: MediaItem; vertical?: boolean | undefined }) {
   const Icon = item.media_type === "podcast" ? Headphones : item.media_type === "image" ? ImageIcon : PlayCircle;
   return (
     <div
-      className={`grid place-items-center overflow-hidden bg-surface ${item.media_type === "reel" ? "aspect-[9/16]" : "aspect-video"}`}
+      className={`grid place-items-center overflow-hidden bg-surface ${vertical ?? item.media_type === "reel" ? "aspect-[9/16]" : "aspect-video"}`}
     >
       {item.thumbnail_url ? (
         <img src={item.thumbnail_url} alt={item.alt_text || item.title} className="size-full object-cover" loading="lazy" />
@@ -63,12 +89,12 @@ function Thumb({ item }: { item: MediaItem }) {
   );
 }
 
-function Body({ item }: { item: MediaItem }) {
+function Body({ item, compact }: { item: MediaItem; compact?: boolean | undefined }) {
   return (
     <div className="p-4">
-      <p className="text-xs font-semibold uppercase text-primary">{typeLabel[item.media_type]}</p>
-      <h3 className="mt-2 font-semibold leading-6 group-hover:underline">{item.title}</h3>
-      {item.description ? <p className="mt-2 text-sm text-muted-foreground">{item.description}</p> : null}
+      <p className="text-xs font-semibold uppercase text-primary">{compact ? mediaPlatform(item) : typeLabel[item.media_type]}</p>
+      {item.title ? <h3 className={`mt-2 font-semibold leading-6 group-hover:underline ${compact ? "line-clamp-2 text-sm" : ""}`}>{item.title}</h3> : null}
+      {item.description && !compact ? <p className="mt-2 text-sm text-muted-foreground">{item.description}</p> : null}
     </div>
   );
 }
@@ -76,7 +102,7 @@ function Body({ item }: { item: MediaItem }) {
 const cardClass =
   "group block w-full border border-border bg-background text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
-export function MediaCard({ item }: { item: MediaItem }) {
+export function MediaCard({ item, vertical, compact }: { item: MediaItem; vertical?: boolean | undefined; compact?: boolean | undefined }) {
   const [open, setOpen] = useState(false);
   const isImage = item.media_type === "image";
   const embed = isImage ? null : mediaEmbedUrl(item);
@@ -85,17 +111,17 @@ export function MediaCard({ item }: { item: MediaItem }) {
   if (!isImage && !embed)
     return (
       <a href={item.url} target="_blank" rel="noreferrer" className={cardClass}>
-        <Thumb item={item} />
-        <Body item={item} />
+        <Thumb item={item} vertical={vertical} />
+        <Body item={item} compact={compact} />
       </a>
     );
-  const tall = item.media_type === "reel";
+  const tall = vertical ?? item.media_type === "reel";
   const audio = item.media_type === "podcast";
   return (
     <>
       <button type="button" className={cardClass} onClick={() => setOpen(true)} aria-label={`Open ${item.title}`}>
-        <Thumb item={item} />
-        <Body item={item} />
+        <Thumb item={item} vertical={vertical} />
+        <Body item={item} compact={compact} />
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className={tall ? "max-w-md" : "max-w-4xl"}>
@@ -151,6 +177,47 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function Slider({ title, items, vertical }: { title: string; items: MediaItem[]; vertical: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: "smooth" });
+  const btn = "grid size-10 place-items-center border border-border bg-background hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-primary";
+  return (
+    <div>
+      <div className="flex items-end justify-between gap-4">
+        <h3 className="font-heading text-xl font-semibold">{title}</h3>
+        {items.length > 1 ? (
+          <div className="hidden gap-2 sm:flex">
+            <button type="button" className={btn} onClick={() => scroll(-1)} aria-label={`Previous ${title}`}><ChevronLeft className="size-5" /></button>
+            <button type="button" className={btn} onClick={() => scroll(1)} aria-label={`Next ${title}`}><ChevronRight className="size-5" /></button>
+          </div>
+        ) : null}
+      </div>
+      <div ref={ref} className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:thin]">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className={`shrink-0 snap-start ${vertical ? "w-[62%] sm:w-[34%] md:w-[26%] lg:w-[19%]" : "w-[85%] sm:w-[60%] md:w-[45%] lg:w-[32%]"}`}
+          >
+            <MediaCard item={item} vertical={vertical} compact />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Public department media: portrait slider, then landscape slider; empty groups are hidden. */
+export function MediaSliders({ items }: { items: MediaItem[] }) {
+  const vertical = items.filter(isVerticalMedia);
+  const horizontal = items.filter((item) => !isVerticalMedia(item));
+  return (
+    <div className="grid gap-12">
+      {vertical.length ? <Slider title="Short videos" items={vertical} vertical /> : null}
+      {horizontal.length ? <Slider title="Videos" items={horizontal} vertical={false} /> : null}
     </div>
   );
 }

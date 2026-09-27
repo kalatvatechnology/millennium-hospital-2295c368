@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { departmentQuery, faqQuery, type DoctorWithDepartment, type FaqRow, type MediaItem } from "@/lib/queries";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
 import { enabledItems, type DepartmentPage } from "@/lib/department-page";
-import { MediaGrid } from "@/components/content/media";
+import { MediaSliders } from "@/components/content/media";
 import { createPageMeta } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
 
@@ -376,9 +376,10 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
       {v.mediaEnabled && media.length ? (
         <section className="bg-secondary">
           <div className={`${wrap} py-12 sm:py-16`}>
-            <Label n={num()} text="Media" />
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Watch &amp; listen</h2>
-            <div className="mt-8"><MediaGrid items={media} /></div>
+            <Label n={num()} text="Media & Content" />
+            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Watch &amp; learn</h2>
+            <p className="mt-3 max-w-2xl text-muted-foreground">Videos and short explainers from our {lower} team.</p>
+            <div className="mt-8"><MediaSliders items={media} /></div>
           </div>
         </section>
       ) : null}
