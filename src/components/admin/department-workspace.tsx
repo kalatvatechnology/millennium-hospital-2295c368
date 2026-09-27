@@ -1837,7 +1837,7 @@ const move = (list: string[], i: number, d: -1 | 1) => {
   return next;
 };
 
-function LinkedList({
+export function LinkedList({
   rows,
   empty,
   onMove,
