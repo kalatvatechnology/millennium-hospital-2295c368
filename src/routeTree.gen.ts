@@ -23,6 +23,7 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
+import { Route as TmpFacilitiesRouteImport } from './routes/tmp-facilities'
 import { Route as AdminIndexRouteImport } from './routes/[_]admin.index'
 import { Route as AdminAuditLogsRouteImport } from './routes/[_]admin.audit-logs'
 import { Route as AdminBlogRouteImport } from './routes/[_]admin.blog'
@@ -148,6 +149,11 @@ const ServicesRoute = ServicesRouteImport.update({
 const TermsAndConditionsRoute = TermsAndConditionsRouteImport.update({
   id: '/terms-and-conditions',
   path: '/terms-and-conditions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TmpFacilitiesRoute = TmpFacilitiesRouteImport.update({
+  id: '/tmp-facilities',
+  path: '/tmp-facilities',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -455,6 +461,7 @@ export interface FileRoutesByFullPath {
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
+  '/tmp-facilities': typeof TmpFacilitiesRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/blog': typeof AdminBlogRouteWithChildren
   '/_admin/blog-comments': typeof AdminBlogCommentsRouteWithChildren
@@ -521,6 +528,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
+  '/tmp-facilities': typeof TmpFacilitiesRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
   '/_admin/enquiries': typeof AdminEnquiriesRoute
@@ -590,6 +598,7 @@ export interface FileRoutesById {
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
+  '/tmp-facilities': typeof TmpFacilitiesRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
   '/_admin/blog': typeof AdminBlogRouteWithChildren
   '/_admin/blog-comments': typeof AdminBlogCommentsRouteWithChildren
@@ -664,6 +673,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
+    | '/tmp-facilities'
     | '/_admin/audit-logs'
     | '/_admin/blog'
     | '/_admin/blog-comments'
@@ -730,6 +740,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/reviews'
     | '/terms-and-conditions'
+    | '/tmp-facilities'
     | '/_admin/audit-logs'
     | '/_admin/dashboard'
     | '/_admin/enquiries'
@@ -798,6 +809,7 @@ export interface FileRouteTypes {
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
+    | '/tmp-facilities'
     | '/_admin/audit-logs'
     | '/_admin/blog'
     | '/_admin/blog-comments'
@@ -871,6 +883,7 @@ export interface RootRouteChildren {
   ReviewsRoute: typeof ReviewsRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   TermsAndConditionsRoute: typeof TermsAndConditionsRoute
+  TmpFacilitiesRoute: typeof TmpFacilitiesRoute
   ApiPublicDoctorProfileImageRoute: typeof ApiPublicDoctorProfileImageRoute
   ApiPublicDoctorVcardRoute: typeof ApiPublicDoctorVcardRoute
 }
@@ -973,6 +986,13 @@ declare module '@tanstack/react-router' {
       path: '/terms-and-conditions'
       fullPath: '/terms-and-conditions'
       preLoaderRoute: typeof TermsAndConditionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tmp-facilities': {
+      id: '/tmp-facilities'
+      path: '/tmp-facilities'
+      fullPath: '/tmp-facilities'
+      preLoaderRoute: typeof TmpFacilitiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_admin/': {
@@ -1606,6 +1626,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewsRoute: ReviewsRoute,
   ServicesRoute: ServicesRouteWithChildren,
   TermsAndConditionsRoute: TermsAndConditionsRoute,
+  TmpFacilitiesRoute: TmpFacilitiesRoute,
   ApiPublicDoctorProfileImageRoute: ApiPublicDoctorProfileImageRoute,
   ApiPublicDoctorVcardRoute: ApiPublicDoctorVcardRoute,
 }
