@@ -37,6 +37,7 @@ import {
   type Field,
 } from "@/lib/admin-content";
 import { userFacingDataError } from "@/lib/data/errors";
+import { departmentOwnedImagePaths, removeUnreferencedDepartmentImages } from "@/lib/department-storage-cleanup";
 import { createPageMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/_admin/content/$contentType/$recordId")({
@@ -165,8 +166,13 @@ function ContentWorkspace() {
     },
   });
   const remove = useMutation({
-    mutationFn: () => deleteRecord(type, recordId, String(values[type.titleField] ?? "")),
-    onSuccess: async () => {
+    mutationFn: async () => {
+      // Read the department's own page images before the row disappears.
+      const ownedPaths = type.key === "departments" ? await departmentOwnedImagePaths(recordId) : [];
+      await deleteRecord(type, recordId, String(values[type.titleField] ?? ""));
+      return ownedPaths;
+    },
+    onSuccess: async (ownedPaths) => {
       // Only after the record is deleted: remove its saved image and any unsaved upload.
       await cleanupImages(
         imageFields.flatMap((field) => [
@@ -174,6 +180,7 @@ function ContentWorkspace() {
           values[field.name] !== baseline[field.name] ? managedImagePath(field, values[field.name]) : null,
         ]),
       );
+      if (ownedPaths.length) await removeUnreferencedDepartmentImages(ownedPaths);
       // The record no longer exists: never refetch it (that 406s and retries). Leave the page first,
       // then drop its cached query so nothing can load it again.
       const recordKey = ["admin-content-record", type.table, recordId];
