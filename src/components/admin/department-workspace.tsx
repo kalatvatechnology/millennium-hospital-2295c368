@@ -973,7 +973,7 @@ export function DepartmentWorkspace() {
                 onChange={(v) => set("media", { enabled: v })}
               />
               <AddNewLink kind="media" departmentId={departmentId} dirty={dirty} />
-              <LinkManager kind="media" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).media} onChange={(v) => setLinks("media", v)} />
+              <LinkManager kind="media" departmentId={departmentId} departmentName={identity.name.trim() || "this department"} ids={(page.links ?? { doctors: [], faqs: [], media: [] }).media} onChange={(v) => setLinks("media", v)} />
             </Panel>
           ) : null}
           {active === "seo" ? (
