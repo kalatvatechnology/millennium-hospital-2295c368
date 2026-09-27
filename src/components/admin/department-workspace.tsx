@@ -12,7 +12,12 @@ import {
 import { Link, useBlocker, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { removeUnreferencedDepartmentImages } from "@/lib/department-storage-cleanup";
+import {
+  addPendingUpload,
+  cleanupPendingUploads,
+  clearPendingUploads,
+  removeUnreferencedDepartmentImages,
+} from "@/lib/department-storage-cleanup";
 import {
   ArrowDown,
   ArrowLeft,
@@ -272,11 +277,16 @@ export function DepartmentWorkspace() {
 
   // Unsaved uploads are removed when leaving the workspace.
   useEffect(() => {
+    // Uploads left unsaved by an earlier visit (reload, closed tab) are cleaned up now.
+    void cleanupPendingUploads(departmentId);
     const pending = uploads.current;
     return () => {
-      if (pending.size) void removeImages([...pending]);
+      if (pending.size) {
+        clearPendingUploads(departmentId);
+        void removeImages([...pending]);
+      }
     };
-  }, []);
+  }, [departmentId]);
 
   const row = record.data;
   const published = Boolean(row?.["published"]);
@@ -321,6 +331,7 @@ export function DepartmentWorkspace() {
     ];
     await removeImages([...previous, ...uploads.current].filter((u) => !keep.has(u)));
     uploads.current.clear();
+    clearPendingUploads(departmentId);
   };
 
   const refresh = () =>
@@ -373,6 +384,7 @@ export function DepartmentWorkspace() {
     const keep = new Set(pageImageUrls(baseline.page));
     void removeImages([...uploads.current].filter((u) => !keep.has(u)));
     uploads.current.clear();
+    clearPendingUploads(departmentId);
     setIdentity(structuredClone(baseline.identity));
     setPage(structuredClone(baseline.page));
     setError(null);
@@ -382,7 +394,10 @@ export function DepartmentWorkspace() {
   const busy = saveDraft.isPending || publish.isPending || unpublish.isPending;
   const set = <K extends keyof DepartmentPage>(key: K, value: DepartmentPage[K]) =>
     setPage((p) => ({ ...p, [key]: value }));
-  const onUpload = (url: string) => uploads.current.add(url);
+  const onUpload = (url: string) => {
+    uploads.current.add(url);
+    addPendingUpload(departmentId, url);
+  };
   // Returning from "+ Add FAQ" / "+ Add Media": link the newly created library record to this
   // department's draft. Only the link is saved; the live page changes only after Publish.
   const { linkNew, linkKind } = useSearch({ from: "/_admin/departments/$departmentId/$section" });
