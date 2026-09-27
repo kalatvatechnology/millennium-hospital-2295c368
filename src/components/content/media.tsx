@@ -78,7 +78,7 @@ function Thumb({ item, vertical }: { item: MediaItem; vertical?: boolean | undef
   const Icon = item.media_type === "podcast" ? Headphones : item.media_type === "image" ? ImageIcon : PlayCircle;
   return (
     <div
-      className={`grid w-full shrink-0 place-items-center overflow-hidden bg-surface ${vertical ?? item.media_type === "reel" ? "aspect-[9/16]" : "aspect-[16/9]"}`}
+      className={`grid w-full shrink-0 place-items-center overflow-hidden bg-surface ${vertical === true ? "aspect-[3/4]" : vertical === undefined && item.media_type === "reel" ? "aspect-[9/16]" : "aspect-[16/9]"}`}
     >
       {item.thumbnail_url ? (
         <img src={item.thumbnail_url} alt={item.alt_text || item.title} className="size-full object-cover" loading="lazy" />
@@ -183,24 +183,33 @@ export function MediaGrid({ items }: { items: MediaItem[] }) {
 
 function Slider({ title, items, vertical }: { title: string; items: MediaItem[]; vertical: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: "smooth" });
+  // Step by exactly one card (card width + 1rem gap) so the next card slides in smoothly.
+  const scroll = (dir: number) => {
+    const el = ref.current;
+    const card = el?.firstElementChild as HTMLElement | null;
+    if (!el || !card) return;
+    el.scrollBy({ left: dir * (card.offsetWidth + 16), behavior: "smooth" });
+  };
   const btn = "grid size-10 place-items-center border border-border bg-background hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-primary";
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex items-end justify-between gap-4">
         <h3 className="font-heading text-xl font-semibold">{title}</h3>
         {items.length > 1 ? (
-          <div className="hidden gap-2 sm:flex">
+          <div className="flex shrink-0 gap-2">
             <button type="button" className={btn} onClick={() => scroll(-1)} aria-label={`Previous ${title}`}><ChevronLeft className="size-5" /></button>
             <button type="button" className={btn} onClick={() => scroll(1)} aria-label={`Next ${title}`}><ChevronRight className="size-5" /></button>
           </div>
         ) : null}
       </div>
-      <div ref={ref} className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:thin]">
+      <div
+        ref={ref}
+        className="mt-5 flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth pb-3 [scrollbar-width:thin] [-webkit-overflow-scrolling:touch]"
+      >
         {items.map((item) => (
           <div
             key={item.id}
-            className={`shrink-0 snap-start ${vertical ? "w-[62%] sm:w-[34%] md:w-[26%] lg:w-[19%]" : "w-[85%] sm:w-[60%] md:w-[45%] lg:w-[32%]"}`}
+            className={`shrink-0 snap-start ${vertical ? "w-full sm:w-[calc((100%-1rem)/2)] md:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)]" : "w-full sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)]"}`}
           >
             <MediaCard item={item} vertical={vertical} compact />
           </div>
