@@ -1398,7 +1398,7 @@ function ListPanel({
       {refined ? (
         <Group title="Public content" description="Label, title and introduction shown at the top of this section.">
       <Grid>
-        <Field label="Section label">
+        <Field label="Section label" className={titleLabel === "Main statement" ? "content-start" : undefined}>
           <Input
             value={value.label}
             onChange={(e) => onChange({ ...value, label: e.target.value })}
