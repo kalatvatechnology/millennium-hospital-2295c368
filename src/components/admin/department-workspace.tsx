@@ -1303,7 +1303,7 @@ function Field({
   required?: boolean;
   wide?: boolean;
   count?: [number, number];
-  className?: string;
+  className?: string | undefined;
   children: ReactNode;
 }) {
   const fieldId = useId();
