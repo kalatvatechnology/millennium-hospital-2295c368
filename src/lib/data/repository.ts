@@ -94,7 +94,9 @@ export async function getDepartment(slug: string, preview = false) {
             .eq("department_id", department["id"])
             .order("display_order")
             .then((r: any) => (r.error ? [] : rows(r)).map((row) => row["faqs"]).filter(Boolean) as Row[]),
-      links
+      // Public page: the published department-media relationship (synced on Publish).
+      // Preview: the staged draft links.
+      preview && links
         ? byIds("media_items", "*", links.media).catch((): Row[] => [])
         : db
             .from("media_departments")

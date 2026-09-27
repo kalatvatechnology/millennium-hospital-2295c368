@@ -149,7 +149,7 @@ function ContentWorkspace() {
       toast.success(
         fromDepartment && type.key === "faqs"
           ? "FAQ saved to this department."
-          : fromDepartment
+          : fromDepartment && isNew
           ? `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved to the library and linked to this department.`
           : `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`,
       );
