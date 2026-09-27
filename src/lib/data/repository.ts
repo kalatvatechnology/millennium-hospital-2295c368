@@ -569,7 +569,7 @@ export async function listMedia(homeOnly = false): Promise<MediaItem[]> {
 
 export async function listFaqs(): Promise<{ categories: FaqCategory[]; faqs: Faq[] }> {
   if (usesProductionContract) {
-    const faqs = rows(await order(published(db.from("faqs").select("*")))).map(mapFaq);
+    const faqs = rows(await order(published(db.from("faqs").select("*").is("department_id", null)))).map(mapFaq);
     const names = [
       ...new Set(faqs.map((item) => item.category).filter((item): item is string => Boolean(item))),
     ];
@@ -584,7 +584,7 @@ export async function listFaqs(): Promise<{ categories: FaqCategory[]; faqs: Faq
   }
   const [categoryResult, faqResult] = await Promise.all([
     order(published(db.from("faq_categories").select("*"))),
-    order(published(db.from("faqs").select("*"))),
+    order(published(db.from("faqs").select("*").is("department_id", null))),
   ]);
   const categories = rows(categoryResult).map((row) => ({
     id: String(row["id"]),

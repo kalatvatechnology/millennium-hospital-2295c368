@@ -510,7 +510,9 @@ export async function listRecords(type: ContentType) {
     .order("id")
     .limit(1000);
   if (error) throw classifyDataError(error);
-  return (data ?? []) as Record<string, any>[];
+  const list = (data ?? []) as Record<string, any>[];
+  // CMS > FAQs manages hospital-wide FAQs only; department FAQs live in their Department workspace.
+  return type.key === "faqs" ? list.filter((row) => !row["department_id"]) : list;
 }
 
 export async function getRecord(type: ContentType, id: string) {
