@@ -1846,6 +1846,7 @@ export type Database = {
           answer: string
           category_id: string | null
           created_at: string
+          department_id: string | null
           display_order: number
           id: string
           published: boolean
@@ -1856,6 +1857,7 @@ export type Database = {
           answer: string
           category_id?: string | null
           created_at?: string
+          department_id?: string | null
           display_order?: number
           id?: string
           published?: boolean
@@ -1866,6 +1868,7 @@ export type Database = {
           answer?: string
           category_id?: string | null
           created_at?: string
+          department_id?: string | null
           display_order?: number
           id?: string
           published?: boolean
@@ -1878,6 +1881,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "faq_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "faqs_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]

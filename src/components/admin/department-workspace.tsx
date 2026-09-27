@@ -25,6 +25,7 @@ import {
   Plus,
   Send,
   Trash2,
+  Pencil,
   Upload,
   UserRound,
 } from "lucide-react";
@@ -867,7 +868,7 @@ export function DepartmentWorkspace() {
           {active === "faqs" ? (
             <Panel
               title="FAQs"
-              description="Add a new FAQ or link one from the central FAQ library. New FAQs are saved to the library and linked here automatically. Removing only unlinks it from this department. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are selected."
+              description="FAQs written specifically for this department. They never appear in the hospital-wide FAQs. Removing an FAQ only hides it from this page; delete it permanently from its Edit page. Changes are saved with the draft and appear on the public page only after Publish. The section is hidden when none are shown."
             >
               <Toggle
                 label="Show the FAQ section"
@@ -875,7 +876,7 @@ export function DepartmentWorkspace() {
                 onChange={(v) => set("faqs", { enabled: v })}
               />
               <AddNewLink kind="faqs" departmentId={departmentId} dirty={dirty} />
-              <LinkManager kind="faq" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).faqs} onChange={(v) => setLinks("faqs", v)} />
+              <LinkManager kind="faq" departmentId={departmentId} ids={(page.links ?? { doctors: [], faqs: [], media: [] }).faqs} onChange={(v) => setLinks("faqs", v)} />
             </Panel>
           ) : null}
           {active === "media" ? (
@@ -1095,9 +1096,11 @@ function CompletionCard({
                       <Plus className="size-4" aria-hidden /> {item.section === "faqs" ? "Add FAQ" : "Add Media"}
                     </Link>
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => onNavigate(item.section)}>
-                    {item.section === "faqs" ? "Link Existing FAQ" : "Select from Media Library"}
-                  </Button>
+                  {item.section === "media" ? (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => onNavigate(item.section)}>
+                      Select from Media Library
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
             </li>
@@ -1619,7 +1622,9 @@ function LinkedList({
   onRemove,
   removeLabel,
   busy,
+  renderAction,
 }: {
+  renderAction?: ((id: string) => ReactNode) | undefined;
   rows: LinkRow[];
   empty: ReactNode;
   onMove: (i: number, d: -1 | 1) => void;
@@ -1653,6 +1658,7 @@ function LinkedList({
           </div>
           <StatusBadge status={r.status} tone={r.status === "Published" ? "positive" : "neutral"} />
           <div className="flex gap-1">
+            {renderAction?.(r.id)}
             <Button
               type="button"
               size="icon"
@@ -1833,7 +1839,10 @@ function LinkManager({
   kind,
   ids,
   onChange,
+  departmentId,
 }: {
+  /** FAQs only: restricts choices to FAQs owned by this department. */
+  departmentId?: string;
   kind: "faq" | "media";
   ids: string[];
   onChange: (ids: string[]) => void;
@@ -1846,7 +1855,7 @@ function LinkManager({
           title: (r: any) => r.question,
           sub: () => "",
           image: () => null,
-          label: "Link Existing FAQ",
+          label: "Show an FAQ from this department",
           noun: "FAQ",
           empty: "No FAQs selected. The FAQ section is hidden on the public page.",
         }
@@ -1861,9 +1870,11 @@ function LinkManager({
           empty: "No media selected. The Media section is hidden on the public page.",
         };
   const data = useQuery({
-    queryKey: ["admin-department-link-options", kind],
+    queryKey: ["admin-department-link-options", kind, departmentId ?? null],
     queryFn: async () => {
-      const { data, error } = await db.from(cfg.source).select(cfg.select).order("display_order");
+      let q = db.from(cfg.source).select(cfg.select);
+      if (kind === "faq" && departmentId) q = q.eq("department_id", departmentId);
+      const { data, error } = await q.order("display_order");
       if (error) throw error;
       return data as any[];
     },
@@ -1894,6 +1905,21 @@ function LinkManager({
         rows={rows}
         busy={false}
         removeLabel={`Remove ${cfg.noun} from this page`}
+        renderAction={
+          kind === "faq" && departmentId
+            ? (id) => (
+                <Button asChild size="sm" variant="ghost">
+                  <Link
+                    to="/_admin/content/$contentType/$recordId"
+                    params={{ contentType: "faqs", recordId: id }}
+                    search={{ department: departmentId, section: "faqs" }}
+                  >
+                    <Pencil className="size-4" aria-hidden /> Edit
+                  </Link>
+                </Button>
+              )
+            : undefined
+        }
         empty={cfg.empty}
         onMove={(i, d) => onChange(move(ids, i, d))}
         onRemove={(id) => onChange(ids.filter((x) => x !== id))}
