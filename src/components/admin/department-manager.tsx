@@ -116,7 +116,7 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ].map(([label, value]) => (
           <div key={label} className="bg-background px-4 py-3">
             <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
-            <dd className="mt-1 text-2xl font-semibold tabular-nums text-primary">{records.isPending ? "—" : value}</dd>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums text-primary">{records.isPending || counts.isPending ? "—" : value}</dd>
           </div>
         ))}
       </dl>
@@ -199,7 +199,7 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
       <div>
         <div className="flex items-baseline justify-between text-sm">
           <span className="text-muted-foreground">Profile</span>
-          <span className="font-semibold tabular-nums">{insight.percentage}% complete</span>
+          <span className="font-semibold tabular-nums">{countsReady ? `${insight.percentage}% complete` : "Calculating…"}</span>
         </div>
         <progress value={insight.percentage} max={100} aria-label={`${row["name"]} profile completion`} className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-primary" />
         <div className="mt-2"><StatusBadge status={ready.label} tone={ready.tone} /></div>
