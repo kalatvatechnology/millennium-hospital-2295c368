@@ -3,6 +3,8 @@ export const siteConfig = {
   shortName: "TMH",
   tagline: "Thoughtful care, built around people.",
   description: "The official website of The Millennium Hospital.",
+  /** Production domain; turns site-relative paths into full links for social sharing. */
+  url: "https://www.themillenniumhospital.com",
   contact: {
     phone: null as string | null,
     email: null as string | null,

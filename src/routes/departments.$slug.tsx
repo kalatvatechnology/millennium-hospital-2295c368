@@ -43,7 +43,12 @@ export const Route = createFileRoute("/departments/$slug")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ];
-    if (/^https:\/\//.test(image)) meta.push({ property: "og:image", content: image }, { name: "twitter:image", content: image });
+    const absoluteImage = /^https:\/\//.test(image)
+      ? image
+      : image.startsWith("/") && !image.startsWith("//")
+        ? `${siteConfig.url}${image}`
+        : "";
+    if (absoluteImage) meta.push({ property: "og:image", content: absoluteImage }, { name: "twitter:image", content: absoluteImage });
     if (seo && !seo.index) meta.push({ name: "robots", content: "noindex, nofollow" });
     return { meta, links: seo?.canonical_url ? [{ rel: "canonical", href: seo.canonical_url }] : [] };
   },
