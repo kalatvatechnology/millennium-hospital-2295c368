@@ -202,9 +202,9 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
             {v.hero.hasActions ? <div className="mt-9 hidden flex-wrap gap-3 lg:flex"><HeroActions {...v.hero} specialists={v.hero.specialists && v.specialists} /></div> : null}
           </div>
           <figure className="dept-reveal relative lg:my-0">
-            <div className="group relative aspect-[6/7] overflow-hidden bg-secondary sm:aspect-[16/12] lg:absolute lg:inset-0 lg:aspect-auto">
+            <div className="group relative aspect-[16/10] overflow-hidden bg-secondary sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto">
               {heroImage ? (
-                <img src={heroImage} alt={heroAlt} className="size-full object-cover object-[center_28%] transition-transform duration-[1200ms] group-hover:scale-[1.02]" width={1280} height={1536} />
+                <img src={heroImage} alt={heroAlt} className="size-full object-cover object-center lg:object-[center_28%] transition-transform duration-[1200ms] group-hover:scale-[1.02]" width={1280} height={1536} />
               ) : (
                 <div className="grid size-full place-items-center bg-primary text-primary-foreground"><span className="font-heading text-8xl font-semibold opacity-20">{department.name.slice(0, 2)}</span></div>
               )}
