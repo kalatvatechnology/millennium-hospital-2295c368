@@ -24,15 +24,17 @@ import { cn } from "@/lib/utils";
 const PAGE_SIZE = 20;
 
 async function relationshipCounts() {
-  const [doctors, services] = await Promise.all([
+  // Saved relationship rows only; unsaved editor changes are never counted.
+  const [doctors, services, faqs, media] = await Promise.all([
     supabase.from("doctor_departments").select("department_id").limit(5000),
     supabase.from("professional_service_departments").select("department_id").limit(5000),
+    supabase.from("department_faqs").select("department_id").limit(5000),
+    supabase.from("media_departments").select("department_id").limit(5000),
   ]);
-  if (doctors.error) throw classifyDataError(doctors.error);
-  if (services.error) throw classifyDataError(services.error);
+  for (const r of [doctors, services, faqs, media]) if (r.error) throw classifyDataError(r.error);
   const tally = (rows: { department_id: string }[]) =>
     rows.reduce<Record<string, number>>((acc, r) => ((acc[r.department_id] = (acc[r.department_id] ?? 0) + 1), acc), {});
-  return { doctors: tally(doctors.data ?? []), services: tally(services.data ?? []) };
+  return { doctors: tally(doctors.data ?? []), services: tally(services.data ?? []), faqs: tally(faqs.data ?? []), media: tally(media.data ?? []) };
 }
 
 const READINESS = {
@@ -60,6 +62,8 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         insight: getDepartmentInsight(row, {
           doctors: counts.data?.doctors[row["id"]] ?? 0,
           services: counts.data?.services[row["id"]] ?? 0,
+          faqs: counts.data?.faqs[row["id"]] ?? 0,
+          media: counts.data?.media[row["id"]] ?? 0,
         }),
       })),
     [records.data, counts.data],
@@ -112,7 +116,7 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ].map(([label, value]) => (
           <div key={label} className="bg-background px-4 py-3">
             <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
-            <dd className="mt-1 text-2xl font-semibold tabular-nums text-primary">{records.isPending ? "—" : value}</dd>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums text-primary">{records.isPending || counts.isPending ? "—" : value}</dd>
           </div>
         ))}
       </dl>
@@ -195,7 +199,7 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
       <div>
         <div className="flex items-baseline justify-between text-sm">
           <span className="text-muted-foreground">Profile</span>
-          <span className="font-semibold tabular-nums">{insight.percentage}% complete</span>
+          <span className="font-semibold tabular-nums">{countsReady ? `${insight.percentage}% complete` : "Calculating…"}</span>
         </div>
         <progress value={insight.percentage} max={100} aria-label={`${row["name"]} profile completion`} className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-primary" />
         <div className="mt-2"><StatusBadge status={ready.label} tone={ready.tone} /></div>
@@ -218,6 +222,11 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {canWrite ? (
+              <DropdownMenuItem asChild>
+                <Link to="/_admin/departments/$departmentId/$section" params={{ departmentId: String(row["id"]), section: "identity" }}><Pencil className="size-4" /> Edit</Link>
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem asChild>
               <a href={`/departments/${row["slug"]}?preview=1`} target="_blank" rel="noreferrer"><Eye className="size-4" /> Preview draft</a>
             </DropdownMenuItem>

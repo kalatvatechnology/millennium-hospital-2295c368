@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDepartmentCompletion } from "@/lib/department-completion";
-import { enabledItems, hasPageContent, parseDepartmentPage, type ListSection } from "@/lib/department-page";
+import { enabledItems, hasPageContent, parseDepartmentPage, type DepartmentPage, type ListSection } from "@/lib/department-page";
 import { share, weightedCompletion, type ReadinessState, type ScoredSection } from "@/lib/profile-scoring";
 
 /** Adjust section weights here; the list UI reads only the computed result. */
@@ -40,27 +40,29 @@ const listScore = (s: ListSection) => share(s.title.trim() || s.intro.trim(), en
 
 export type DepartmentInsight = ReturnType<typeof getDepartmentInsight>;
 
-export function getDepartmentInsight(
-  row: Record<string, any>,
-  counts: { doctors: number; services: number },
-) {
-  // Staff see the working version: the draft when one exists, otherwise what is live.
-  const page = parseDepartmentPage(
-    hasPageContent(row["page_draft"]) ? row["page_draft"] : row["page_published"],
-  );
-  const identity = {
-    name: String(row["name"] ?? ""),
-    slug: String(row["slug"] ?? ""),
-    short_description: String(row["short_description"] ?? ""),
-    description: String(row["description"] ?? ""),
-  };
-  const published = Boolean(row["published"]);
-  const cardImage: string | null = page.seo.og_image_url || row["card_image_url"] || null;
-  const links = page.links;
-  const doctors = links ? links.doctors.length : counts.doctors;
-  const faqs = links?.faqs.length ?? 0;
-  const media = links?.media.length ?? 0;
+type DepartmentIdentity = { name: string; slug: string; short_description: string; description: string };
 
+/**
+ * The single Department completion score. Used by the Departments list and the
+ * Department editor so both always show the same percentage for the same content.
+ * Specialists/FAQs/Media count the selections saved on the page itself.
+ */
+export function scoreDepartment({
+  identity,
+  page,
+  cardImage,
+  saved,
+}: {
+  identity: DepartmentIdentity;
+  page: DepartmentPage;
+  cardImage: string | null;
+  /** Saved relationship counts, used only when the page has no selections of its own (same fallback as the editor). */
+  saved?: { doctors: number; faqs: number; media: number };
+}) {
+  const links = page.links;
+  const doctors = links ? links.doctors.length : (saved?.doctors ?? 0);
+  const faqs = links ? links.faqs.length : (saved?.faqs ?? 0);
+  const media = links ? links.media.length : (saved?.media ?? 0);
   const sections: ScoredSection<Key>[] = (
     [
       ["identity", true, share(identity.name.trim(), identity.slug.trim(), identity.short_description.trim())],
@@ -77,8 +79,30 @@ export function getDepartmentInsight(
       ["card", true, cardImage ? 1 : 0],
     ] as [Key, boolean, number][]
   ).map(([key, applicable, score]) => ({ key, label: LABELS[key], weight: DEPARTMENT_WEIGHTS[key], applicable, score }));
+  return { sections, percentage: weightedCompletion(sections) };
+}
 
-  const percentage = weightedCompletion(sections);
+/** Card / OG image rule shared by list and editor. */
+export const departmentCardImage = (page: DepartmentPage, row: Record<string, any> | null | undefined): string | null =>
+  page.seo.og_image_url || row?.["card_image_url"] || null;
+
+export function getDepartmentInsight(
+  row: Record<string, any>,
+  counts: { doctors: number; services: number; faqs: number; media: number },
+) {
+  // Content score uses the saved working version: the saved draft when one exists, otherwise what is live.
+  const page = parseDepartmentPage(
+    hasPageContent(row["page_draft"]) ? row["page_draft"] : row["page_published"],
+  );
+  const identity = {
+    name: String(row["name"] ?? ""),
+    slug: String(row["slug"] ?? ""),
+    short_description: String(row["short_description"] ?? ""),
+    description: String(row["description"] ?? ""),
+  };
+  const published = Boolean(row["published"]);
+  const cardImage = departmentCardImage(page, row);
+  const { sections, percentage } = scoreDepartment({ identity, page, cardImage, saved: counts });
 
   // Blocking issues = the existing CMS validation rules (the same ones Save/Publish enforce).
   const blocking = getDepartmentCompletion({ identity, page, cardImage, published })
@@ -116,7 +140,8 @@ export function getDepartmentInsight(
     attention,
     seoReady,
     cardImage,
-    doctors,
+    // Counts = saved doctor_departments / professional_service_departments rows only.
+    doctors: counts.doctors,
     services: counts.services,
     published,
     updatedAt: updatedAt ?? null,

@@ -43,6 +43,7 @@ import {
   getDepartmentCompletion,
   type CompletionState,
 } from "@/lib/department-completion";
+import { departmentCardImage, scoreDepartment } from "@/lib/department-dashboard";
 import { getDepartmentPresentation } from "@/lib/department-presentation";
 import {
   hasPageContent,
@@ -435,12 +436,11 @@ export function DepartmentWorkspace() {
     faqs: page.faqs.enabled,
     media: page.media.enabled,
   };
-  const completion = getDepartmentCompletion({
-    identity,
-    page,
-    cardImage: row?.["card_image_url"] ?? null,
-    published,
-  });
+  const cardImage = departmentCardImage(page, row);
+  const completion = {
+    ...getDepartmentCompletion({ identity, page, cardImage, published }),
+    percentage: scoreDepartment({ identity, page, cardImage }).percentage, // page.links already falls back to saved relationships
+  };
   const saveState: SaveState = saveDraft.isPending
     ? "saving"
     : saveFailed
