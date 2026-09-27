@@ -20,7 +20,6 @@ import { Route as FacilitiesRouteImport } from './routes/facilities'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as MediaRouteImport } from './routes/media'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
-import { Route as QaCarePreviewRouteImport } from './routes/qa-care-preview'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
@@ -134,11 +133,6 @@ const MediaRoute = MediaRouteImport.update({
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QaCarePreviewRoute = QaCarePreviewRouteImport.update({
-  id: '/qa-care-preview',
-  path: '/qa-care-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewsRoute = ReviewsRouteImport.update({
@@ -458,7 +452,6 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/media': typeof MediaRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
-  '/qa-care-preview': typeof QaCarePreviewRoute
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
@@ -526,7 +519,6 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/media': typeof MediaRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
-  '/qa-care-preview': typeof QaCarePreviewRoute
   '/reviews': typeof ReviewsRoute
   '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/_admin/audit-logs': typeof AdminAuditLogsRoute
@@ -595,7 +587,6 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/media': typeof MediaRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
-  '/qa-care-preview': typeof QaCarePreviewRoute
   '/reviews': typeof ReviewsRoute
   '/services': typeof ServicesRouteWithChildren
   '/terms-and-conditions': typeof TermsAndConditionsRoute
@@ -670,7 +661,6 @@ export interface FileRouteTypes {
     | '/faq'
     | '/media'
     | '/privacy-policy'
-    | '/qa-care-preview'
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
@@ -738,7 +728,6 @@ export interface FileRouteTypes {
     | '/faq'
     | '/media'
     | '/privacy-policy'
-    | '/qa-care-preview'
     | '/reviews'
     | '/terms-and-conditions'
     | '/_admin/audit-logs'
@@ -806,7 +795,6 @@ export interface FileRouteTypes {
     | '/faq'
     | '/media'
     | '/privacy-policy'
-    | '/qa-care-preview'
     | '/reviews'
     | '/services'
     | '/terms-and-conditions'
@@ -880,7 +868,6 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   MediaRoute: typeof MediaRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
-  QaCarePreviewRoute: typeof QaCarePreviewRoute
   ReviewsRoute: typeof ReviewsRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   TermsAndConditionsRoute: typeof TermsAndConditionsRoute
@@ -965,13 +952,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/qa-care-preview': {
-      id: '/qa-care-preview'
-      path: '/qa-care-preview'
-      fullPath: '/qa-care-preview'
-      preLoaderRoute: typeof QaCarePreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reviews': {
@@ -1623,7 +1603,6 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   MediaRoute: MediaRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
-  QaCarePreviewRoute: QaCarePreviewRoute,
   ReviewsRoute: ReviewsRoute,
   ServicesRoute: ServicesRouteWithChildren,
   TermsAndConditionsRoute: TermsAndConditionsRoute,
