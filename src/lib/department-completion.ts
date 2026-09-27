@@ -191,8 +191,6 @@ export function getDepartmentCompletion({
   ];
 
   const applicable = items.filter((item) => item.applicable);
-  const completed = applicable.filter((item) => item.complete).length;
-  const percentage = applicable.length ? Math.round((completed / applicable.length) * 100) : 100;
   const missing = applicable.filter((item) => !item.complete);
   const sectionStates = Object.fromEntries(
     (
