@@ -439,7 +439,7 @@ export function DepartmentWorkspace() {
   const cardImage = departmentCardImage(page, row);
   const completion = {
     ...getDepartmentCompletion({ identity, page, cardImage, published }),
-    percentage: scoreDepartment({ identity, page, cardImage }).percentage,
+    percentage: scoreDepartment({ identity, page, cardImage }).percentage, // page.links already falls back to saved relationships
   };
   const saveState: SaveState = saveDraft.isPending
     ? "saving"

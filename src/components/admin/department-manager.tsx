@@ -24,15 +24,17 @@ import { cn } from "@/lib/utils";
 const PAGE_SIZE = 20;
 
 async function relationshipCounts() {
-  const [doctors, services] = await Promise.all([
+  // Saved relationship rows only; unsaved editor changes are never counted.
+  const [doctors, services, faqs, media] = await Promise.all([
     supabase.from("doctor_departments").select("department_id").limit(5000),
     supabase.from("professional_service_departments").select("department_id").limit(5000),
+    supabase.from("department_faqs").select("department_id").limit(5000),
+    supabase.from("media_departments").select("department_id").limit(5000),
   ]);
-  if (doctors.error) throw classifyDataError(doctors.error);
-  if (services.error) throw classifyDataError(services.error);
+  for (const r of [doctors, services, faqs, media]) if (r.error) throw classifyDataError(r.error);
   const tally = (rows: { department_id: string }[]) =>
     rows.reduce<Record<string, number>>((acc, r) => ((acc[r.department_id] = (acc[r.department_id] ?? 0) + 1), acc), {});
-  return { doctors: tally(doctors.data ?? []), services: tally(services.data ?? []) };
+  return { doctors: tally(doctors.data ?? []), services: tally(services.data ?? []), faqs: tally(faqs.data ?? []), media: tally(media.data ?? []) };
 }
 
 const READINESS = {
@@ -60,6 +62,8 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         insight: getDepartmentInsight(row, {
           doctors: counts.data?.doctors[row["id"]] ?? 0,
           services: counts.data?.services[row["id"]] ?? 0,
+          faqs: counts.data?.faqs[row["id"]] ?? 0,
+          media: counts.data?.media[row["id"]] ?? 0,
         }),
       })),
     [records.data, counts.data],

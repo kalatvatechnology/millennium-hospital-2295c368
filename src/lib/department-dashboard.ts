@@ -51,15 +51,18 @@ export function scoreDepartment({
   identity,
   page,
   cardImage,
+  saved,
 }: {
   identity: DepartmentIdentity;
   page: DepartmentPage;
   cardImage: string | null;
+  /** Saved relationship counts, used only when the page has no selections of its own (same fallback as the editor). */
+  saved?: { doctors: number; faqs: number; media: number };
 }) {
   const links = page.links;
-  const doctors = links?.doctors.length ?? 0;
-  const faqs = links?.faqs.length ?? 0;
-  const media = links?.media.length ?? 0;
+  const doctors = links ? links.doctors.length : (saved?.doctors ?? 0);
+  const faqs = links ? links.faqs.length : (saved?.faqs ?? 0);
+  const media = links ? links.media.length : (saved?.media ?? 0);
   const sections: ScoredSection<Key>[] = (
     [
       ["identity", true, share(identity.name.trim(), identity.slug.trim(), identity.short_description.trim())],
@@ -85,7 +88,7 @@ export const departmentCardImage = (page: DepartmentPage, row: Record<string, an
 
 export function getDepartmentInsight(
   row: Record<string, any>,
-  counts: { doctors: number; services: number },
+  counts: { doctors: number; services: number; faqs: number; media: number },
 ) {
   // Content score uses the saved working version: the saved draft when one exists, otherwise what is live.
   const page = parseDepartmentPage(
@@ -99,7 +102,7 @@ export function getDepartmentInsight(
   };
   const published = Boolean(row["published"]);
   const cardImage = departmentCardImage(page, row);
-  const { sections, percentage } = scoreDepartment({ identity, page, cardImage });
+  const { sections, percentage } = scoreDepartment({ identity, page, cardImage, saved: counts });
 
   // Blocking issues = the existing CMS validation rules (the same ones Save/Publish enforce).
   const blocking = getDepartmentCompletion({ identity, page, cardImage, published })
