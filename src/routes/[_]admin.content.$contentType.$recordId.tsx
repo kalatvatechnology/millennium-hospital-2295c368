@@ -44,6 +44,12 @@ import {
   removeUnreferencedDepartmentImages,
 } from "@/lib/department-storage-cleanup";
 import { createPageMeta } from "@/lib/seo";
+import {
+  MediaAssociationPicker,
+  applyMediaAssociations,
+  emptyAssociations,
+  type MediaAssociations,
+} from "@/components/admin/media-associations";
 
 export const Route = createFileRoute("/_admin/content/$contentType/$recordId")({
   head: () => ({
@@ -86,7 +92,7 @@ function ContentWorkspace() {
   // Opened from a Department workspace: return there and link the new record automatically.
   const { department, section: departmentSection } = Route.useSearch();
   // Department FAQs are owned by their department, so editing one also returns to that department.
-  const fromDepartment = Boolean(department) && (contentType === "faqs" || (isNew && contentType === "media"));
+  const fromDepartment = Boolean(department) && (contentType === "faqs" || contentType === "media");
   const goBack = (linkNew?: string) =>
     fromDepartment
       ? navigate({
@@ -99,6 +105,8 @@ function ContentWorkspace() {
   const [values, setValues] = useState<Record<string, any>>(() => emptyContentValues(type));
   const [baseline, setBaseline] = useState<Record<string, any>>(() => emptyContentValues(type));
   const [error, setError] = useState<string | null>(null);
+  const [assoc, setAssoc] = useState<MediaAssociations>(emptyAssociations);
+  const assocBaseline = useRef<MediaAssociations>(emptyAssociations());
   const record = useQuery({
     queryKey: ["admin-content-record", type.table, recordId],
     enabled: !isNew,
@@ -125,14 +133,17 @@ function ContentWorkspace() {
     if (cleanupError) console.error("Department image cleanup failed", { paths: targets, cleanupError });
   };
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const payload = contentPayload(type, values, canPublish);
       // Uploaded image media: the image itself is the media link.
       if (type.key === "media" && payload["media_type"] === "image" && !String(payload["url"] ?? "").trim() && payload["thumbnail_url"])
         payload["url"] = payload["thumbnail_url"];
       // New FAQ created inside a Department workspace belongs to that department (not hospital-wide).
       if (type.key === "faqs" && isNew && department) payload["department_id"] = department;
-      return saveRecord(type, isNew ? null : recordId, payload);
+      const savedId = await saveRecord(type, isNew ? null : recordId, payload);
+      const mediaId = isNew ? savedId : recordId;
+      if (type.key === "media" && mediaId) await applyMediaAssociations(String(mediaId), assocBaseline.current, assoc);
+      return savedId;
     },
     onSuccess: async (savedId) => {
       // Only after the database update succeeded: remove the exact file this record used before.
@@ -145,11 +156,12 @@ function ContentWorkspace() {
         queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
         queryClient.invalidateQueries({ queryKey: ["admin-content-record", type.table, recordId] }),
         queryClient.invalidateQueries({ queryKey: [type.table] }),
+        ...(type.key === "media" ? [queryClient.invalidateQueries()] : []),
       ]);
       toast.success(
         fromDepartment && type.key === "faqs"
           ? "FAQ saved to this department."
-          : fromDepartment
+          : fromDepartment && isNew
           ? `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved to the library and linked to this department.`
           : `${type.singular.charAt(0).toUpperCase()}${type.singular.slice(1)} saved successfully.`,
       );
@@ -290,6 +302,21 @@ function ContentWorkspace() {
             }}
           />
         </WorkspaceSection>
+        {type.key === "media" ? (
+          <WorkspaceSection
+            className="mt-10"
+            title="Where this media appears"
+            description="Link this one media record to departments, doctors and services. Saved together with the content above."
+          >
+            <MediaAssociationPicker
+              mediaId={isNew ? null : recordId}
+              value={assoc}
+              onChange={setAssoc}
+              onLoaded={(v) => (assocBaseline.current = v)}
+              presetDepartment={isNew ? department : undefined}
+            />
+          </WorkspaceSection>
+        ) : null}
       </WorkspaceLayout>
     </AdminShell>
   );

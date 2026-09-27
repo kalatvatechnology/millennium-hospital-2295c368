@@ -321,6 +321,14 @@ export function DepartmentWorkspace() {
       .update(payload)
       .eq("id", departmentId);
     if (saveError) throw saveError;
+    // Publishing syncs the department's media links into the shared relationship the public page reads.
+    if (mode === "publish") {
+      const { error: syncError } = await db.rpc("sync_department_media", {
+        _department_id: departmentId,
+        _media_ids: page.links?.media ?? [],
+      });
+      if (syncError) throw syncError;
+    }
     // Only after a successful save: remove images no longer referenced by the draft, the published page or the card.
     const keep = new Set([
       ...pageImageUrls(page),
@@ -973,7 +981,7 @@ export function DepartmentWorkspace() {
                 onChange={(v) => set("media", { enabled: v })}
               />
               <AddNewLink kind="media" departmentId={departmentId} dirty={dirty} />
-              <LinkManager kind="media" ids={(page.links ?? { doctors: [], faqs: [], media: [] }).media} onChange={(v) => setLinks("media", v)} />
+              <LinkManager kind="media" departmentId={departmentId} departmentName={identity.name.trim() || "this department"} ids={(page.links ?? { doctors: [], faqs: [], media: [] }).media} onChange={(v) => setLinks("media", v)} />
             </Panel>
           ) : null}
           {active === "seo" ? (
@@ -2134,9 +2142,11 @@ function LinkManager({
   ids,
   onChange,
   departmentId,
+  departmentName,
 }: {
-  /** FAQs only: restricts choices to FAQs owned by this department. */
+  /** FAQs: restricts choices to this department's FAQs. Both kinds: enables the Edit link. */
   departmentId?: string;
+  departmentName?: string;
   kind: "faq" | "media";
   ids: string[];
   onChange: (ids: string[]) => void;
@@ -2200,15 +2210,15 @@ function LinkManager({
         icon={kind === "faq" ? "faq" : undefined}
         rows={rows}
         busy={false}
-        removeLabel={`Remove ${cfg.noun} from this page`}
+        removeLabel={kind === "media" && departmentName ? `Remove from ${departmentName}` : `Remove ${cfg.noun} from this page`}
         renderAction={
-          kind === "faq" && departmentId
+          departmentId
             ? (id) => (
                 <Button asChild size="sm" variant="ghost">
                   <Link
                     to="/_admin/content/$contentType/$recordId"
-                    params={{ contentType: "faqs", recordId: id }}
-                    search={{ department: departmentId, section: "faqs" }}
+                    params={{ contentType: kind === "faq" ? "faqs" : "media", recordId: id }}
+                    search={{ department: departmentId, section: kind === "faq" ? "faqs" : "media" }}
                   >
                     <Pencil className="size-4" aria-hidden /> Edit
                   </Link>

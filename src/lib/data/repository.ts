@@ -94,7 +94,9 @@ export async function getDepartment(slug: string, preview = false) {
             .eq("department_id", department["id"])
             .order("display_order")
             .then((r: any) => (r.error ? [] : rows(r)).map((row) => row["faqs"]).filter(Boolean) as Row[]),
-      links
+      // Public page: the published department-media relationship (synced on Publish).
+      // Preview: the staged draft links.
+      preview && links
         ? byIds("media_items", "*", links.media).catch((): Row[] => [])
         : db
             .from("media_departments")
@@ -454,7 +456,7 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
   if (legacyKind === "hospital")
     return { service: mapped, departments: [] as Department[], doctors: [] as Doctor[] };
   if (!usesProductionContract) {
-    const [departments, doctors] = await Promise.all([
+    const [departments, doctors, mediaLinks] = await Promise.all([
       db
         .from("professional_service_departments")
         .select("departments(*)")
@@ -463,9 +465,18 @@ async function getServiceRecord(slug: string, legacyKind: "professional" | "hosp
         .from("professional_service_doctors")
         .select("doctors(*, department:departments!doctors_department_id_fkey(id,name,slug), doctor_specializations(enabled,display_order,department_specializations(name)))")
         .eq("professional_service_id", mapped.id),
+      db
+        .from("media_professional_services")
+        .select("media_items(*)")
+        .eq("professional_service_id", mapped.id),
     ]);
     return {
       service: mapped,
+      media: (mediaLinks.error ? [] : rows(mediaLinks))
+        .map((item) => item["media_items"])
+        .filter(Boolean)
+        .map((item) => mapMedia(item))
+        .filter((item) => item.status === "published"),
       departments: rows(departments)
         .map((item) => item["departments"])
         .filter(Boolean)

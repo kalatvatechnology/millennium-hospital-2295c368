@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MediaGrid } from "@/components/content/media";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDown, ClipboardCheck, HeartHandshake, Stethoscope } from "lucide-react";
 import { PublicPage } from "@/components/layout/public-page";
@@ -101,6 +102,12 @@ function ProfessionalServiceDetail() {
                       <DepartmentCard key={item.id} department={item} />
                     ))}
                   </div>
+                </ContentSection>
+              ) : null}
+              {"media" in data && data.media?.length ? (
+                <ContentSection>
+                  <h2 className="text-2xl font-semibold">Media</h2>
+                  <div className="mt-8"><MediaGrid items={data.media} /></div>
                 </ContentSection>
               ) : null}
               {data.doctors.length ? (
