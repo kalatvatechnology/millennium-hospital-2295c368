@@ -218,6 +218,11 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {canWrite ? (
+              <DropdownMenuItem asChild>
+                <Link to="/_admin/departments/$departmentId/$section" params={{ departmentId: String(row["id"]), section: "identity" }}><Pencil className="size-4" /> Edit</Link>
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem asChild>
               <a href={`/departments/${row["slug"]}?preview=1`} target="_blank" rel="noreferrer"><Eye className="size-4" /> Preview draft</a>
             </DropdownMenuItem>
