@@ -220,5 +220,5 @@ export function getDepartmentCompletion({
     }),
   ) as Record<DepartmentSectionKey, CompletionState>;
 
-  return { percentage, items, missing, sectionStates };
+  return { items, missing, sectionStates };
 }
