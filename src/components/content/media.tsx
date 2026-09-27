@@ -74,7 +74,7 @@ export function mediaPlatform(item: MediaItem): string {
   return typeLabel[item.media_type];
 }
 
-function Thumb({ item, vertical }: { item: MediaItem; vertical?: boolean }) {
+function Thumb({ item, vertical }: { item: MediaItem; vertical?: boolean | undefined }) {
   const Icon = item.media_type === "podcast" ? Headphones : item.media_type === "image" ? ImageIcon : PlayCircle;
   return (
     <div
@@ -89,7 +89,7 @@ function Thumb({ item, vertical }: { item: MediaItem; vertical?: boolean }) {
   );
 }
 
-function Body({ item, compact }: { item: MediaItem; compact?: boolean }) {
+function Body({ item, compact }: { item: MediaItem; compact?: boolean | undefined }) {
   return (
     <div className="p-4">
       <p className="text-xs font-semibold uppercase text-primary">{compact ? mediaPlatform(item) : typeLabel[item.media_type]}</p>
@@ -102,7 +102,7 @@ function Body({ item, compact }: { item: MediaItem; compact?: boolean }) {
 const cardClass =
   "group block w-full border border-border bg-background text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
-export function MediaCard({ item, vertical, compact }: { item: MediaItem; vertical?: boolean; compact?: boolean }) {
+export function MediaCard({ item, vertical, compact }: { item: MediaItem; vertical?: boolean | undefined; compact?: boolean | undefined }) {
   const [open, setOpen] = useState(false);
   const isImage = item.media_type === "image";
   const embed = isImage ? null : mediaEmbedUrl(item);
