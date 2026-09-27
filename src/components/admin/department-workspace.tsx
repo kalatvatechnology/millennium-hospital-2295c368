@@ -21,6 +21,7 @@ import {
 import {
   ArrowDown,
   ArrowLeft,
+  ArrowRight,
   ArrowUp,
   AlertCircle,
   CheckCircle2,
@@ -500,79 +501,87 @@ export function DepartmentWorkspace() {
       description="Department workspace"
       requires="content.write"
     >
-      <div className="border-b border-border bg-background pb-5">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <Link
-            to="/_admin/departments"
-            className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" /> Back to Departments
-          </Link>
-          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2.5">
-            <h2 className="min-w-0 truncate text-xl font-semibold sm:text-2xl">
-              {identity.name || "Untitled department"}
-            </h2>
-            <StatusBadge
-              status={published ? "Published" : "Draft"}
-              tone={published ? "positive" : "neutral"}
-            />
-            {hasDraftChanges && published ? (
-              <span className="text-xs font-medium text-muted-foreground">Unpublished changes</span>
-            ) : null}
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <SaveStateLabel state={saveState} />
-            <span>Last saved {formatDate(row["page_draft_saved_at"])}</span>
-          </div>
-        </div>
-        <div
-          className="grid size-14 shrink-0 place-items-center border border-border bg-secondary text-center sm:size-16"
-          aria-label={`${completion.percentage}% profile readiness`}
+      <div className="border-b border-border pb-5">
+        <Link
+          to="/_admin/departments"
+          className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
-          <strong className="text-base font-semibold text-primary sm:text-lg">
-            {completion.percentage}%
-          </strong>
-          <span className="sr-only">complete</span>
-        </div>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" variant="outline" disabled={!dirty || busy} onClick={cancel}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={busy}
-            onClick={() => saveDraft.mutate()}
-          >
-            {saveDraft.isPending ? "Saving…" : "Save Draft"}
-          </Button>
-          <Button asChild variant="outline">
-            <a
-              href={`/departments/${row["slug"]}?preview=1`}
-              target="_blank"
-              rel="noreferrer"
-              title={dirty ? "Save the draft first to preview your latest edits." : undefined}
-            >
-              <ExternalLink className="size-4" /> Preview
-            </a>
-          </Button>
-          {canPublish ? published ? (
+          <ArrowLeft className="size-4" /> Back to Departments
+        </Link>
+        <div className="mt-1 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+              <h2 className="min-w-0 truncate text-2xl font-semibold text-foreground sm:text-[1.75rem]">
+                {identity.name || "Untitled department"}
+              </h2>
+              <StatusBadge
+                status={published ? "Published" : "Draft"}
+                tone={published ? "positive" : "neutral"}
+              />
+              {hasDraftChanges && published ? (
+                <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                  Unpublished changes
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <SaveStateLabel state={saveState} />
+              <span aria-hidden>·</span>
+              <span>Last saved {formatDate(row["page_draft_saved_at"])}</span>
+              <span aria-hidden>·</span>
+              <span aria-label={`${completion.percentage}% profile readiness`}>
+                {completion.percentage}% complete
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
-              variant="outline"
-              className="text-destructive"
-              disabled={busy}
-              onClick={() => unpublish.mutate()}
+              variant="ghost"
+              className="text-muted-foreground"
+              disabled={!dirty || busy}
+              onClick={cancel}
             >
-              {unpublish.isPending ? "Unpublishing…" : "Unpublish"}
+              Cancel
             </Button>
-          ) : (
-            <Button type="button" disabled={busy} onClick={() => publish.mutate()}>
-              <Send className="size-4" /> {publish.isPending ? "Publishing…" : "Publish"}
+            <Button asChild variant="outline">
+              <a
+                href={`/departments/${row["slug"]}?preview=1`}
+                target="_blank"
+                rel="noreferrer"
+                title={dirty ? "Save the draft first to preview your latest edits." : undefined}
+              >
+                <ExternalLink className="size-4" /> Preview
+              </a>
             </Button>
-          ) : null}
+            <Button type="button" disabled={busy} onClick={() => saveDraft.mutate()}>
+              {saveDraft.isPending ? "Saving…" : "Save Draft"}
+            </Button>
+            {canPublish ? (
+              <span className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden />
+            ) : null}
+            {canPublish ? published ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="text-destructive"
+                disabled={busy}
+                onClick={() => unpublish.mutate()}
+              >
+                {unpublish.isPending ? "Unpublishing…" : "Unpublish"}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="border-primary/40 text-primary"
+                disabled={busy}
+                onClick={() => publish.mutate()}
+              >
+                <Send className="size-4" /> {publish.isPending ? "Publishing…" : "Publish"}
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
       {error ? (
@@ -612,9 +621,12 @@ export function DepartmentWorkspace() {
           </div>
           <nav
             aria-label="Department sections"
-            className="sticky top-24 hidden overflow-hidden border border-border bg-background shadow-[var(--shadow-sm)] lg:block"
+            className="sticky top-24 hidden overflow-hidden rounded-lg border border-border bg-card p-1.5 lg:block"
           >
-            <ul>
+            <p className="px-3 pb-1.5 pt-2 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              Sections
+            </p>
+            <ul className="grid gap-0.5">
               {SECTIONS.map((s, i) => {
                 const isActive = s.key === active;
                 const off = enabled[s.key] === false;
@@ -625,19 +637,24 @@ export function DepartmentWorkspace() {
                       params={{ departmentId, section: s.key }}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "flex min-h-11 items-center gap-3 border-l-2 px-3 py-2 text-sm",
+                        "flex min-h-10 items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm",
                         isActive
-                          ? "border-brand-accent bg-secondary font-semibold text-foreground"
-                          : "border-transparent text-muted-foreground hover:bg-secondary/60",
+                          ? "border-primary bg-secondary font-semibold text-primary"
+                          : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                     >
-                      <span className="w-5 font-heading text-xs tabular-nums text-brand-accent">
+                      <span
+                        className={cn(
+                          "w-5 text-xs tabular-nums",
+                          isActive ? "text-primary" : "text-muted-foreground/80",
+                        )}
+                      >
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                       <span className={cn("min-w-0 flex-1", off && "opacity-60")}>
+                      <span className={cn("min-w-0 flex-1", off && "opacity-60")}>
                         {s.label}
                       </span>
-                       <SectionStatus state={completion.sectionStates[s.key]} showLabel={false} />
+                      <SectionStatus state={completion.sectionStates[s.key]} showLabel={false} quiet />
                     </Link>
                   </li>
                 );
@@ -658,7 +675,10 @@ export function DepartmentWorkspace() {
               title="Identity & Hero"
               description="Department details and the top of the public page. Name, slug and descriptions also appear on the Department Card."
             >
-              <div role="note" className="border border-border bg-secondary p-4 text-sm leading-6 text-muted-foreground">
+              <div
+                role="note"
+                className="rounded-md border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-6 text-muted-foreground"
+              >
                 <p>
                   <strong className="text-foreground">Department identity &amp; card data</strong>{" "}
                   (name, slug, short and full description) goes live as soon as you save.
@@ -671,7 +691,7 @@ export function DepartmentWorkspace() {
               {!hasPageContent(row["page_draft"]) &&
               !hasPageContent(row["page_published"]) &&
               getDepartmentPresentation(row["slug"]) ? (
-                <div className="flex flex-col gap-3 border border-border bg-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-muted-foreground">
                     This department's page currently shows its approved design text. Load that text
                     here to edit it (images are not copied).
@@ -688,124 +708,147 @@ export function DepartmentWorkspace() {
                   </Button>
                 </div>
               ) : null}
-              <Grid>
-                <Field label="Department name" required>
-                  <Input
-                    value={identity.name}
-                    onChange={(e) => setIdentity({ ...identity, name: e.target.value })}
-                  />
-                </Field>
-                <Field label="Slug" help="Web address: /departments/slug">
-                  <Input
-                    value={identity.slug}
-                    onChange={(e) =>
-                      setIdentity({ ...identity, slug: e.target.value.toLowerCase() })
-                    }
-                  />
-                </Field>
-                <Field
-                  label="Short description"
-                  wide
-                  count={[identity.short_description.length, 180]}
-                >
-                  <Textarea
-                    rows={2}
-                    value={identity.short_description}
-                    onChange={(e) =>
-                      setIdentity({ ...identity, short_description: e.target.value })
-                    }
-                  />
-                </Field>
-                <Field
-                  label="Full description"
-                  wide
-                  help="Used as the About introduction when that section has no introduction of its own."
-                >
-                  <Textarea
-                    rows={4}
-                    value={identity.description}
-                    onChange={(e) => setIdentity({ ...identity, description: e.target.value })}
-                  />
-                </Field>
-              </Grid>
-              <SubHeading
+              <Group title="Department identity" description="Core details used across the website.">
+                <Grid>
+                  <Field label="Department name" required>
+                    <Input
+                      value={identity.name}
+                      onChange={(e) => setIdentity({ ...identity, name: e.target.value })}
+                    />
+                  </Field>
+                  <Field label="Slug" help="Web address: /departments/slug">
+                    <Input
+                      value={identity.slug}
+                      onChange={(e) =>
+                        setIdentity({ ...identity, slug: e.target.value.toLowerCase() })
+                      }
+                    />
+                  </Field>
+                </Grid>
+              </Group>
+              <Group
+                title="Department description"
+                description="Shown on the Department Card and the public page."
+              >
+                <Grid>
+                  <Field
+                    label="Short description"
+                    wide
+                    count={[identity.short_description.length, 180]}
+                  >
+                    <Textarea
+                      rows={2}
+                      value={identity.short_description}
+                      onChange={(e) =>
+                        setIdentity({ ...identity, short_description: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field
+                    label="Full description"
+                    wide
+                    help="Used as the About introduction when that section has no introduction of its own."
+                  >
+                    <Textarea
+                      rows={4}
+                      value={identity.description}
+                      onChange={(e) => setIdentity({ ...identity, description: e.target.value })}
+                    />
+                  </Field>
+                </Grid>
+              </Group>
+              <Group
                 title="Hero"
-                toggle={
+                description="The main visual at the top of the public department page."
+                action={
                   <Toggle
                     checked={page.hero.enabled}
                     onChange={(v) => set("hero", { ...page.hero, enabled: v })}
                   />
                 }
-              />
-              <Grid>
-                <Field
-                  label="Hero headline"
-                  wide
-                  help="One line per row. The last row is shown in navy."
-                >
-                  <Textarea
-                    rows={4}
-                    value={page.hero.headline}
-                    onChange={(e) => set("hero", { ...page.hero, headline: e.target.value })}
+              >
+                <Grid>
+                  <Field
+                    label="Hero headline"
+                    wide
+                    help="One line per row. The last row is shown in navy."
+                  >
+                    <Textarea
+                      rows={4}
+                      value={page.hero.headline}
+                      onChange={(e) => set("hero", { ...page.hero, headline: e.target.value })}
+                    />
+                  </Field>
+                  <Field
+                    label="Hero introduction"
+                    wide
+                    help="Leave empty to use the short description."
+                  >
+                    <Textarea
+                      rows={3}
+                      value={page.hero.intro}
+                      onChange={(e) => set("hero", { ...page.hero, intro: e.target.value })}
+                    />
+                  </Field>
+                  <div className="grid gap-4 border-t border-border pt-4 md:col-span-2">
+                    <ImageField
+                      label="Hero image"
+                      size="large"
+                      url={page.hero.image_url}
+                      fallbackNote="Without a hero image, the Department Card image is used."
+                      onChange={(url) => set("hero", { ...page.hero, image_url: url })}
+                      onUpload={onUpload}
+                    />
+                    <Field label="Hero image alt text" wide count={[page.hero.image_alt.length, 160]}>
+                      <Input
+                        value={page.hero.image_alt}
+                        maxLength={160}
+                        onChange={(e) => set("hero", { ...page.hero, image_alt: e.target.value })}
+                      />
+                    </Field>
+                  </div>
+                </Grid>
+              </Group>
+              <Group
+                title="Department Card / OG Image"
+                description="Used for Department Cards and social sharing — separate from the Hero image."
+              >
+                <div className="grid gap-4">
+                  <ImageField
+                    label="Department Card / OG Image"
+                    url={page.seo.og_image_url}
+                    fallbackNote="Used for Department Cards and social sharing (OG image). Recommended 1600 × 900 px (16:9). JPG, PNG or WebP. Maximum 5 MB."
+                    onChange={(url) => set("seo", { ...page.seo, og_image_url: url })}
+                    onUpload={onUpload}
                   />
-                </Field>
-                <Field
-                  label="Hero introduction"
-                  wide
-                  help="Leave empty to use the short description."
-                >
-                  <Textarea
-                    rows={3}
-                    value={page.hero.intro}
-                    onChange={(e) => set("hero", { ...page.hero, intro: e.target.value })}
+                  <Field label="Department Card / OG Image alt text" wide count={[page.seo.og_image_alt.length, 160]}>
+                    <Input
+                      value={page.seo.og_image_alt}
+                      maxLength={160}
+                      onChange={(e) => set("seo", { ...page.seo, og_image_alt: e.target.value })}
+                    />
+                  </Field>
+                </div>
+              </Group>
+              <Group title="Page actions" description="Buttons shown in the hero of the public page.">
+                <div className="grid gap-x-4 gap-y-1 sm:grid-cols-3">
+                  <Toggle
+                    label="Show Book Appointment"
+                    checked={page.hero.show_book}
+                    onChange={(v) => set("hero", { ...page.hero, show_book: v })}
                   />
-                </Field>
-                <ImageField
-                  label="Hero image"
-                  url={page.hero.image_url}
-                  fallbackNote="Without a hero image, the Department Card image is used."
-                  onChange={(url) => set("hero", { ...page.hero, image_url: url })}
-                  onUpload={onUpload}
-                />
-                <Field label="Hero image alt text" wide count={[page.hero.image_alt.length, 160]}>
-                  <Input
-                    value={page.hero.image_alt}
-                    maxLength={160}
-                    onChange={(e) => set("hero", { ...page.hero, image_alt: e.target.value })}
+                  <Toggle
+                    label="Show Contact Hospital"
+                    checked={page.hero.show_contact}
+                    onChange={(v) => set("hero", { ...page.hero, show_contact: v })}
                   />
-                </Field>
-                <ImageField
-                  label="Department Card / OG Image"
-                  url={page.seo.og_image_url}
-                  fallbackNote="Used for Department Cards and social sharing (OG image). Recommended 1600 × 900 px (16:9). JPG, PNG or WebP. Maximum 5 MB."
-                  onChange={(url) => set("seo", { ...page.seo, og_image_url: url })}
-                  onUpload={onUpload}
-                />
-                <Field label="Department Card / OG Image alt text" wide count={[page.seo.og_image_alt.length, 160]}>
-                  <Input
-                    value={page.seo.og_image_alt}
-                    maxLength={160}
-                    onChange={(e) => set("seo", { ...page.seo, og_image_alt: e.target.value })}
+                  <Toggle
+                    label="Show Meet Our Specialists"
+                    checked={page.hero.show_specialists}
+                    onChange={(v) => set("hero", { ...page.hero, show_specialists: v })}
                   />
-                </Field>
-              </Grid>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Toggle
-                  label="Show Book Appointment"
-                  checked={page.hero.show_book}
-                  onChange={(v) => set("hero", { ...page.hero, show_book: v })}
-                />
-                <Toggle
-                  label="Show Contact Hospital"
-                  checked={page.hero.show_contact}
-                  onChange={(v) => set("hero", { ...page.hero, show_contact: v })}
-                />
-                <Toggle
-                  label="Show Meet Our Specialists"
-                  checked={page.hero.show_specialists}
-                  onChange={(v) => set("hero", { ...page.hero, show_specialists: v })}
-                />
-              </div>
+                </div>
+              </Group>
             </Panel>
           ) : null}
 
@@ -993,22 +1036,28 @@ export function DepartmentWorkspace() {
             </Panel>
           ) : null}
 
-          <div className="mt-8 flex justify-between gap-3 border-t border-border pt-4">
+          <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-5">
             <Button
               type="button"
               variant="ghost"
+              className="text-muted-foreground"
               disabled={index <= 0}
               onClick={() => goto(SECTIONS[index - 1]!.key)}
             >
-              Previous
+              <ArrowLeft className="size-4" aria-hidden /> Previous
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
+              className="border-primary/40 text-primary hover:bg-secondary"
               disabled={index >= SECTIONS.length - 1}
               onClick={() => goto(SECTIONS[index + 1]!.key)}
             >
               Next
+              {index < SECTIONS.length - 1 ? (
+                <span className="hidden sm:inline">: {SECTIONS[index + 1]!.label}</span>
+              ) : null}
+              <ArrowRight className="size-4" aria-hidden />
             </Button>
           </div>
         </div>
@@ -1057,16 +1106,28 @@ function SaveStateLabel({ state }: { state: SaveState }) {
   );
 }
 
-function SectionStatus({ state, showLabel = true }: { state: CompletionState; showLabel?: boolean }) {
+function SectionStatus({
+  state,
+  showLabel = true,
+  quiet = false,
+}: {
+  state: CompletionState;
+  showLabel?: boolean;
+  quiet?: boolean;
+}) {
   const content = {
-    complete: { label: "Complete", icon: CheckCircle2, className: "text-success-foreground" },
+    complete: {
+      label: "Complete",
+      icon: CheckCircle2,
+      className: quiet ? "text-success" : "text-success-foreground",
+    },
     attention: { label: "Needs attention", icon: AlertCircle, className: "text-brand-accent" },
     optional: { label: "Optional", icon: Circle, className: "text-muted-foreground" },
   }[state];
   const Icon = content.icon;
   return (
     <span className={cn("inline-flex shrink-0 items-center gap-1 text-xs font-medium", content.className)}>
-      <Icon className="size-4 shrink-0" aria-hidden />
+      <Icon className={cn("shrink-0", quiet ? "size-3.5" : "size-4")} aria-hidden />
       {showLabel ? content.label : <span className="sr-only">{content.label}</span>}
     </span>
   );
@@ -1190,8 +1251,35 @@ function SubHeading({ title, toggle }: { title: string; toggle?: ReactNode }) {
   );
 }
 
+function Group({
+  title,
+  description,
+  action,
+  children,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-1 border-b border-border pb-3">
+        <div className="min-w-0">
+          <h4 className="font-semibold text-foreground">{title}</h4>
+          {description ? (
+            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{description}</p>
+          ) : null}
+        </div>
+        {action}
+      </header>
+      {children}
+    </section>
+  );
+}
+
 function Grid({ children }: { children: ReactNode }) {
-  return <div className="grid gap-4 md:grid-cols-2">{children}</div>;
+  return <div className="grid gap-x-5 gap-y-4 md:grid-cols-2">{children}</div>;
 }
 
 function Field({
@@ -1427,12 +1515,14 @@ function ImageField({
   onChange,
   onUpload,
   fallbackNote,
+  size = "default",
 }: {
   label: string;
   url: string;
   onChange: (url: string) => void;
   onUpload: (url: string) => void;
   fallbackNote?: string;
+  size?: "large" | "default";
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -1471,12 +1561,19 @@ function ImageField({
   return (
     <div className="grid gap-2 md:col-span-2">
       <Label>{label}</Label>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="grid h-28 w-44 shrink-0 place-items-center overflow-hidden border border-border bg-secondary">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div
+          className={cn(
+            "grid aspect-video w-full shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-muted",
+            size === "large" ? "sm:w-80" : "sm:w-60",
+          )}
+        >
           {url ? (
             <img src={url} alt="" className="size-full object-cover" />
           ) : (
-            <ImagePlus className="size-6 text-muted-foreground" aria-hidden />
+            <span className="grid justify-items-center gap-1.5 text-xs text-muted-foreground">
+              <ImagePlus className="size-6" aria-hidden /> No image
+            </span>
           )}
         </div>
         <div className="grid gap-2">
