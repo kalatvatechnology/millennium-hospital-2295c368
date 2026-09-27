@@ -369,10 +369,7 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
         </div>
       </section> : null}
 
-      {/* 08 FAQ — only when department FAQs exist. */}
-      {(() => { const faqNum = v.faqsEnabled && (faqs.length || !page) ? num() : ""; return faqNum ? <DepartmentFaqs departmentName={department.name} linked={faqs} legacy={!page} n={faqNum} /> : null; })()}
-
-      {/* 09 MEDIA — only when media is linked to the department. */}
+      {/* MEDIA — only when media is linked to the department; sits before FAQs. */}
       {v.mediaEnabled && media.length ? (
         <section className="bg-secondary">
           <div className={`${wrap} py-12 sm:py-16`}>
@@ -383,6 +380,9 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
           </div>
         </section>
       ) : null}
+
+      {/* FAQ — only when department FAQs exist. */}
+      {(() => { const faqNum = v.faqsEnabled && (faqs.length || !page) ? num() : ""; return faqNum ? <DepartmentFaqs departmentName={department.name} linked={faqs} legacy={!page} n={faqNum} /> : null; })()}
 
       {/* 09 CTA */}
       <section className="relative bg-sidebar text-sidebar-foreground">
