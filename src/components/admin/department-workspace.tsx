@@ -25,6 +25,7 @@ import {
   Plus,
   Send,
   Trash2,
+  Pencil,
   Upload,
   UserRound,
 } from "lucide-react";
