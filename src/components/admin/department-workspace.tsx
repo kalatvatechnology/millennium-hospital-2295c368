@@ -1347,7 +1347,7 @@ function Toggle({
   );
 }
 
-export function ListPanel({
+function ListPanel({
   title,
   itemName,
   emptyText,
