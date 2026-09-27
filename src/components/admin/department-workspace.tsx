@@ -1146,15 +1146,15 @@ function CompletionCard({
 }) {
   const visible = [...missing.slice(0, 4), ...missing.slice(4).filter((i) => i.section === "faqs" || i.section === "media")];
   return (
-    <section aria-labelledby="profile-readiness" className="mb-6 border border-border bg-background p-4 shadow-[var(--shadow-sm)] sm:p-5">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+    <section aria-labelledby="profile-readiness" className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
         <div className="min-w-0">
-          <h3 id="profile-readiness" className="font-semibold">Department profile</h3>
+          <h3 id="profile-readiness" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Department profile</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {missing.length ? `${missing.length} item${missing.length === 1 ? "" : "s"} need attention` : "All profile checks are complete"}
+            {missing.length ? `${missing.length} item${missing.length === 1 ? "" : "s"} need attention` : "All profile checks are complete."}
           </p>
         </div>
-        <p className="shrink-0 text-lg font-semibold text-primary">{percentage}% complete</p>
+        <p className="shrink-0 text-primary"><span className="font-heading text-3xl font-semibold tabular-nums">{percentage}%</span> <span className="text-sm text-muted-foreground">complete</span></p>
       </div>
       <progress
         className="mt-4 h-2 w-full appearance-none overflow-hidden bg-secondary accent-primary [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-secondary [&::-webkit-progress-value]:bg-primary"
