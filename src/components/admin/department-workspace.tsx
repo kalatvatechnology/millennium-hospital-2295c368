@@ -1539,10 +1539,10 @@ function SeoPanel({
     {
       ok: Boolean(seo.og_image_url || page.hero.image_url || cardImage),
       text: seo.og_image_url
-        ? "OG image is set."
+        ? "Card / OG Image is set."
         : page.hero.image_url || cardImage
-          ? "No OG image set — the hero or card image is used."
-          : "No OG image available.",
+          ? "No Card / OG Image set. The public page may fall back to the Hero Image for sharing previews."
+          : "No Card / OG Image set.",
     },
     {
       ok: seo.index,
@@ -1583,10 +1583,15 @@ function SeoPanel({
             onChange={(e) => onChange({ ...seo, canonical_url: e.target.value.trim() })}
           />
         </Field>
-        <p className="text-sm text-muted-foreground md:col-span-2">
-          OG image (social sharing): {seo.og_image_url ? "set" : "not set"}. Upload or replace it as the
-          “Department Card / OG Image” in Identity &amp; Hero.
-        </p>
+        <div className="text-sm text-muted-foreground md:col-span-2">
+          <p className="font-medium text-foreground">Sharing image: Card / OG Image</p>
+          <p>
+            {seo.og_image_url
+              ? "Used for Department Cards and social sharing."
+              : "No Card / OG Image set. The public page may fall back to the Hero Image for sharing previews."}{" "}
+            Upload or replace it in Identity &amp; Hero.
+          </p>
+        </div>
       </Grid>
       <Toggle
         label="Allow search engines to index this page"
