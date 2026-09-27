@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Eye, ImageOff, MoreHorizontal, Pencil, Plus } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
-import { FilterSelect, Pagination, SearchField, StatusBadge } from "@/components/admin/ui";
+import { FilterSelect, Pagination, SearchField } from "@/components/admin/ui";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/page";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,21 +107,36 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ) : null
       }
     >
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border lg:grid-cols-4">
+      <dl className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-background lg:grid-cols-4">
         {[
           ["Total departments", metrics.total],
           ["Published", metrics.published],
           ["Drafts", metrics.drafts],
           ["Average completion", `${metrics.avg}%`],
-        ].map(([label, value]) => (
-          <div key={label} className="bg-background px-4 py-3">
-            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
-            <dd className="mt-1 text-2xl font-semibold tabular-nums text-primary">{records.isPending || counts.isPending ? "—" : value}</dd>
+        ].map(([label, value], i) => (
+          <div
+            key={label}
+            className={cn(
+              "px-5 py-4",
+              i % 2 === 1 && "border-l border-border",
+              i >= 2 && "border-t border-border lg:border-t-0",
+              i === 2 && "lg:border-l",
+            )}
+          >
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</dt>
+            <dd
+              className={cn(
+                "mt-1.5 font-semibold tabular-nums leading-none text-foreground",
+                i === 3 ? "text-3xl text-primary" : "text-2xl",
+              )}
+            >
+              {records.isPending || counts.isPending ? "—" : value}
+            </dd>
           </div>
         ))}
       </dl>
 
-      <div className="mt-6 flex flex-wrap items-end gap-4">
+      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-background p-3 sm:p-4 [&>div:first-child]:basis-full md:[&>div:first-child]:basis-0 [&>div:not(:first-child)]:min-w-36 [&>div:not(:first-child)]:flex-1 md:[&>div:not(:first-child)]:max-w-44 md:[&>div:not(:first-child)]:flex-none [&_label]:text-xs [&_label]:font-medium [&_label]:text-muted-foreground">
         <SearchField value={search} onChange={reset(setSearch)} placeholder="Search departments" />
         <FilterSelect label="Status" value={status} onChange={reset(setStatus)} options={[
           { value: "all", label: "All" },
@@ -141,7 +156,7 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ]} />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
         {records.isPending ? (
           <LoadingState />
         ) : records.isError ? (
@@ -149,7 +164,7 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ) : rows.length === 0 ? (
           <EmptyState title="No departments found" description="Try a different search or filter." />
         ) : (
-          <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-background shadow-[var(--shadow-sm)]">
+          <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-background">
             {rows.map(({ row, insight }) => (
               <DepartmentRow key={row["id"]} row={row} insight={insight} canWrite={canWrite} countsReady={!counts.isPending} />
             ))}
@@ -161,54 +176,104 @@ export function DepartmentManager({ type }: { type: ContentType }) {
   );
 }
 
+const READINESS_STYLE = {
+  ready: { dot: "bg-success", text: "text-success-foreground" },
+  attention: { dot: "bg-warning", text: "text-warning-foreground" },
+  not_ready: { dot: "bg-destructive", text: "text-destructive" },
+} as const;
+
 function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<string, any>; insight: DepartmentInsight; canWrite: boolean; countsReady: boolean }) {
   const ready = READINESS[insight.readiness];
+  const readyStyle = READINESS_STYLE[insight.readiness];
   const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const editParams = { departmentId: String(row["id"]), section: "identity" };
+  const [firstIssue, ...moreIssues] = insight.attention;
   return (
-    <li className="grid gap-4 p-4 md:grid-cols-[8rem_minmax(0,1fr)_11rem_auto] md:items-center">
-      <div className="aspect-video w-32 overflow-hidden rounded-md border border-border bg-surface">
+    <li className="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-3.5 transition-colors hover:bg-surface/40 md:grid-cols-[5rem_minmax(0,1fr)_9.5rem_auto] md:items-center lg:grid-cols-[5rem_minmax(0,1fr)_11rem_auto] lg:gap-x-6 lg:px-5">
+      <div className="aspect-video w-20 overflow-hidden rounded-md border border-border bg-surface">
         {insight.cardImage ? (
           <img src={insight.cardImage} alt="" className="size-full object-cover" loading="lazy" />
         ) : (
-          <div className="grid size-full place-items-center content-center gap-1 text-muted-foreground">
-            <ImageOff className="size-4" aria-hidden />
-            <span className="text-xs font-medium">Image required</span>
+          <div
+            className="grid size-full place-items-center content-center gap-0.5 text-muted-foreground"
+            title="Card / OG image missing"
+          >
+            <ImageOff className="size-3.5" aria-hidden />
+            <span className="text-[10px] font-medium leading-none">Image required</span>
+            <span className="sr-only">Card / OG image missing</span>
           </div>
         )}
       </div>
 
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold">{row["name"] || "Untitled"}</p>
-          <StatusBadge status={insight.published ? "published" : "draft"} tone={insight.published ? "positive" : "neutral"} />
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="truncate text-[15px] font-semibold leading-tight text-foreground">{row["name"] || "Untitled"}</p>
+          <span
+            className={cn(
+              "inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium leading-none",
+              insight.published ? "bg-success/10 text-success-foreground" : "bg-muted text-muted-foreground",
+            )}
+          >
+            {insight.published ? "Published" : "Draft"}
+          </span>
         </div>
         <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{row["short_description"] || "No short description yet"}</p>
-        <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
           <span>{countsReady ? `${plural(insight.doctors, "Doctor")} · ${plural(insight.services, "Service")}` : "Counting…"}</span>
-          <span className={cn(insight.seoReady ? "text-primary" : "text-destructive")}>SEO • {insight.seoReady ? "Ready" : "Needs attention"}</span>
-          <span>{relativeUpdated(insight.updatedAt)}</span>
+          <span aria-hidden>·</span>
+          <span className={cn("font-medium", insight.seoReady ? "text-success-foreground" : "text-foreground")}>
+            SEO {insight.seoReady ? "ready" : "needs attention"}
+          </span>
+          <span aria-hidden className="hidden lg:inline">·</span>
+          <span className="hidden lg:inline">{relativeUpdated(insight.updatedAt)}</span>
         </p>
-        {insight.attention.length ? (
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Attention:</span> {insight.attention.slice(0, 3).join(" · ")}
-            {insight.attention.length > 3 ? ` +${insight.attention.length - 3} more` : ""}
+        {firstIssue ? (
+          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs">
+            <span className="shrink-0 font-semibold text-warning-foreground">Attention</span>
+            <span aria-hidden className="text-muted-foreground">·</span>
+            <span className="truncate text-foreground">{firstIssue}</span>
+            {moreIssues.length ? (
+              canWrite ? (
+                <Link
+                  to="/_admin/departments/$departmentId/$section"
+                  params={editParams}
+                  title={moreIssues.join(" · ")}
+                  aria-label={`${moreIssues.length} more issues for ${row["name"]}: ${moreIssues.join(", ")}`}
+                  className="shrink-0 rounded font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  +{moreIssues.length} more
+                </Link>
+              ) : (
+                <span className="shrink-0 text-muted-foreground" title={moreIssues.join(" · ")}>+{moreIssues.length} more</span>
+              )
+            ) : null}
           </p>
         ) : null}
       </div>
 
-      <div>
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="text-muted-foreground">Profile</span>
-          <span className="font-semibold tabular-nums">{countsReady ? `${insight.percentage}% complete` : "Calculating…"}</span>
+      <div className="col-start-2 md:col-start-auto">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Profile</span>
+          {countsReady ? (
+            <span className="text-right leading-none">
+              <span className="text-xl font-semibold tabular-nums text-foreground">{insight.percentage}%</span>
+              <span className="ml-1 text-xs text-muted-foreground">complete</span>
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground">Calculating…</span>
+          )}
         </div>
-        <progress value={insight.percentage} max={100} aria-label={`${row["name"]} profile completion`} className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-primary" />
-        <div className="mt-2"><StatusBadge status={ready.label} tone={ready.tone} /></div>
+        <progress value={countsReady ? insight.percentage : 0} max={100} aria-label={`${row["name"]} profile completion`} className="mt-2 h-1 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:bg-primary" />
+        <p className={cn("mt-2 flex items-center gap-1.5 text-xs font-medium", readyStyle.text)}>
+          <span aria-hidden className={cn("size-1.5 rounded-full", readyStyle.dot)} />
+          {ready.label}
+        </p>
       </div>
 
-      <div className="flex items-center gap-2 md:justify-end">
+      <div className="col-start-2 flex items-center gap-1.5 md:col-start-auto md:justify-end">
         {canWrite ? (
           <Button asChild size="sm" variant="outline">
-            <Link to="/_admin/departments/$departmentId/$section" params={{ departmentId: String(row["id"]), section: "identity" }}>
+            <Link to="/_admin/departments/$departmentId/$section" params={editParams} aria-label={`Edit ${row["name"]}`}>
               <Pencil className="size-4" /> Edit
             </Link>
           </Button>
@@ -217,14 +282,14 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="ghost" aria-label={`More actions for ${row["name"]}`}>
+            <Button size="icon" variant="ghost" className="size-8" aria-label={`More actions for ${row["name"]}`}>
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {canWrite ? (
               <DropdownMenuItem asChild>
-                <Link to="/_admin/departments/$departmentId/$section" params={{ departmentId: String(row["id"]), section: "identity" }}><Pencil className="size-4" /> Edit</Link>
+                <Link to="/_admin/departments/$departmentId/$section" params={editParams}><Pencil className="size-4" /> Edit</Link>
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem asChild>
