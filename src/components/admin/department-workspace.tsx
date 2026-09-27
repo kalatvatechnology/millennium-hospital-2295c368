@@ -2134,9 +2134,11 @@ function LinkManager({
   ids,
   onChange,
   departmentId,
+  departmentName,
 }: {
-  /** FAQs only: restricts choices to FAQs owned by this department. */
+  /** FAQs: restricts choices to this department's FAQs. Both kinds: enables the Edit link. */
   departmentId?: string;
+  departmentName?: string;
   kind: "faq" | "media";
   ids: string[];
   onChange: (ids: string[]) => void;
@@ -2200,15 +2202,15 @@ function LinkManager({
         icon={kind === "faq" ? "faq" : undefined}
         rows={rows}
         busy={false}
-        removeLabel={`Remove ${cfg.noun} from this page`}
+        removeLabel={kind === "media" && departmentName ? `Remove from ${departmentName}` : `Remove ${cfg.noun} from this page`}
         renderAction={
-          kind === "faq" && departmentId
+          departmentId
             ? (id) => (
                 <Button asChild size="sm" variant="ghost">
                   <Link
                     to="/_admin/content/$contentType/$recordId"
-                    params={{ contentType: "faqs", recordId: id }}
-                    search={{ department: departmentId, section: "faqs" }}
+                    params={{ contentType: kind === "faq" ? "faqs" : "media", recordId: id }}
+                    search={{ department: departmentId, section: kind === "faq" ? "faqs" : "media" }}
                   >
                     <Pencil className="size-4" aria-hidden /> Edit
                   </Link>
