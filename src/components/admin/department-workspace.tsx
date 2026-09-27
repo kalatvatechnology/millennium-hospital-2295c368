@@ -1845,6 +1845,7 @@ function LinkedList({
   removeLabel,
   busy,
   renderAction,
+  refined,
 }: {
   renderAction?: ((id: string) => ReactNode) | undefined;
   rows: LinkRow[];
@@ -1853,12 +1854,62 @@ function LinkedList({
   onRemove: (id: string) => void;
   removeLabel: string;
   busy: boolean;
+  refined?: boolean;
 }) {
   if (!rows.length)
     return (
       <div className="border border-dashed border-border p-5 text-sm text-muted-foreground">
         {empty}
       </div>
+    );
+  if (refined)
+    return (
+      <ol className="grid border-t border-border">
+        {rows.map((r, i) => (
+          <li
+            key={r.id}
+            className="grid gap-3 border-b border-border py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="w-6 shrink-0 font-heading text-sm font-semibold tabular-nums text-brand-accent">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-secondary">
+                {r.image ? (
+                  <img src={r.image} alt="" className="size-full object-cover" loading="lazy" />
+                ) : (
+                  <UserRound className="size-5 text-muted-foreground" aria-hidden />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-heading font-semibold text-foreground">{r.title}</p>
+                {r.sub ? <p className="truncate text-sm text-muted-foreground">{r.sub}</p> : null}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 pl-9 sm:justify-end sm:pl-0">
+              <StatusBadge status={r.status} tone={r.status === "Published" ? "positive" : "neutral"} />
+              {renderAction?.(r.id)}
+              <Button type="button" size="sm" variant="outline" className="h-9 gap-1.5 px-3" aria-label="Move up" disabled={busy || i === 0} onClick={() => onMove(i, -1)}>
+                <ArrowUp className="size-4" /> Up
+              </Button>
+              <Button type="button" size="sm" variant="outline" className="h-9 gap-1.5 px-3" aria-label="Move down" disabled={busy || i === rows.length - 1} onClick={() => onMove(i, 1)}>
+                <ArrowDown className="size-4" /> Down
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                aria-label={removeLabel}
+                className="ml-auto size-9 text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:ml-0"
+                disabled={busy}
+                onClick={() => onRemove(r.id)}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ol>
     );
   return (
     <ol className="grid border-t border-border">
@@ -1995,12 +2046,13 @@ function SpecialistsManager({ ids, onChange }: { ids: string[]; onChange: (ids: 
   return (
     <div className="grid gap-4">
       <LinkedList
+        refined
         rows={rows}
         busy={false}
         removeLabel="Remove doctor from this page"
         empty={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span>No specialists are selected for this department page.</span>
+            <span>No specialists linked yet. Choose an existing doctor below and select Link Existing Doctor.</span>
             <Button asChild variant="outline" size="sm">
               <Link to="/_admin/doctors">Manage Doctors</Link>
             </Button>
