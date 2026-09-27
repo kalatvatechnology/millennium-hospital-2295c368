@@ -1624,7 +1624,7 @@ function LinkedList({
   busy,
   renderAction,
 }: {
-  renderAction?: (id: string) => ReactNode;
+  renderAction?: ((id: string) => ReactNode) | undefined;
   rows: LinkRow[];
   empty: ReactNode;
   onMove: (i: number, d: -1 | 1) => void;
