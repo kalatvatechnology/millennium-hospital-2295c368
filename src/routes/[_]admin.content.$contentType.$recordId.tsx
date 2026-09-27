@@ -86,7 +86,7 @@ function ContentWorkspace() {
   // Opened from a Department workspace: return there and link the new record automatically.
   const { department, section: departmentSection } = Route.useSearch();
   // Department FAQs are owned by their department, so editing one also returns to that department.
-  const fromDepartment = Boolean(department) && (contentType === "faqs" || (isNew && contentType === "media"));
+  const fromDepartment = Boolean(department) && (contentType === "faqs" || contentType === "media");
   const goBack = (linkNew?: string) =>
     fromDepartment
       ? navigate({

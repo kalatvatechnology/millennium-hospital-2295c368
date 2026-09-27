@@ -2848,6 +2848,10 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       slugify_label: { Args: { value: string }; Returns: string }
+      sync_department_media: {
+        Args: { _department_id: string; _media_ids: string[] }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:

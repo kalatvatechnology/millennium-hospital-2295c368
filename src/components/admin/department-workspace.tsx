@@ -321,6 +321,14 @@ export function DepartmentWorkspace() {
       .update(payload)
       .eq("id", departmentId);
     if (saveError) throw saveError;
+    // Publishing syncs the department's media links into the shared relationship the public page reads.
+    if (mode === "publish") {
+      const { error: syncError } = await db.rpc("sync_department_media", {
+        _department_id: departmentId,
+        _media_ids: page.links?.media ?? [],
+      });
+      if (syncError) throw syncError;
+    }
     // Only after a successful save: remove images no longer referenced by the draft, the published page or the card.
     const keep = new Set([
       ...pageImageUrls(page),
