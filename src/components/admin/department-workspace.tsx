@@ -901,6 +901,7 @@ export function DepartmentWorkspace() {
           ) : null}
           {active === "facilities" ? (
             <ListPanel
+              refined
               title="Facilities & Technology"
               itemName="facility point"
               textOptional
@@ -908,6 +909,7 @@ export function DepartmentWorkspace() {
               value={page.facilities}
               onChange={(v) => set("facilities", { ...page.facilities, ...v })}
               extra={
+                <Group title="Feature image" description="Photo shown beside the facility points, with its alt text.">
                 <Grid>
                   <ImageField
                     label="Feature image"
@@ -929,6 +931,7 @@ export function DepartmentWorkspace() {
                     />
                   </Field>
                 </Grid>
+                </Group>
               }
             />
           ) : null}
