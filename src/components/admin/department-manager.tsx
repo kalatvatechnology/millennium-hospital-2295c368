@@ -136,8 +136,10 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ))}
       </dl>
 
-      <div className="mt-5 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-background p-3 sm:p-4 [&>div:first-child]:basis-full lg:[&>div:first-child]:basis-0 [&>div:not(:first-child)]:min-w-36 [&>div:not(:first-child)]:flex-1 lg:[&>div:not(:first-child)]:max-w-44 lg:[&>div:not(:first-child)]:flex-none [&_label]:text-xs [&_label]:font-medium [&_label]:text-muted-foreground">
-        <SearchField value={search} onChange={reset(setSearch)} placeholder="Search departments" />
+      <div className="mt-5 grid gap-3 rounded-lg border border-border bg-background p-3 sm:grid-cols-3 sm:p-4 xl:grid-cols-[minmax(0,1fr)_11rem_11rem_11rem] [&_label]:text-xs [&_label]:font-medium [&_label]:text-muted-foreground [&>div]:min-w-0">
+        <div className="sm:col-span-3 xl:col-span-1 [&>div]:min-w-0">
+          <SearchField value={search} onChange={reset(setSearch)} placeholder="Search departments" />
+        </div>
         <FilterSelect label="Status" value={status} onChange={reset(setStatus)} options={[
           { value: "all", label: "All" },
           { value: "published", label: "Published" },
@@ -189,7 +191,7 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
   const editParams = { departmentId: String(row["id"]), section: "identity" };
   const [firstIssue, ...moreIssues] = insight.attention;
   return (
-    <li className="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-3.5 transition-colors hover:bg-surface/40 md:grid-cols-[5rem_minmax(0,1fr)_9.5rem_auto] md:items-center lg:grid-cols-[5rem_minmax(0,1fr)_11rem_auto] lg:gap-x-6 lg:px-5">
+    <li className="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 gap-y-3 px-4 py-3.5 transition-colors hover:bg-surface/40 md:grid-cols-[5rem_minmax(0,1fr)_9.5rem_auto] md:items-center xl:grid-cols-[5rem_minmax(0,1fr)_11rem_auto] xl:gap-x-6 xl:px-5">
       <div className="aspect-video w-20 overflow-hidden rounded-md border border-border bg-surface">
         {insight.cardImage ? (
           <img src={insight.cardImage} alt="" className="size-full object-cover" loading="lazy" />
@@ -224,8 +226,8 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
           <span className={cn("font-medium", insight.seoReady ? "text-success-foreground" : "text-foreground")}>
             SEO {insight.seoReady ? "ready" : "needs attention"}
           </span>
-          <span aria-hidden className="hidden lg:inline">·</span>
-          <span className="hidden lg:inline">{relativeUpdated(insight.updatedAt)}</span>
+          <span aria-hidden className="hidden xl:inline">·</span>
+          <span className="hidden xl:inline">{relativeUpdated(insight.updatedAt)}</span>
         </p>
         {firstIssue ? (
           <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs">
@@ -257,7 +259,7 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
           {countsReady ? (
             <span className="text-right leading-none">
               <span className="text-xl font-semibold tabular-nums text-foreground">{insight.percentage}%</span>
-              <span className="ml-1 hidden text-xs text-muted-foreground lg:inline">complete</span>
+              <span className="ml-1 hidden text-xs text-muted-foreground xl:inline">complete</span>
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">Calculating…</span>
