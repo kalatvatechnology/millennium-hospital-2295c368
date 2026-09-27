@@ -94,11 +94,11 @@ function managedPath(url: string | null | undefined): string | null {
   }
 }
 
+// Pending (unsaved) and replaced images: removed only when no saved record references them.
 async function removeImages(urls: string[]) {
   const paths = [...new Set(urls.map(managedPath).filter((p): p is string => Boolean(p)))];
   if (!paths.length) return;
-  const { error } = await supabase.storage.from(imageBucket).remove(paths);
-  if (error) console.error("Department image cleanup failed", { paths, error });
+  await removeUnreferencedDepartmentImages(paths);
 }
 
 class ValidationError extends Error {}
