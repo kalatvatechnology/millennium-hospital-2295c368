@@ -78,7 +78,7 @@ function Thumb({ item, vertical }: { item: MediaItem; vertical?: boolean | undef
   const Icon = item.media_type === "podcast" ? Headphones : item.media_type === "image" ? ImageIcon : PlayCircle;
   return (
     <div
-      className={`grid place-items-center overflow-hidden bg-surface ${vertical ?? item.media_type === "reel" ? "aspect-[9/16]" : "aspect-video"}`}
+      className={`grid w-full shrink-0 place-items-center overflow-hidden bg-surface ${vertical ?? item.media_type === "reel" ? "aspect-[9/16]" : "aspect-[16/9]"}`}
     >
       {item.thumbnail_url ? (
         <img src={item.thumbnail_url} alt={item.alt_text || item.title} className="size-full object-cover" loading="lazy" />
