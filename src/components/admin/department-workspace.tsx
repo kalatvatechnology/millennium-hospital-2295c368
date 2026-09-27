@@ -871,6 +871,7 @@ export function DepartmentWorkspace() {
               value={page.care}
               onChange={(v) => set("care", v)}
               titleHelp="One line per row. Leave empty for “Specialized [Department] Care”."
+              refined
             />
           ) : null}
           {active === "conditions" ? (
