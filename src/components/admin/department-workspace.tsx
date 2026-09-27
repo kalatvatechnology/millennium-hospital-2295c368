@@ -790,7 +790,7 @@ export function DepartmentWorkspace() {
                       onChange={(e) => set("hero", { ...page.hero, intro: e.target.value })}
                     />
                   </Field>
-                  <div className="grid gap-4 border-t border-border pt-4 md:col-span-2">
+                  <div className="grid min-w-0 gap-4 border-t border-border pt-4 md:col-span-2">
                     <ImageField
                       label="Hero image"
                       size="large"
@@ -1559,7 +1559,7 @@ function ImageField({
     }
   };
   return (
-    <div className="grid gap-2 md:col-span-2">
+    <div className="grid min-w-0 gap-2 md:col-span-2">
       <Label>{label}</Label>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <div
@@ -1576,7 +1576,7 @@ function ImageField({
             </span>
           )}
         </div>
-        <div className="grid gap-2">
+        <div className="grid min-w-0 flex-1 gap-2">
           <input
             ref={input}
             type="file"
