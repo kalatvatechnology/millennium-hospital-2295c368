@@ -60,7 +60,7 @@ export function mapDepartment(row: Row): Department {
     // Global rule: the published SEO → OG Image is the department card image;
     // falls back to the stored card image (or the placeholder) when absent.
     card_image_url: publishedOgImage(row) ?? text(row["card_image_url"]),
-    card_image_alt: text(row["card_image_alt"]),
+    card_image_alt: (publishedOgImage(row) && publishedOgAlt(row)) || text(row["card_image_alt"]),
     display_order: number(row["display_order"]),
     status: status(row),
   };
