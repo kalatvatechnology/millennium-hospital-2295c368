@@ -880,6 +880,7 @@ export function DepartmentWorkspace() {
               itemName="condition"
               nameLabel="Name"
               textOptional
+              refined
               emptyText="No conditions added."
               value={page.conditions}
               onChange={(v) => set("conditions", v)}
@@ -1346,7 +1347,7 @@ function Toggle({
   );
 }
 
-function ListPanel({
+export function ListPanel({
   title,
   itemName,
   emptyText,
