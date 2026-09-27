@@ -1295,6 +1295,7 @@ function Field({
   required,
   wide,
   count,
+  className,
   children,
 }: {
   label: string;
@@ -1302,6 +1303,7 @@ function Field({
   required?: boolean;
   wide?: boolean;
   count?: [number, number];
+  className?: string | undefined;
   children: ReactNode;
 }) {
   const fieldId = useId();
@@ -1311,7 +1313,7 @@ function Field({
       })
     : children;
   return (
-    <div className={cn("grid gap-1.5", wide && "md:col-span-2")}>
+    <div className={cn("grid gap-1.5", wide && "md:col-span-2", className)}>
       <div className="flex items-baseline justify-between gap-3">
         <Label htmlFor={fieldId}>
           {label}
@@ -1396,7 +1398,7 @@ function ListPanel({
       {refined ? (
         <Group title="Public content" description="Label, title and introduction shown at the top of this section.">
       <Grid>
-        <Field label="Section label">
+        <Field label="Section label" className={titleLabel === "Main statement" ? "content-start" : undefined}>
           <Input
             value={value.label}
             onChange={(e) => onChange({ ...value, label: e.target.value })}
