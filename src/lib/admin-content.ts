@@ -80,7 +80,7 @@ export const contentTypes: ContentType[] = [
         label: "Department card image",
         type: "image",
         imageFolder: "departments",
-        help: "Recommended 1200 × 800 px (3:2 landscape). JPG, PNG or WebP.",
+        help: "Recommended 1600 × 900 px (16:9). JPG, PNG or WebP. Maximum 5 MB.",
       },
       {
         name: "card_image_alt",

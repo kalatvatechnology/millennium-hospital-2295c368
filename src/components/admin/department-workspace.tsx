@@ -124,6 +124,8 @@ function validate(identity: Identity, page: DepartmentPage): string | null {
   if (identity.short_description.length > 180)
     return "Short description must be 180 characters or fewer.";
   if (page.hero.image_url && !page.hero.image_alt.trim()) return "Add alt text for the hero image.";
+  if (page.seo.og_image_url && !page.seo.og_image_alt.trim())
+    return "Add alt text for the Department Card / OG image.";
   if (page.facilities.image_url && !page.facilities.image_alt.trim())
     return "Add alt text for the facilities image.";
   const lists: [string, ListSection][] = [
@@ -754,6 +756,20 @@ export function DepartmentWorkspace() {
                     value={page.hero.image_alt}
                     maxLength={160}
                     onChange={(e) => set("hero", { ...page.hero, image_alt: e.target.value })}
+                  />
+                </Field>
+                <ImageField
+                  label="Department Card / OG Image"
+                  url={page.seo.og_image_url}
+                  fallbackNote="Used for Department Cards and social sharing (OG image). Recommended 1600 × 900 px (16:9). JPG, PNG or WebP. Maximum 5 MB."
+                  onChange={(url) => set("seo", { ...page.seo, og_image_url: url })}
+                  onUpload={onUpload}
+                />
+                <Field label="Department Card / OG Image alt text" wide count={[page.seo.og_image_alt.length, 160]}>
+                  <Input
+                    value={page.seo.og_image_alt}
+                    maxLength={160}
+                    onChange={(e) => set("seo", { ...page.seo, og_image_alt: e.target.value })}
                   />
                 </Field>
               </Grid>
@@ -1567,13 +1583,10 @@ function SeoPanel({
             onChange={(e) => onChange({ ...seo, canonical_url: e.target.value.trim() })}
           />
         </Field>
-        <ImageField
-          label="OG image (social sharing)"
-          url={seo.og_image_url}
-          onChange={(url) => onChange({ ...seo, og_image_url: url })}
-          onUpload={onUpload}
-          fallbackNote="Without one, the hero or card image is used."
-        />
+        <p className="text-sm text-muted-foreground md:col-span-2">
+          OG image (social sharing): {seo.og_image_url ? "set" : "not set"}. Upload or replace it as the
+          “Department Card / OG Image” in Identity &amp; Hero.
+        </p>
       </Grid>
       <Toggle
         label="Allow search engines to index this page"

@@ -50,6 +50,11 @@ function publishedOgImage(row: Row): string | null {
   return text((seo as Row)["og_image_url"]);
 }
 
+function publishedOgAlt(row: Row): string | null {
+  const seo = (row["page_published"] as Row | null)?.["seo"] as Row | undefined;
+  return seo && typeof seo === "object" ? text(seo["og_image_alt"]) : null;
+}
+
 export function mapDepartment(row: Row): Department {
   return {
     id: required(row["id"], ""),
@@ -60,7 +65,7 @@ export function mapDepartment(row: Row): Department {
     // Global rule: the published SEO → OG Image is the department card image;
     // falls back to the stored card image (or the placeholder) when absent.
     card_image_url: publishedOgImage(row) ?? text(row["card_image_url"]),
-    card_image_alt: text(row["card_image_alt"]),
+    card_image_alt: (publishedOgImage(row) && publishedOgAlt(row)) || text(row["card_image_alt"]),
     display_order: number(row["display_order"]),
     status: status(row),
   };

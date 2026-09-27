@@ -37,6 +37,8 @@ export type DepartmentPage = {
     description: string;
     canonical_url: string;
     og_image_url: string;
+    /** Alt text for the Department Card / OG image (separate from the hero alt). */
+    og_image_alt: string;
     index: boolean;
   };
   /**
@@ -116,6 +118,7 @@ export function parseDepartmentPage(value: unknown): DepartmentPage {
       description: str(seo["description"]),
       canonical_url: str(seo["canonical_url"]),
       og_image_url: str(seo["og_image_url"]),
+      og_image_alt: str(seo["og_image_alt"]),
       index: bool(seo["index"], true),
     },
     links: parseLinks(r["links"]),
