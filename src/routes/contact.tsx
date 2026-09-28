@@ -6,9 +6,29 @@ import { EnquiryForm } from "@/components/content/enquiry-form";
 import { createPageMeta } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
 import { hospitalWhatsappDigits } from "@/lib/whatsapp";
+import { getWebsitePageMeta } from "@/lib/website-page-meta.functions";
+
+const FALLBACK_DESCRIPTION =
+  "Find verified contact and location information for The Millennium Hospital and send an enquiry.";
 
 export const Route = createFileRoute("/contact")({
-  head: () => ({ meta: createPageMeta("Contact", "Find verified contact and location information for The Millennium Hospital and send an enquiry.") }),
+  // SEO title/description come from Website Pages → "contact" (website_pages.meta_title / meta_description).
+  loader: async () => ({ meta: await getWebsitePageMeta({ data: { slug: "contact" } }).catch(() => null) }),
+  head: ({ loaderData }) => {
+    const title = loaderData?.meta?.title;
+    const description = loaderData?.meta?.description ?? FALLBACK_DESCRIPTION;
+    if (!title) return { meta: createPageMeta("Contact", description) };
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+    };
+  },
   component: ContactPage,
 });
 
