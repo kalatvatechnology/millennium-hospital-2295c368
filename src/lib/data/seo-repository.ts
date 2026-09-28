@@ -32,6 +32,9 @@ type DataClient = { from(table: string): Query };
 
 const db = supabase as unknown as DataClient;
 
+/** Stable id for the single public /faq page entity (not a database row). */
+export const FAQ_PAGE_ID = "faq-page";
+
 function rows(result: Result<Row[]>): Row[] {
   if (result.error) throw classifyDataError(result.error);
   return result.data ?? [];
@@ -65,7 +68,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       db
         .from("website_pages")
         .select("id, title, slug, meta_title, meta_description, body, status"),
-      db.from("departments").select("id, name, slug, description, published"),
+      db.from("departments").select("id, name, slug, description, published, page_published"),
       db.from("professional_services").select("id, title, slug, summary, description, published"),
       db.from("hospital_services").select("id, title, slug, summary, description, published"),
       db
@@ -83,7 +86,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
         .select(
           "id, title, slug, excerpt, body, seo_title, meta_description, canonical_url, cover_image_url, featured_image_alt, robots_index, status",
         ),
-      db.from("faqs").select("id, question, answer, published"),
+      db.from("faqs").select("id, question, answer, published, department_id"),
     ]);
 
   const entities: SeoEntity[] = [];
@@ -112,6 +115,14 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
   }
 
   for (const row of rows(departments)) {
+    // The public department page renders page_published, so its SEO fields are audited there.
+    const page = parseDepartmentPage(row["page_published"]);
+    const images: SeoEntity["images"] = [];
+    if (text(page.hero.image_url)) images.push({ url: page.hero.image_url, alt: text(page.hero.image_alt) });
+    if (text(page.facilities.image_url))
+      images.push({ url: page.facilities.image_url, alt: text(page.facilities.image_alt) });
+    if (text(page.seo.og_image_url))
+      images.push({ url: page.seo.og_image_url, alt: text(page.seo.og_image_alt) });
     entities.push({
       type: "department",
       id: String(row["id"]),
@@ -119,15 +130,17 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       path: `/departments/${String(row["slug"] ?? "")}`,
       published: row["published"] === true,
       heading: text(row["name"]),
-      seoTitle: null,
-      metaDescription: text(row["description"]),
-      canonicalUrl: null,
-      indexable: true,
-      images: [],
+      seoTitle: text(page.seo.title),
+      metaDescription: text(page.seo.description),
+      canonicalUrl: text(page.seo.canonical_url),
+      indexable: page.seo.index,
+      images,
       internalLinks: 0,
       fields: [
         ...field("Department name", "name", row["name"]),
         ...field("Description", "description", row["description"]),
+        ...field("SEO title", "seo_title", page.seo.title),
+        ...field("Meta description", "meta_description", page.seo.description),
       ],
     });
   }
@@ -249,26 +262,28 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
     });
   }
 
-  for (const row of rows(faqs)) {
-    entities.push({
-      type: "faq",
-      id: String(row["id"]),
-      label: String(row["question"] ?? "FAQ"),
-      path: "/faq",
-      published: row["published"] === true,
-      heading: text(row["question"]),
-      seoTitle: null,
-      metaDescription: null,
-      canonicalUrl: null,
-      indexable: true,
-      images: [],
-      internalLinks: 0,
-      fields: [
-        ...field("Question", "question", row["question"]),
-        ...field("Answer", "answer", row["answer"]),
-      ],
-    });
-  }
+  // /faq is ONE public page. Individual questions are content on it, not separate SEO pages.
+  // Only hospital-wide FAQs (department_id NULL) are shown there; department FAQs live on department pages.
+  const hospitalFaqs = rows(faqs).filter((row) => row["published"] === true && !row["department_id"]);
+  entities.push({
+    type: "faq",
+    id: FAQ_PAGE_ID,
+    label: "FAQ page",
+    path: "/faq",
+    published: true,
+    // Title and description of /faq are set in the site code (src/routes/faq.tsx).
+    heading: "Frequently asked questions",
+    seoTitle: "Frequently asked questions | The Millennium Hospital",
+    metaDescription: "Answers to common questions about visiting The Millennium Hospital.",
+    canonicalUrl: null,
+    indexable: true,
+    images: [],
+    internalLinks: 0,
+    fields: hospitalFaqs.flatMap((row) => [
+      ...field("Question", "question", row["question"]),
+      ...field("Answer", "answer", row["answer"]),
+    ]),
+  });
 
   return entities;
 }
@@ -352,7 +367,7 @@ export async function runWebsiteKeywordScan(actorId: string | null): Promise<Seo
     return draft.usages.map((usage) => ({
       keyword_id: keywordId,
       entity_type: usage.entityType,
-      entity_id: usage.entityId,
+      entity_id: usage.entityId === FAQ_PAGE_ID ? null : usage.entityId,
       entity_label: usage.entityLabel,
       entity_path: usage.entityPath,
       field: usage.field,
