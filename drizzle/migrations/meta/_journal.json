@@ -232,6 +232,13 @@
       "when": 1790621267930,
       "tag": "0032_doctor_social_and_index_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790622522439,
+      "tag": "0033_doctor_media_roles",
+      "breakpoints": true
     }
   ]
 }

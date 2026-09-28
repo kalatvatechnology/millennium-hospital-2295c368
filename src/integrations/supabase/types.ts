@@ -2067,6 +2067,7 @@ export type Database = {
           enabled: boolean
           media_id: string
           show_on_profile: boolean
+          usage: string
         }
         Insert: {
           display_order?: number
@@ -2074,6 +2075,7 @@ export type Database = {
           enabled?: boolean
           media_id: string
           show_on_profile?: boolean
+          usage?: string
         }
         Update: {
           display_order?: number
@@ -2081,6 +2083,7 @@ export type Database = {
           enabled?: boolean
           media_id?: string
           show_on_profile?: boolean
+          usage?: string
         }
         Relationships: [
           {
@@ -2860,6 +2863,10 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      media_image_src: {
+        Args: { _m: Database["public"]["Tables"]["media_items"]["Row"] }
+        Returns: string
+      }
       move_department: {
         Args: { _department_id: string; _direction: string }
         Returns: undefined
