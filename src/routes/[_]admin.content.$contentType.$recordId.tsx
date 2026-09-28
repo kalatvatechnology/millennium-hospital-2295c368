@@ -58,9 +58,10 @@ export const Route = createFileRoute("/_admin/content/$contentType/$recordId")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { department?: string | undefined; section?: string | undefined } => ({
+  validateSearch: (search: Record<string, unknown>): { department?: string | undefined; section?: string | undefined; field?: string | undefined } => ({
     department: typeof search["department"] === "string" ? search["department"] : undefined,
     section: typeof search["section"] === "string" ? search["section"] : undefined,
+    field: typeof search["field"] === "string" ? search["field"] : undefined,
   }),
   component: ContentWorkspace,
 });

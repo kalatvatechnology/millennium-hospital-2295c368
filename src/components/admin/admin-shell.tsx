@@ -9,6 +9,7 @@ import { ROLE_LABELS, type Permission } from "@/lib/permissions";
 import { backendFeatures } from "@/lib/data/backend";
 import { userFacingDataError } from "@/lib/data/errors";
 import { MillenniumLogo } from "@/components/shared/millennium-logo";
+import { FieldFocus } from "@/components/admin/field-focus";
 
 type NavItem = { label: string; to: string; permission: Permission | Permission[] | null };
 
@@ -176,7 +177,10 @@ export function AdminShell({
           </div>
           <div className="mt-8">
             {allowed ? (
-              children
+              <>
+                {children}
+                <FieldFocus />
+              </>
             ) : (
               <EmptyState
                 title="You do not have access to this section"

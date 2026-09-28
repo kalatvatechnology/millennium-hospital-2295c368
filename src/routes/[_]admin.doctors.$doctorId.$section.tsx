@@ -9,5 +9,8 @@ export const Route = createFileRoute("/_admin/doctors/$doctorId/$section")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { field?: string | undefined } => ({
+    field: typeof search["field"] === "string" ? search["field"] : undefined,
+  }),
   component: DoctorWorkspace,
 });
