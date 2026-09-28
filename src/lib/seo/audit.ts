@@ -1,5 +1,5 @@
 import { countKeywordOccurrences, normalizeKeyword } from "./keywords";
-import type { SeoEntity, SeoKeywordRecord, SeoTargetKeyword } from "./types";
+import type { SeoEntity, SeoEntityType, SeoKeywordRecord, SeoTargetKeyword } from "./types";
 
 export type CheckStatus = "pass" | "attention" | "problem";
 
@@ -8,8 +8,18 @@ export type SeoIssue = {
   label: string;
   status: CheckStatus;
   detail: string;
-  entities: { label: string; path: string | null }[];
+  entities: SeoAffected[];
 };
+
+/** One affected record: enough to build its "Fix issue →" destination. */
+export type SeoAffected = { type: SeoEntityType; id: string; label: string; path: string | null };
+
+const affected = (entity: SeoEntity): SeoAffected => ({
+  type: entity.type,
+  id: entity.id,
+  label: entity.label,
+  path: entity.path,
+});
 
 const TITLE_MIN = 30;
 const TITLE_MAX = 60;
@@ -19,7 +29,7 @@ const DESCRIPTION_MAX = 160;
 function collect(entities: SeoEntity[], predicate: (entity: SeoEntity) => boolean) {
   return entities
     .filter(predicate)
-    .map((entity) => ({ label: entity.label, path: entity.path }));
+    .map(affected);
 }
 
 function duplicates(entities: SeoEntity[], pick: (entity: SeoEntity) => string | null) {
@@ -34,22 +44,22 @@ function duplicates(entities: SeoEntity[], pick: (entity: SeoEntity) => string |
   return [...seen.values()]
     .filter((bucket) => bucket.length > 1)
     .flat()
-    .map((entity) => ({ label: entity.label, path: entity.path }));
+    .map(affected);
 }
 
 function issue(
   key: string,
   label: string,
   detail: string,
-  affected: { label: string; path: string | null }[],
+  affectedList: SeoAffected[],
   problemWhenAny = false,
 ): SeoIssue {
   return {
     key,
     label,
-    status: affected.length === 0 ? "pass" : problemWhenAny ? "problem" : "attention",
+    status: affectedList.length === 0 ? "pass" : problemWhenAny ? "problem" : "attention",
     detail,
-    entities: affected,
+    entities: affectedList,
   };
 }
 
