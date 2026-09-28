@@ -40,6 +40,9 @@ export type Doctor = {
   seo_description: string | null;
   canonical_url: string | null;
   og_image_url: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  robots_index: boolean;
   section_visibility: Record<string, boolean>;
   expertise: string[];
   languages: string[];
