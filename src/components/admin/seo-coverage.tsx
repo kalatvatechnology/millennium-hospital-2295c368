@@ -12,7 +12,7 @@ import {
   type CoverageStatus,
   type StatusCounts,
 } from "@/lib/seo/coverage";
-import { SEO_TARGET_TYPE_LABELS } from "@/lib/seo/types";
+import { SEO_TARGET_TYPE_LABELS, SEO_TARGET_TYPES, type SeoTargetType } from "@/lib/seo/types";
 
 const TONES: Record<CoverageStatus, { dot: string; className: string }> = {
   covered: { dot: "bg-primary", className: "bg-primary/10 text-primary" },
@@ -169,6 +169,49 @@ export function CoverageDetail({ result }: { result: CoverageResult }) {
           <p className="text-sm text-muted-foreground">No action needed.</p>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Status counts per primary target type (dashboard breakdown). */
+export function CoverageTypeBreakdown({
+  counts,
+}: {
+  counts: Record<SeoTargetType, StatusCounts & { gaps: number }>;
+}) {
+  const headers = ["Covered", "Partial", "Review", "Not covered", "Setup", "Gaps"];
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border bg-background">
+      <table className="w-full min-w-[640px] text-sm">
+        <thead className="bg-muted text-left text-muted-foreground">
+          <tr>
+            <th className="px-4 py-3 font-medium">Primary target</th>
+            <th className="px-4 py-3 text-right font-medium">Keywords</th>
+            {headers.map((label) => (
+              <th key={label} className="px-4 py-3 text-right font-medium">
+                {label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {SEO_TARGET_TYPES.map((type) => {
+            const row = counts[type];
+            return (
+              <tr key={type} className="border-t border-border">
+                <td className="px-4 py-3 font-medium">{SEO_TARGET_TYPE_LABELS[type]}</td>
+                <td className="px-4 py-3 text-right">{row.total}</td>
+                <td className="px-4 py-3 text-right">{row.covered}</td>
+                <td className="px-4 py-3 text-right">{row.partially_covered}</td>
+                <td className="px-4 py-3 text-right">{row.review_needed}</td>
+                <td className="px-4 py-3 text-right">{row.not_covered}</td>
+                <td className="px-4 py-3 text-right">{row.needs_setup}</td>
+                <td className="px-4 py-3 text-right font-semibold">{row.gaps}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
