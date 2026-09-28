@@ -53,6 +53,7 @@ import {
 import { googleReviewUrlError } from "@/lib/review-url";
 import { DoctorSeoWorkspace } from "@/components/admin/doctor-seo-workspace";
 import type { DoctorSeoSource } from "@/lib/doctor-seo";
+import { mediaReferencedUrls, syncDoctorMediaRoles } from "@/lib/doctor-media";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -520,7 +521,9 @@ export function DoctorWorkspace() {
   const imageOptions = useMemo(
     () =>
       (media.data ?? []).flatMap((item: any) =>
-        item.thumbnail_url ? [{ value: item.thumbnail_url, label: item.title }] : [],
+        (item.thumbnail_url || (item.media_type === "image" ? item.url : null))
+          ? [{ value: item.thumbnail_url || item.url, label: item.title }]
+          : [],
       ),
     [media.data],
   );
@@ -1398,7 +1401,7 @@ function ImageEditor({
             </Select>
             {value ? (
               <p className="mt-1 text-xs text-muted-foreground">
-                Selected: {options.find((option) => option.value === value)?.label ?? "Image outside Media & Content"}
+                Selected: {options.find((option) => option.value === value)?.label ?? "New upload — added to Media & Content when you save"}
               </p>
             ) : null}
           </div>
@@ -1440,6 +1443,11 @@ function ImageEditor({
           >
             <Trash2 className="size-4" /> Remove image
           </Button>
+        ) : null}
+        {value && canModify ? (
+          <p className="text-xs text-muted-foreground">
+            Removing only disconnects the image from this doctor. It stays in Media &amp; Content.
+          </p>
         ) : null}
       </div>
     </section>
