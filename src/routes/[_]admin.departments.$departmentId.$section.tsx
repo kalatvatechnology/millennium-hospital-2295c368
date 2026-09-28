@@ -9,8 +9,9 @@ export const Route = createFileRoute("/_admin/departments/$departmentId/$section
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { linkNew?: string | undefined; linkKind?: "faqs" | "media" | undefined } => ({
+  validateSearch: (search: Record<string, unknown>): { linkNew?: string | undefined; linkKind?: "faqs" | "media" | undefined; field?: string | undefined } => ({
     linkNew: typeof search["linkNew"] === "string" ? search["linkNew"] : undefined,
+    field: typeof search["field"] === "string" ? search["field"] : undefined,
     linkKind: search["linkKind"] === "faqs" || search["linkKind"] === "media" ? search["linkKind"] : undefined,
   }),
   component: DepartmentWorkspace,

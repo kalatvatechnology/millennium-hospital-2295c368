@@ -51,6 +51,9 @@ export const Route = createFileRoute("/_admin/blog/$postId/$section")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { field?: string | undefined } => ({
+    field: typeof search["field"] === "string" ? search["field"] : undefined,
+  }),
   component: BlogWorkspace,
 });
 const sections = [
