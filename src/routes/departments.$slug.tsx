@@ -186,8 +186,8 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
     <div className="dept-page overflow-x-clip">
       {/* 01 HERO */}
       {v.hero.enabled ? <section className="relative bg-background">
-        <div className={`${wrap} grid lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:min-h-[36rem]`}>
-          <div className="dept-reveal flex flex-col justify-center pb-6 pt-8 sm:pt-10 lg:py-14 lg:pr-10">
+        <div className={`${wrap} grid lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:gap-x-8 xl:gap-x-10 lg:min-h-[36rem]`}>
+          <div className="dept-reveal flex flex-col justify-center min-w-0 pb-6 pt-8 sm:pt-10 lg:py-14">
             <nav aria-label="Breadcrumb" className={`${eyebrow} text-[0.8rem] flex items-center gap-3 text-muted-foreground`}>
               <Link to="/departments" className="hover:text-primary">Departments</Link>
               <span className="h-px w-6 bg-brand-accent" aria-hidden />
@@ -195,13 +195,13 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
             </nav>
             <h1 className="mt-6 min-w-0 break-normal font-heading text-[2.35rem] font-semibold uppercase leading-[1] tracking-[-0.02em] text-foreground [hyphens:none] min-[380px]:text-[2.6rem] sm:text-[3.4rem] lg:text-[2.6rem] xl:text-[3.5rem] 2xl:text-[3.9rem]">
               {v.hero.lines.length ? v.hero.lines.map((l, i) => (
-                <span key={`${l}-${i}`} className={`block sm:whitespace-nowrap ${i === v.hero.lines.length - 1 && v.hero.lines.length > 1 ? "text-primary" : ""}`}>{l}</span>
+                <span key={`${l}-${i}`} className={`block ${i === v.hero.lines.length - 1 && v.hero.lines.length > 1 ? "text-primary" : ""}`}>{l}</span>
               )) : department.name}
             </h1>
             {lead ? <p className="mt-7 max-w-[30rem] border-l-2 border-brand-accent pl-5 text-lg leading-[1.85rem] text-muted-foreground">{lead}</p> : null}
-            {v.hero.hasActions ? <div className="mt-9 hidden flex-wrap gap-3 lg:flex"><HeroActions {...v.hero} specialists={v.hero.specialists && v.specialists} /></div> : null}
+            {v.hero.hasActions ? <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><HeroActions {...v.hero} specialists={v.hero.specialists && v.specialists} /></div> : null}
           </div>
-          <figure className="dept-reveal relative lg:my-0">
+          <figure className="dept-reveal relative mb-8 min-w-0 lg:mb-0">
             <div className="group relative aspect-[16/10] overflow-hidden bg-secondary sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto">
               {heroImage ? (
                 <img src={heroImage} alt={heroAlt} className="size-full object-cover object-center lg:object-[center_28%] transition-transform duration-[1200ms] group-hover:scale-[1.02]" width={1280} height={1536} />
@@ -216,7 +216,6 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
               <span className="font-heading text-sm font-semibold">Dept. / {department.name}</span>
             </figcaption>
           </figure>
-          <div className="flex flex-col gap-3 pb-8 pt-5 sm:flex-row lg:hidden">{v.hero.hasActions ? <HeroActions {...v.hero} specialists={v.hero.specialists && v.specialists} /> : null}</div>
         </div>
       </section> : null}
 
