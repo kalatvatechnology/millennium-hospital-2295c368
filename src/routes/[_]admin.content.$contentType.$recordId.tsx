@@ -45,6 +45,7 @@ import {
 } from "@/lib/department-storage-cleanup";
 import { createPageMeta } from "@/lib/seo";
 import { loadDoctorMediaUses } from "@/lib/doctor-media";
+import { WebsitePageSeoSection } from "@/components/admin/website-page-seo-section";
 import {
   MediaAssociationPicker,
   applyMediaAssociations,
@@ -249,7 +250,7 @@ function ContentWorkspace() {
           ) : (
             <div className="grid gap-5 lg:grid-cols-2">
               {type.fields
-                .filter((field) => !(field.publishControl && !canPublish))
+                .filter((field) => !(field.publishControl && !canPublish) && !field.seoSection)
                 .map((field) => (
                   <FieldControl
                     key={field.name}
@@ -326,6 +327,12 @@ function ContentWorkspace() {
             }}
           />
         </WorkspaceSection>
+        {type.key === "pages" && !(record.isPending && !isNew) ? (
+          <WebsitePageSeoSection
+            values={values}
+            set={(name, value) => setValues((current) => ({ ...current, [name]: value }))}
+          />
+        ) : null}
         {type.key === "media" ? (
           <WorkspaceSection
             className="mt-10"
