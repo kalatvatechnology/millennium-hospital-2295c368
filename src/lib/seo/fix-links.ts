@@ -72,7 +72,6 @@ const NO_FIELD: Partial<Record<SeoEntityType, SeoFixField[]>> = {
   professional_service: ["seo_title", "canonical_url", "indexable"],
   hospital_service: ["seo_title", "canonical_url", "indexable"],
   location: ["seo_title", "canonical_url", "indexable"],
-  page: ["canonical_url", "indexable"],
 };
 
 function sectionFor(type: SeoEntityType, field: SeoFixField): { key: string; label: string } {
@@ -105,9 +104,9 @@ export function seoFixTarget(
   const field = ISSUE_FIELD[issueKey];
   if (!field) return null;
   if (NO_FIELD[entity.type]?.includes(field))
-    return { manual: true, reason: "This editor has no field for this yet — not fixable in the CMS." };
+    return { manual: true, reason: "Managed automatically by the website." };
   if (entity.type === "faq" && field !== "content")
-    return { manual: true, reason: "Set in the website code, not in the CMS." };
+    return { manual: true, reason: "Managed automatically by the website." };
   const section = sectionFor(entity.type, field);
   switch (entity.type) {
     case "department":
@@ -163,7 +162,10 @@ export function seoFixTarget(
           params: { contentType, recordId: entity.id },
           search: { field },
         }),
-        context: [listLabel, entity.label],
+        context:
+          entity.type === "page" && field !== "content" && field !== "heading"
+            ? [listLabel, entity.label, "SEO"]
+            : [listLabel, entity.label],
         permission: entity.type === "location" ? "locations.manage" : "content.write",
       };
     }

@@ -3,7 +3,7 @@ import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { PublicPage } from "@/components/layout/public-page";
 import { ContentSection, PageIntro } from "@/components/shared/page";
 import { EnquiryForm } from "@/components/content/enquiry-form";
-import { createPageMeta } from "@/lib/seo";
+import { websitePageHead } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
 import { hospitalWhatsappDigits } from "@/lib/whatsapp";
 import { getWebsitePageMeta } from "@/lib/website-page-meta.functions";

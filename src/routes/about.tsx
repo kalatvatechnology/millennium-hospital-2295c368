@@ -26,13 +26,17 @@ import {
 } from "@/components/ui/breadcrumb";
 import hospitalExteriorAsset from "@/assets/millennium-hospital-exterior.png.asset.json";
 import { departmentsQuery, facilitiesQuery } from "@/lib/queries";
-import { createPageMeta } from "@/lib/seo";
+import { websitePageHead } from "@/lib/seo";
+import { getWebsitePageMeta } from "@/lib/website-page-meta.functions";
 
 const pageDescription =
   "Learn about The Millennium Multispeciality Hospital and Diagnostic Centre, its approach to care, specialities, facilities and Navi Mumbai location.";
 
 export const Route = createFileRoute("/about")({
-  head: () => ({ meta: createPageMeta("About The Millennium Hospital", pageDescription) }),
+  // SEO comes from Website Pages → "about".
+  loader: async () => ({ meta: await getWebsitePageMeta({ data: { slug: "about" } }).catch(() => null) }),
+  head: ({ loaderData }) =>
+    websitePageHead("about", loaderData?.meta, { title: "About The Millennium Hospital", description: pageDescription }),
   component: AboutPage,
 });
 
