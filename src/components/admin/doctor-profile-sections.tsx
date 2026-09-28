@@ -95,6 +95,8 @@ type Relationship = {
   key: string;
   source: string;
   link: string;
+  /** Extra column filters limiting which link rows this editor owns (e.g. media gallery rows). */
+  scope?: Record<string, string>;
   sourceId: string;
   label: string;
   text: string;
@@ -128,6 +130,7 @@ const mediaRelationship: Relationship = {
   key: "media",
   source: "media_items",
   link: "media_doctors",
+  scope: { usage: "gallery" },
   sourceId: "media_id",
   label: "Media",
   text: "title",
@@ -532,7 +535,7 @@ function RelationshipGroup({
         : relation.sourceId;
       const [source, links] = await Promise.all([
         db.from(relation.source).select(`id,${relation.text}`).order(relation.text),
-        db.from(relation.link).select(select).eq("doctor_id", doctorId),
+        db.from(relation.link).select(select).eq("doctor_id", doctorId).match(relation.scope ?? {}),
       ]);
       if (source.error) throw source.error;
       if (links.error) throw links.error;
@@ -552,7 +555,8 @@ function RelationshipGroup({
         .from(relation.link)
         .delete()
         .eq("doctor_id", doctorId)
-        .eq(relation.sourceId, row[relation.sourceId]);
+        .eq(relation.sourceId, row[relation.sourceId])
+        .match(relation.scope ?? {});
       if (error) throw error;
     }
     const controls = relation.controls ?? [];
@@ -575,6 +579,7 @@ function RelationshipGroup({
             .update(payload)
             .eq("doctor_id", doctorId)
             .eq(relation.sourceId, row[relation.sourceId])
+            .match(relation.scope ?? {})
         : db.from(relation.link).insert(payload);
       const { error } = await command;
       if (error) throw error;

@@ -42,7 +42,7 @@ async function loadOptions() {
 async function loadCurrent(mediaId: string): Promise<MediaAssociations> {
   const [departments, doctors, professional, hospital] = await Promise.all([
     db.from("departments").select("id,page_draft,page_published"),
-    db.from("media_doctors").select("doctor_id").eq("media_id", mediaId),
+    db.from("media_doctors").select("doctor_id").eq("media_id", mediaId).eq("usage", "gallery"),
     db.from("media_professional_services").select("professional_service_id").eq("media_id", mediaId),
     db.from("media_hospital_services").select("hospital_service_id").eq("media_id", mediaId),
   ]);
@@ -94,7 +94,10 @@ export async function applyMediaAssociations(mediaId: string, before: MediaAssoc
       if (error) throw error;
     }
     if (remove.length) {
-      const { error } = await db.from(t.table).delete().eq("media_id", mediaId).in(t.col, remove);
+      let del = db.from(t.table).delete().eq("media_id", mediaId).in(t.col, remove);
+      // Doctor image roles (profile/hero/OG) are managed in the Doctor Workspace, not here.
+      if (t.table === "media_doctors") del = del.eq("usage", "gallery");
+      const { error } = await del;
       if (error) throw error;
     }
   }

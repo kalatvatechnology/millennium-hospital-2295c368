@@ -211,6 +211,7 @@ export async function getDoctor(slug: string, preview = false) {
         .from("media_doctors")
         .select("display_order,media_items(*)")
         .eq("doctor_id", doctor.id)
+        .eq("usage", "gallery")
         .eq("enabled", true)
         .eq("show_on_profile", true)
         .order("display_order"),
