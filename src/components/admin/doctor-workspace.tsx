@@ -203,7 +203,7 @@ export function DoctorWorkspace() {
     queryFn: async () => {
       const { data, error } = await db
         .from("media_items")
-        .select("id,title,thumbnail_url,url")
+        .select("id,title,thumbnail_url,url,media_type")
         .order("title");
       if (error) throw error;
       return data ?? [];
@@ -520,6 +520,15 @@ export function DoctorWorkspace() {
       (media.data ?? []).flatMap((item: any) =>
         item.thumbnail_url ? [{ value: item.thumbnail_url, label: item.title }] : [],
       ),
+    [media.data],
+  );
+  // OG image choices: every Media & Content image (thumbnail, or the image itself for image items).
+  const ogImageOptions = useMemo(
+    () =>
+      (media.data ?? []).flatMap((item: any) => {
+        const value = item.thumbnail_url || (item.media_type === "image" ? item.url : null);
+        return value ? [{ value, label: item.title }] : [];
+      }),
     [media.data],
   );
 
@@ -929,10 +938,12 @@ export function DoctorWorkspace() {
                     set={set}
                     imageEditor={
                       <ImageEditor
-                        label="OG image"
+                        label="Open Graph image"
                         value={values.og_image_url ?? ""}
                         alt=""
-                        options={imageOptions}
+                        options={ogImageOptions}
+                        previewAspect="aspect-[1200/630] max-w-80"
+                        showEmptyLibrary
                         ratio="Social sharing image"
                         onValue={(value) => set("og_image_url", value)}
                       />
@@ -1199,7 +1210,11 @@ function ImageEditor({
   objectPosition = "center",
   onObjectPosition,
   uploadDirectory,
+  previewAspect,
+  showEmptyLibrary = false,
 }: {
+  previewAspect?: string;
+  showEmptyLibrary?: boolean;
   label: string;
   value: string;
   alt: string;
@@ -1303,7 +1318,7 @@ function ImageEditor({
         <img
           src={value}
           alt={alt || `${label} preview`}
-          className="aspect-[4/5] w-full max-w-56 rounded-md bg-secondary object-cover"
+          className={`${previewAspect ?? "aspect-[4/5] max-w-56"} w-full rounded-md bg-secondary object-cover`}
         />
       ) : (
         <div className="grid min-h-36 place-items-center rounded-md border border-dashed border-border text-sm text-muted-foreground">
@@ -1379,7 +1394,16 @@ function ImageEditor({
                 ))}
               </SelectContent>
             </Select>
+            {value ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Selected: {options.find((option) => option.value === value)?.label ?? "Image outside Media & Content"}
+              </p>
+            ) : null}
           </div>
+        ) : showEmptyLibrary ? (
+          <p className="text-sm text-muted-foreground">
+            No images in Media & Content yet. Add one there first.
+          </p>
         ) : null}
         {onAlt ? (
           <div>
