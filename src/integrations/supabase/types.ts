@@ -2837,6 +2837,10 @@ export type Database = {
       can_manage_content: { Args: never; Returns: boolean }
       can_manage_enquiries: { Args: never; Returns: boolean }
       can_publish: { Args: never; Returns: boolean }
+      delete_department: {
+        Args: { _department_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2847,6 +2851,10 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      move_department: {
+        Args: { _department_id: string; _direction: string }
+        Returns: undefined
+      }
       slugify_label: { Args: { value: string }; Returns: string }
       sync_department_media: {
         Args: { _department_id: string; _media_ids: string[] }

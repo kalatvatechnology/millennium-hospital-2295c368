@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, Eye, ImageOff, MoreHorizontal, Pencil, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Eye, ImageOff, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { FilterSelect, Pagination, SearchField } from "@/components/admin/ui";
 import { EmptyState, ErrorState, LoadingState } from "@/components/shared/page";
@@ -11,8 +12,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { supabase } from "@/integrations/supabase/client";
 import { listRecords, type ContentType } from "@/lib/admin-content";
@@ -44,8 +56,32 @@ const READINESS = {
 } as const;
 
 export function DepartmentManager({ type }: { type: ContentType }) {
-  const { can } = useAdminSession();
+  const { can, roles } = useAdminSession();
   const canWrite = can("content.write");
+  // Reorder/delete are super-admin only; the database enforces the same rule.
+  const canManageOrder = roles.includes("super_admin");
+  const queryClient = useQueryClient();
+  const [toDelete, setToDelete] = useState<Record<string, any> | null>(null);
+  const refresh = () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["admin-content", type.table] }),
+    queryClient.invalidateQueries({ queryKey: ["admin-department-counts"] }),
+  ]);
+  const move = useMutation({
+    mutationFn: async ({ id, direction }: { id: string; direction: "up" | "down" }) => {
+      const { error } = await supabase.rpc("move_department", { _department_id: id, _direction: direction });
+      if (error) throw error;
+    },
+    onSuccess: refresh,
+    onError: (e: any) => toast.error(e?.message ?? "Could not reorder departments"),
+  });
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("delete_department", { _department_id: id });
+      if (error) throw error;
+    },
+    onSuccess: async () => { toast.success("Department deleted"); setToDelete(null); await refresh(); },
+    onError: (e: any) => toast.error(e?.message ?? "Could not delete department"),
+  });
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [readiness, setReadiness] = useState("all");
@@ -54,6 +90,10 @@ export function DepartmentManager({ type }: { type: ContentType }) {
 
   const records = useQuery({ queryKey: ["admin-content", type.table], queryFn: () => listRecords(type) });
   const counts = useQuery({ queryKey: ["admin-department-counts"], queryFn: relationshipCounts });
+  const orderedIds = useMemo(
+    () => [...(records.data ?? [])].sort((a, b) => (a["display_order"] ?? 0) - (b["display_order"] ?? 0) || String(a["name"]).localeCompare(String(b["name"]))).map((r) => String(r["id"])),
+    [records.data],
+  );
 
   const enriched = useMemo(
     () =>
@@ -168,12 +208,48 @@ export function DepartmentManager({ type }: { type: ContentType }) {
         ) : (
           <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-background">
             {rows.map(({ row, insight }) => (
-              <DepartmentRow key={row["id"]} row={row} insight={insight} canWrite={canWrite} countsReady={!counts.isPending} />
+              <DepartmentRow
+                key={row["id"]}
+                row={row}
+                insight={insight}
+                canWrite={canWrite}
+                countsReady={!counts.isPending}
+                order={canManageOrder ? {
+                  position: orderedIds.indexOf(String(row["id"])),
+                  total: orderedIds.length,
+                  busy: move.isPending,
+                  onMove: (direction) => move.mutate({ id: String(row["id"]), direction }),
+                  onDelete: () => setToDelete(row),
+                } : null}
+              />
             ))}
           </ul>
         )}
         <Pagination page={currentPage} pageCount={pageCount} total={filtered.length} onPageChange={setPage} />
       </div>
+      <AlertDialog open={!!toDelete} onOpenChange={(open) => !open && !remove.isPending && setToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {toDelete?.["name"] || "this department"}?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>The department, its page and its department-owned FAQs, specializations, designations and qualifications will be removed. This cannot be undone.</p>
+                <p>Doctors, media, professional services, facilities and hospital-wide FAQs are kept — only their link to this department is removed.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={remove.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={remove.isPending}
+              onClick={(e) => { e.preventDefault(); if (toDelete) remove.mutate(String(toDelete["id"])); }}
+            >
+              {remove.isPending ? "Deleting…" : "Delete department"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminShell>
   );
 }
@@ -184,7 +260,9 @@ const READINESS_STYLE = {
   not_ready: { dot: "bg-destructive", text: "text-destructive" },
 } as const;
 
-function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<string, any>; insight: DepartmentInsight; canWrite: boolean; countsReady: boolean }) {
+type OrderControls = { position: number; total: number; busy: boolean; onMove: (d: "up" | "down") => void; onDelete: () => void };
+
+function DepartmentRow({ row, insight, canWrite, countsReady, order }: { row: Record<string, any>; insight: DepartmentInsight; canWrite: boolean; countsReady: boolean; order: OrderControls | null }) {
   const ready = READINESS[insight.readiness];
   const readyStyle = READINESS_STYLE[insight.readiness];
   const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
@@ -273,6 +351,16 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
       </div>
 
       <div className="col-start-2 flex items-center gap-1.5 md:col-start-auto md:justify-end">
+        {order ? (
+          <>
+            <Button size="icon" variant="outline" className="size-8" disabled={order.busy || order.position <= 0} onClick={() => order.onMove("up")} aria-label={`Move ${row["name"]} up`} title="Move up">
+              <ArrowUp className="size-4" />
+            </Button>
+            <Button size="icon" variant="outline" className="size-8" disabled={order.busy || order.position < 0 || order.position >= order.total - 1} onClick={() => order.onMove("down")} aria-label={`Move ${row["name"]} down`} title="Move down">
+              <ArrowDown className="size-4" />
+            </Button>
+          </>
+        ) : null}
         {canWrite ? (
           <Button asChild size="sm" variant="outline">
             <Link to="/_admin/departments/$departmentId/$section" params={editParams} aria-label={`Edit ${row["name"]}`}>
@@ -301,6 +389,14 @@ function DepartmentRow({ row, insight, canWrite, countsReady }: { row: Record<st
               <DropdownMenuItem asChild>
                 <a href={`/departments/${row["slug"]}`} target="_blank" rel="noreferrer"><ExternalLink className="size-4" /> View public page</a>
               </DropdownMenuItem>
+            ) : null}
+            {order ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={order.onDelete} className="text-destructive focus:text-destructive">
+                  <Trash2 className="size-4" /> Delete department
+                </DropdownMenuItem>
+              </>
             ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
