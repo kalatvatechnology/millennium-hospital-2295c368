@@ -4,7 +4,7 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { StatusPill } from "@/components/admin/seo-ui";
 import { LoadingState } from "@/components/shared/page";
 import { createPageMeta } from "@/lib/seo";
-import type { CheckStatus } from "@/lib/seo/audit";
+import { isPageEntity, type CheckStatus } from "@/lib/seo/audit";
 import { fetchSeoEntities } from "@/lib/data/seo-repository";
 
 export const Route = createFileRoute("/_admin/seo-technical")({
@@ -37,11 +37,11 @@ function TechnicalSeo() {
   const entities = useQuery({ queryKey: ["seo-entities"], queryFn: fetchSeoEntities });
 
   const published = (entities.data ?? []).filter((entity) => entity.published);
-  const missingCanonical = published.filter((entity) => !entity.canonicalUrl?.trim());
-  const noIndex = published.filter((entity) => !entity.indexable);
+  const missingCanonical = published.filter((entity) => isPageEntity(entity) && !entity.canonicalUrl?.trim());
+  const noIndex = published.filter((entity) => isPageEntity(entity) && !entity.indexable);
   const paths = new Map<string, number>();
   // Duplicate check evaluates real public URLs: records rendered on one shared page aren't pages.
-  for (const entity of published.filter(isPageEntity))
+  for (const entity of published.filter((e) => isPageEntity(e)))
     if (entity.path) paths.set(entity.path, (paths.get(entity.path) ?? 0) + 1);
   const duplicatePaths = [...paths.entries()].filter(([, count]) => count > 1);
 
