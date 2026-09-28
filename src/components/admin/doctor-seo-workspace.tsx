@@ -315,7 +315,7 @@ export function DoctorSeoWorkspace({
               <dt className="text-muted-foreground">Schema type</dt>
               <dd className="font-semibold">
                 {detected?.type}
-                {detected?.basis ? <span className="ml-2 font-normal text-muted-foreground">from department "{detected.basis}"</span> : null}
+                {detected?.basis ? <span className="ml-2 font-normal text-muted-foreground">based on "{detected.basis}"</span> : null}
               </dd>
               <dt className="text-muted-foreground">Status</dt>
               <dd className="flex items-center gap-1.5"><CheckCircle2 className="size-4 text-primary" /> Automatically synced with Doctor Profile</dd>

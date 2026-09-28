@@ -80,9 +80,14 @@ const SCHEMA_TYPE_RULES: { match: RegExp; type: string; specialty?: string }[] =
 
 export type DoctorSchemaType = { type: string; specialty: string | null; basis: string | null };
 
-/** Detects the schema type from department names only (never the doctor's name). */
+/**
+ * Detects the schema type from department names first, then the saved professional
+ * designation (e.g. "Dental Doctor"). Never uses the doctor's name.
+ */
 export function detectDoctorSchemaType(doctor: DoctorSeoSource): DoctorSchemaType {
-  const departments = [doctor.departmentName, ...(doctor.departmentNames ?? [])].map(clean).filter(Boolean);
+  const departments = [doctor.departmentName, ...(doctor.departmentNames ?? []), doctor.designation]
+    .map(clean)
+    .filter(Boolean);
   for (const dept of departments) {
     const rule = SCHEMA_TYPE_RULES.find((r) => r.match.test(dept));
     if (rule) return { type: rule.type, specialty: rule.specialty ?? null, basis: dept };
