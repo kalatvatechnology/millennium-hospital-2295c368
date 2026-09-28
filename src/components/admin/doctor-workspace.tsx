@@ -51,6 +51,8 @@ import {
   type ProfessionalEditorHandle,
 } from "@/components/admin/doctor-department-editors";
 import { googleReviewUrlError } from "@/lib/review-url";
+import { DoctorSeoWorkspace } from "@/components/admin/doctor-seo-workspace";
+import type { DoctorSeoSource } from "@/lib/doctor-seo";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -139,6 +141,9 @@ const blankDoctor = () => ({
   seo_description: "",
   canonical_url: "",
   og_image_url: "",
+  og_title: "",
+  og_description: "",
+  robots_index: true,
   verification_status: "unverified",
   display_order: 0,
   published: false,
@@ -491,6 +496,25 @@ export function DoctorWorkspace() {
       ...(name === "name" && slugIsAutomatic ? { slug: slugify(value) } : {}),
     }));
   };
+  const seoSource = useMemo<DoctorSeoSource>(() => {
+    const departmentName =
+      (departments.data ?? []).find((row: any) => row.id === (selectedDepartmentIds[0] ?? values.department_id))
+        ?.name ?? null;
+    return {
+      name: values.name,
+      slug: values.slug,
+      designation: values.designation,
+      specialty: values.specialty,
+      departmentName,
+      qualifications: Array.isArray(values.qualifications) ? values.qualifications : [],
+      experienceYears: typeof values.experience_years === "number" ? values.experience_years : null,
+      shortIntroduction: values.short_introduction,
+      location: values.location,
+      photoUrl: values.photo_url,
+      socialLinks: values.social_links ?? {},
+      areasOfCare: Array.isArray(values.expertise) ? values.expertise : [],
+    };
+  }, [values, departments.data, selectedDepartmentIds]);
   const imageOptions = useMemo(
     () =>
       (media.data ?? []).flatMap((item: any) =>
@@ -898,37 +922,22 @@ export function DoctorWorkspace() {
                   <SocialEditor rows={social} onChange={setSocial} />
                 ) : null}
                 {section === "seo" ? (
-                  <div className="grid gap-5">
-                    <Field
-                      name="seo_title"
-                      label="SEO title"
-                      kind="text"
-                      value={values.seo_title}
-                      onChange={(value) => set("seo_title", value)}
-                    />
-                    <Field
-                      name="seo_description"
-                      label="SEO description"
-                      kind="textarea"
-                      value={values.seo_description}
-                      onChange={(value) => set("seo_description", value)}
-                    />
-                    <Field
-                      name="canonical_url"
-                      label="Canonical URL"
-                      kind="text"
-                      value={values.canonical_url}
-                      onChange={(value) => set("canonical_url", value)}
-                    />
-                    <ImageEditor
-                      label="Open Graph image"
-                      value={values.og_image_url ?? ""}
-                      alt=""
-                      options={imageOptions}
-                      ratio="Social sharing image"
-                      onValue={(value) => set("og_image_url", value)}
-                    />
-                  </div>
+                  <DoctorSeoWorkspace
+                    doctorId={doctorId}
+                    values={values}
+                    source={seoSource}
+                    set={set}
+                    imageEditor={
+                      <ImageEditor
+                        label="OG image"
+                        value={values.og_image_url ?? ""}
+                        alt=""
+                        options={imageOptions}
+                        ratio="Social sharing image"
+                        onValue={(value) => set("og_image_url", value)}
+                      />
+                    }
+                  />
                 ) : null}
                 {section === "digital-card" && !isNew ? (
                   <DoctorDigitalCardSection

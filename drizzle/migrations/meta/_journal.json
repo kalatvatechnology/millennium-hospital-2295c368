@@ -225,6 +225,13 @@
       "when": 1790575909825,
       "tag": "0031_department_reorder_and_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1790621267930,
+      "tag": "0032_doctor_social_and_index_fields",
+      "breakpoints": true
     }
   ]
 }

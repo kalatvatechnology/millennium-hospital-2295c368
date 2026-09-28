@@ -1413,7 +1413,9 @@ export type Database = {
           languages: string[]
           location: string | null
           name: string
+          og_description: string | null
           og_image_url: string | null
+          og_title: string | null
           phone_country_code: string | null
           phone_number: string | null
           photo_url: string | null
@@ -1423,6 +1425,7 @@ export type Database = {
           qualifications: string[]
           quote: string | null
           quote_attribution: string | null
+          robots_index: boolean
           section_visibility: Json
           seo_description: string | null
           seo_title: string | null
@@ -1456,7 +1459,9 @@ export type Database = {
           languages?: string[]
           location?: string | null
           name: string
+          og_description?: string | null
           og_image_url?: string | null
+          og_title?: string | null
           phone_country_code?: string | null
           phone_number?: string | null
           photo_url?: string | null
@@ -1466,6 +1471,7 @@ export type Database = {
           qualifications?: string[]
           quote?: string | null
           quote_attribution?: string | null
+          robots_index?: boolean
           section_visibility?: Json
           seo_description?: string | null
           seo_title?: string | null
@@ -1499,7 +1505,9 @@ export type Database = {
           languages?: string[]
           location?: string | null
           name?: string
+          og_description?: string | null
           og_image_url?: string | null
+          og_title?: string | null
           phone_country_code?: string | null
           phone_number?: string | null
           photo_url?: string | null
@@ -1509,6 +1517,7 @@ export type Database = {
           qualifications?: string[]
           quote?: string | null
           quote_attribution?: string | null
+          robots_index?: boolean
           section_visibility?: Json
           seo_description?: string | null
           seo_title?: string | null
