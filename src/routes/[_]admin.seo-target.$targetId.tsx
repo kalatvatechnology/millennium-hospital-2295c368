@@ -10,6 +10,8 @@ import {
   WorkspaceSection,
 } from "@/components/admin/workspace";
 import { InlineNotice } from "@/components/admin/seo-ui";
+import { CoverageDetail } from "@/components/admin/seo-coverage";
+import { useSeoCoverage } from "@/hooks/use-seo-coverage";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +30,9 @@ import {
   SEO_KEYWORD_CATEGORIES,
   SEO_SEARCH_INTENTS,
   SEO_TARGET_STATUSES,
+  SEO_TARGET_TYPES,
+  SEO_TARGET_TYPE_LABELS,
+  type SeoTargetType,
   type SeoKeywordCategory,
   type SeoSearchIntent,
   type SeoTargetStatus,
@@ -59,6 +64,8 @@ const EMPTY: TargetKeywordInput = {
   targetEntityType: null,
   departmentId: null,
   professionalServiceId: null,
+  hospitalServiceId: null,
+  websitePageId: null,
   doctorId: null,
   locationId: null,
   blogPostId: null,
@@ -83,6 +90,8 @@ function TargetKeywordWorkspace() {
     enabled: !isNew,
   });
   const options = useQuery({ queryKey: ["seo-relations"], queryFn: listSeoRelationOptions });
+  const coverage = useSeoCoverage();
+  const coverageResult = isNew ? undefined : coverage.byTarget.get(targetId);
 
   useEffect(() => {
     if (existing.data)
@@ -96,6 +105,8 @@ function TargetKeywordWorkspace() {
         targetEntityType: existing.data.targetEntityType,
         departmentId: existing.data.departmentId,
         professionalServiceId: existing.data.professionalServiceId,
+        hospitalServiceId: existing.data.hospitalServiceId,
+        websitePageId: existing.data.websitePageId,
         doctorId: existing.data.doctorId,
         locationId: existing.data.locationId,
         blogPostId: existing.data.blogPostId,
@@ -109,6 +120,7 @@ function TargetKeywordWorkspace() {
     onSuccess: (id) => {
       void queryClient.invalidateQueries({ queryKey: ["seo-targets"] });
       void queryClient.invalidateQueries({ queryKey: ["seo-target", id] });
+      void queryClient.invalidateQueries({ queryKey: ["seo-coverage-context"] });
       setMessage({ tone: "success", text: "Target keyword saved." });
       if (isNew) void navigate({ to: "/_admin/seo-target/$targetId", params: { targetId: id } });
     },
@@ -272,42 +284,110 @@ function TargetKeywordWorkspace() {
             </WorkspaceSection>
 
             <WorkspaceSection
-              title="Target page"
-              description="Choose the page this keyword should lead people to."
+              title="Primary target"
+              description="Choose the one page this keyword should lead people to, and an optional location."
             >
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label>Primary target type</Label>
+                  <Select
+                    value={draft.targetEntityType ?? NONE}
+                    disabled={!can("seo.manage")}
+                    onValueChange={(next) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        targetEntityType: next === NONE ? null : (next as SeoTargetType),
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Not set" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE}>Not set</SelectItem>
+                      {SEO_TARGET_TYPES.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {SEO_TARGET_TYPE_LABELS[value]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {draft.targetEntityType === "department"
+                  ? relation("Department", draft.departmentId, options.data?.departments, (next) =>
+                      setDraft((prev) => ({ ...prev, departmentId: next })),
+                    )
+                  : null}
+                {draft.targetEntityType === "professional_service"
+                  ? relation(
+                      "Professional service",
+                      draft.professionalServiceId,
+                      options.data?.professionalServices,
+                      (next) => setDraft((prev) => ({ ...prev, professionalServiceId: next })),
+                    )
+                  : null}
+                {draft.targetEntityType === "hospital_service"
+                  ? relation(
+                      "Hospital service",
+                      draft.hospitalServiceId,
+                      options.data?.hospitalServices,
+                      (next) => setDraft((prev) => ({ ...prev, hospitalServiceId: next })),
+                    )
+                  : null}
+                {draft.targetEntityType === "doctor"
+                  ? relation("Doctor", draft.doctorId, options.data?.doctors, (next) =>
+                      setDraft((prev) => ({ ...prev, doctorId: next })),
+                    )
+                  : null}
+                {draft.targetEntityType === "website_page"
+                  ? relation("Website page", draft.websitePageId, options.data?.websitePages, (next) =>
+                      setDraft((prev) => ({ ...prev, websitePageId: next })),
+                    )
+                  : null}
+                {draft.targetEntityType === "blog_post"
+                  ? relation("Blog article", draft.blogPostId, options.data?.blogPosts, (next) =>
+                      setDraft((prev) => ({ ...prev, blogPostId: next })),
+                    )
+                  : null}
+                {relation(
+                  draft.targetEntityType === "location" ? "Location" : "Location context (optional)",
+                  draft.locationId,
+                  options.data?.locations,
+                  (next) => setDraft((prev) => ({ ...prev, locationId: next })),
+                )}
                 <div className="grid gap-2 md:col-span-2">
-                  <Label htmlFor="target-url">Target address</Label>
+                  <Label htmlFor="target-url">Target address override (optional)</Label>
                   <Input
                     id="target-url"
-                    placeholder="/services/professional/dental-implants"
+                    placeholder="Leave empty to use the primary target's page"
                     value={draft.targetUrl ?? ""}
                     disabled={!can("seo.manage")}
                     onChange={(event) =>
                       setDraft((prev) => ({ ...prev, targetUrl: event.target.value || null }))
                     }
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Normally the address comes from the primary target. Only one target is saved; switching
+                    the type clears the other target.
+                  </p>
                 </div>
-                {relation("Department", draft.departmentId, options.data?.departments, (next) =>
-                  setDraft((prev) => ({ ...prev, departmentId: next })),
-                )}
-                {relation(
-                  "Professional service",
-                  draft.professionalServiceId,
-                  options.data?.professionalServices,
-                  (next) => setDraft((prev) => ({ ...prev, professionalServiceId: next })),
-                )}
-                {relation("Doctor", draft.doctorId, options.data?.doctors, (next) =>
-                  setDraft((prev) => ({ ...prev, doctorId: next })),
-                )}
-                {relation("Location", draft.locationId, options.data?.locations, (next) =>
-                  setDraft((prev) => ({ ...prev, locationId: next })),
-                )}
-                {relation("Blog article", draft.blogPostId, options.data?.blogPosts, (next) =>
-                  setDraft((prev) => ({ ...prev, blogPostId: next })),
-                )}
               </div>
             </WorkspaceSection>
+
+            {!isNew ? (
+              <WorkspaceSection
+                title="Coverage"
+                description="Calculated automatically from the saved keyword and the live website content. It cannot be edited."
+              >
+                {coverage.isPending ? (
+                  <LoadingState />
+                ) : coverageResult ? (
+                  <CoverageDetail result={coverageResult} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Coverage is not available.</p>
+                )}
+              </WorkspaceSection>
+            ) : null}
 
             <WorkspaceSection title="Notes">
               <Textarea
