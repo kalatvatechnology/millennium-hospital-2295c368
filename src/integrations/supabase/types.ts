@@ -2805,11 +2805,16 @@ export type Database = {
       website_pages: {
         Row: {
           body: string | null
+          canonical_url: string | null
           created_at: string
           display_order: number
           id: string
           meta_description: string | null
           meta_title: string | null
+          og_description: string | null
+          og_media_id: string | null
+          og_title: string | null
+          robots_index: boolean
           slug: string
           status: Database["public"]["Enums"]["post_status"]
           title: string
@@ -2817,11 +2822,16 @@ export type Database = {
         }
         Insert: {
           body?: string | null
+          canonical_url?: string | null
           created_at?: string
           display_order?: number
           id?: string
           meta_description?: string | null
           meta_title?: string | null
+          og_description?: string | null
+          og_media_id?: string | null
+          og_title?: string | null
+          robots_index?: boolean
           slug: string
           status?: Database["public"]["Enums"]["post_status"]
           title: string
@@ -2829,17 +2839,30 @@ export type Database = {
         }
         Update: {
           body?: string | null
+          canonical_url?: string | null
           created_at?: string
           display_order?: number
           id?: string
           meta_description?: string | null
           meta_title?: string | null
+          og_description?: string | null
+          og_media_id?: string | null
+          og_title?: string | null
+          robots_index?: boolean
           slug?: string
           status?: Database["public"]["Enums"]["post_status"]
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "website_pages_og_media_id_fkey"
+            columns: ["og_media_id"]
+            isOneToOne: false
+            referencedRelation: "media_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

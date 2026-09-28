@@ -239,6 +239,13 @@
       "when": 1790622522439,
       "tag": "0033_doctor_media_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1790625631561,
+      "tag": "0034_website_pages_seo",
+      "breakpoints": true
     }
   ]
 }

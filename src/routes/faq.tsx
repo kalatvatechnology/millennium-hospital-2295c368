@@ -6,10 +6,17 @@ import { ContentSection, EmptyState, PageIntro } from "@/components/shared/page"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { faqQuery } from "@/lib/queries";
-import { createPageMeta } from "@/lib/seo";
+import { websitePageHead } from "@/lib/seo";
+import { getWebsitePageMeta } from "@/lib/website-page-meta.functions";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({ meta: createPageMeta("Frequently asked questions", "Answers to common questions about visiting The Millennium Hospital.") }),
+  // SEO comes from Website Pages → "faq" (one page; individual FAQs are content).
+  loader: async () => ({ meta: await getWebsitePageMeta({ data: { slug: "faq" } }).catch(() => null) }),
+  head: ({ loaderData }) =>
+    websitePageHead("faq", loaderData?.meta, {
+      title: "Frequently asked questions",
+      description: "Answers to common questions about visiting The Millennium Hospital.",
+    }),
   component: FaqPage,
 });
 

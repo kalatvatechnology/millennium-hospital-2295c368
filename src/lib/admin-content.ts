@@ -21,11 +21,16 @@ export type Field = {
   imageFolder?: string;
   /** Returns an error message when the value is invalid. */
   validate?: (value: string) => string | null;
+  /** Edited in a dedicated SEO section instead of the generic field grid. */
+  seoSection?: boolean;
+  /** Initial value for new records. */
+  defaultValue?: unknown;
 };
 
 export { mapEmbedUrlError, isGoogleMapsEmbedUrl } from "@/lib/map-embed";
 import { mapEmbedUrlError } from "@/lib/map-embed";
 import { googleReviewUrlError } from "@/lib/review-url";
+import { canonicalUrlError } from "@/lib/website-page-seo";
 
 export type ContentType = {
   key: string;
@@ -416,8 +421,26 @@ export const contentTypes: ContentType[] = [
       { name: "title", label: "Title", type: "text", required: true },
       { name: "slug", label: "Web address (slug)", type: "text", required: true },
       { name: "body", label: "Page content", type: "textarea" },
-      { name: "meta_title", label: "Search engine title", type: "text" },
-      { name: "meta_description", label: "Search engine description", type: "textarea" },
+      // Rendered in the dedicated Website Page SEO section (seoSection), saved on the same row.
+      { name: "meta_title", label: "SEO title", type: "text", seoSection: true },
+      { name: "meta_description", label: "Meta description", type: "textarea", seoSection: true },
+      {
+        name: "canonical_url",
+        label: "Canonical URL",
+        type: "text",
+        seoSection: true,
+        validate: (value) => canonicalUrlError(value),
+      },
+      { name: "og_title", label: "Open Graph title", type: "text", seoSection: true },
+      { name: "og_description", label: "Open Graph description", type: "textarea", seoSection: true },
+      { name: "og_media_id", label: "Open Graph image", type: "text", seoSection: true },
+      {
+        name: "robots_index",
+        label: "Allow search engines to index this page",
+        type: "boolean",
+        seoSection: true,
+        defaultValue: true,
+      },
       {
         name: "status",
         label: "Status",
@@ -469,7 +492,7 @@ export function contentTypeByKey(key: string) {
 export function emptyContentValues(type: ContentType) {
   const values: Record<string, any> = {};
   for (const field of type.fields) {
-    values[field.name] = field.type === "boolean" ? false : field.type === "select" ? (field.options?.[0]?.value ?? "") : "";
+    values[field.name] = field.defaultValue !== undefined ? field.defaultValue : field.type === "boolean" ? false : field.type === "select" ? (field.options?.[0]?.value ?? "") : "";
   }
   return values;
 }

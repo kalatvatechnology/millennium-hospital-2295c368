@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePageCanonical } from "@/lib/website-page-seo";
 import { classifyDataError } from "./errors";
 import { siteConfig } from "@/config/site";
 import { extractWebsiteKeywords, normalizeKeyword, stripHtml } from "@/lib/seo/keywords";
@@ -68,7 +69,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
     await Promise.all([
       db
         .from("website_pages")
-        .select("id, title, slug, meta_title, meta_description, body, status"),
+        .select("id, title, slug, meta_title, meta_description, canonical_url, robots_index, og_media_id, body, status"),
       db.from("departments").select("id, name, slug, description, published, page_published"),
       db.from("professional_services").select("id, title, slug, summary, description, published"),
       db.from("hospital_services").select("id, title, slug, summary, description, published"),
@@ -102,11 +103,18 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       heading: text(row["title"]),
       seoTitle: text(row["meta_title"]),
       metaDescription: text(row["meta_description"]),
-      canonicalUrl: null,
-      indexable: true,
+      // Empty canonical = automatic: the public page uses its own URL (same rule as the public head).
+      canonicalUrl: resolvePageCanonical(row["canonical_url"], row["slug"]),
+      indexable: row["robots_index"] !== false,
       images: [],
       internalLinks: countLinks(row["body"]),
       fields: [
+        // /faq is one Website Page; its hospital-wide questions are content on it.
+        ...(row["slug"] === "faq"
+          ? rows(faqs)
+              .filter((f) => f["published"] === true && !f["department_id"])
+              .flatMap((f) => [...field("Question", "question", f["question"]), ...field("Answer", "answer", f["answer"])])
+          : []),
         ...field("Page title", "title", row["title"]),
         ...field("SEO title", "meta_title", row["meta_title"]),
         ...field("Meta description", "meta_description", row["meta_description"]),
@@ -264,28 +272,28 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
     });
   }
 
-  // /faq is ONE public page. Individual questions are content on it, not separate SEO pages.
-  // Only hospital-wide FAQs (department_id NULL) are shown there; department FAQs live on department pages.
-  const hospitalFaqs = rows(faqs).filter((row) => row["published"] === true && !row["department_id"]);
-  entities.push({
-    type: "faq",
-    id: FAQ_PAGE_ID,
-    label: "FAQ page",
-    path: "/faq",
-    published: true,
-    // Title and description of /faq are set in the site code (src/routes/faq.tsx).
-    heading: "Frequently asked questions",
-    seoTitle: `Frequently asked questions | ${siteConfig.name}`,
-    metaDescription: "Answers to common questions about visiting The Millennium Hospital.",
-    canonicalUrl: null,
-    indexable: true,
-    images: [],
-    internalLinks: 0,
-    fields: hospitalFaqs.flatMap((row) => [
-      ...field("Question", "question", row["question"]),
-      ...field("Answer", "answer", row["answer"]),
-    ]),
-  });
+  // /faq is ONE public page, owned by Website Pages → "faq" (above). Fallback only if that row is missing.
+  if (!rows(pages).some((row) => row["slug"] === "faq")) {
+    const hospitalFaqs = rows(faqs).filter((row) => row["published"] === true && !row["department_id"]);
+    entities.push({
+      type: "faq",
+      id: FAQ_PAGE_ID,
+      label: "FAQ page",
+      path: "/faq",
+      published: true,
+      heading: "Frequently asked questions",
+      seoTitle: `Frequently asked questions | ${siteConfig.name}`,
+      metaDescription: "Answers to common questions about visiting The Millennium Hospital.",
+      canonicalUrl: `${siteConfig.url}/faq`,
+      indexable: true,
+      images: [],
+      internalLinks: 0,
+      fields: hospitalFaqs.flatMap((row) => [
+        ...field("Question", "question", row["question"]),
+        ...field("Answer", "answer", row["answer"]),
+      ]),
+    });
+  }
 
   return entities;
 }
