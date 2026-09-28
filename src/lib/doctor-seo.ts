@@ -14,6 +14,9 @@ export type DoctorSeoSource = {
   photoUrl?: string | null;
   socialLinks?: Record<string, string> | null;
   areasOfCare?: string[] | null;
+  departmentNames?: string[] | null;
+  specializations?: string[] | null;
+  bio?: string | null;
 };
 
 export const SEO_TITLE_RANGE = [50, 60] as const;
@@ -66,26 +69,66 @@ export function suggestDoctorSeoDescription(doctor: DoctorSeoSource) {
   return parts.join(" ");
 }
 
-/** schema.org Physician built only from real profile fields; empty values are omitted. */
+/**
+ * Central department → Schema.org mapping. Only clear, valid matches are listed;
+ * anything else falls back to the generic "Physician" medical-person type.
+ * `specialty` is a schema.org MedicalSpecialty enumeration value.
+ */
+const SCHEMA_TYPE_RULES: { match: RegExp; type: string; specialty?: string }[] = [
+  { match: /\bdent(al|ist|istry)\b|orthodont|implantolog/i, type: "Dentist", specialty: "Dentistry" },
+];
+
+export type DoctorSchemaType = { type: string; specialty: string | null; basis: string | null };
+
+/** Detects the schema type from department names only (never the doctor's name). */
+export function detectDoctorSchemaType(doctor: DoctorSeoSource): DoctorSchemaType {
+  const departments = [doctor.departmentName, ...(doctor.departmentNames ?? [])].map(clean).filter(Boolean);
+  for (const dept of departments) {
+    const rule = SCHEMA_TYPE_RULES.find((r) => r.match.test(dept));
+    if (rule) return { type: rule.type, specialty: rule.specialty ?? null, basis: dept };
+  }
+  return { type: "Physician", specialty: null, basis: null };
+}
+
+/** Makes site-relative image paths absolute on the public domain so crawlers can fetch them. */
+export function absolutePublicUrl(value?: string | null) {
+  const v = clean(value);
+  if (!v) return null;
+  if (/^https?:\/\//.test(v)) return v;
+  if (v.startsWith("/")) return `${siteConfig.url}${v}`;
+  return null;
+}
+
+/** Schema.org JSON-LD generated only from real saved profile fields; empty values are omitted. */
 export function doctorStructuredData(doctor: DoctorSeoSource) {
   const url = doctorProfileUrl(doctor.slug);
+  const detected = detectDoctorSchemaType(doctor);
   const sameAs = Object.values(doctor.socialLinks ?? {}).map(clean).filter((v) => /^https?:\/\//.test(v));
+  const quals = (doctor.qualifications ?? []).map(clean).filter(Boolean);
+  const knowsAbout = [...new Set((doctor.specializations ?? []).map(clean).filter(Boolean))];
+  const departments = [...new Set([doctor.departmentName, ...(doctor.departmentNames ?? [])].map(clean).filter(Boolean))];
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": "Physician",
+    "@type": detected.type,
     name: clean(doctor.name) || undefined,
     url: url ?? undefined,
-    image: clean(doctor.photoUrl) || undefined,
+    image: absolutePublicUrl(doctor.photoUrl) ?? undefined,
     jobTitle: clean(doctor.designation) || undefined,
-    medicalSpecialty: focus(doctor) || undefined,
-    description: clean(doctor.shortIntroduction) || undefined,
-    hasCredential: (doctor.qualifications ?? []).map(clean).filter(Boolean).length
-      ? (doctor.qualifications ?? []).map(clean).filter(Boolean).map((name) => ({
-          "@type": "EducationalOccupationalCredential",
-          name,
-        }))
+    medicalSpecialty: detected.specialty ?? undefined,
+    knowsAbout: knowsAbout.length ? knowsAbout : undefined,
+    description: clean(doctor.shortIntroduction) || clean(doctor.bio) || undefined,
+    hasCredential: quals.length
+      ? quals.map((name) => ({ "@type": "EducationalOccupationalCredential", name }))
       : undefined,
-    worksFor: { "@type": "Hospital", name: siteConfig.name, url: siteConfig.url },
+    address: clean(doctor.location) ? { "@type": "PostalAddress", addressLocality: clean(doctor.location) } : undefined,
+    parentOrganization: {
+      "@type": "Hospital",
+      name: siteConfig.name,
+      url: siteConfig.url,
+      department: departments.length
+        ? departments.map((name) => ({ "@type": "MedicalOrganization", name }))
+        : undefined,
+    },
     sameAs: sameAs.length ? sameAs : undefined,
   };
   return JSON.parse(JSON.stringify(data)) as Record<string, unknown>;
