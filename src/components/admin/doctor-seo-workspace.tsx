@@ -17,7 +17,8 @@ import {
   type DoctorSeoSource,
 } from "@/lib/doctor-seo";
 
-type Values = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Values = any;
 
 function Group({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
@@ -121,7 +122,7 @@ export function DoctorSeoWorkspace({
   const schema = useMemo(() => doctorStructuredData(source), [source]);
   const canSchema = Boolean(source.name && profileUrl);
 
-  const checks: { label: string; ok: boolean; fix?: string }[] = [
+  const checks: { label: string; ok: boolean; fix?: string | undefined }[] = [
     { label: "SEO title present", ok: Boolean(title.trim()) },
     { label: "SEO description present", ok: Boolean(description.trim()) },
     { label: "Canonical URL available", ok: Boolean(effectiveCanonical) },
