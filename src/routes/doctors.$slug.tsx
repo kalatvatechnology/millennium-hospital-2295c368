@@ -40,6 +40,7 @@ import {
 import { siteConfig } from "@/config/site";
 import { doctorQuery } from "@/lib/queries";
 import { createPageMeta } from "@/lib/seo";
+import { doctorProfileUrl, doctorStructuredData } from "@/lib/doctor-seo";
 
 export const Route = createFileRoute("/doctors/$slug")({
   validateSearch: (search: Record<string, unknown>): { preview?: boolean } =>
@@ -59,13 +60,40 @@ export const Route = createFileRoute("/doctors/$slug")({
       doctor?.bio ??
       "View a clinician profile at The Millennium Hospital.";
     const unpublished = !doctor || doctor.status !== "published";
+    // An unpublished profile is never indexable, whatever the editor's setting.
+    const noindex = unpublished || doctor?.robots_index === false;
+    const profileUrl = doctorProfileUrl(doctor?.slug);
+    const canonical = doctor?.canonical_url ?? profileUrl;
+    const ogTitle = doctor?.og_title ?? `${title} | ${siteConfig.name}`;
+    const ogDescription = doctor?.og_description ?? description;
+    const schema =
+      doctor && !unpublished
+        ? doctorStructuredData({
+            name: doctor.name,
+            slug: doctor.slug,
+            designation: doctor.designation,
+            specialty: doctor.specialty,
+            qualifications: doctor.qualifications,
+            shortIntroduction: doctor.short_introduction,
+            photoUrl: doctor.photo_url,
+            socialLinks: doctor.social_links as Record<string, string>,
+          })
+        : null;
     return {
       meta: [
         ...createPageMeta(title, description),
-        ...(doctor?.og_image_url ? [{ property: "og:image", content: doctor.og_image_url }] : []),
-        ...(unpublished ? [{ name: "robots", content: "noindex, nofollow" }] : []),
+        { property: "og:title", content: ogTitle },
+        { property: "og:description", content: ogDescription },
+        ...(doctor?.og_image_url
+          ? [
+              { property: "og:image", content: doctor.og_image_url },
+              { name: "twitter:image", content: doctor.og_image_url },
+            ]
+          : []),
+        ...(noindex ? [{ name: "robots", content: "noindex, nofollow" }] : []),
       ],
-      links: doctor?.canonical_url ? [{ rel: "canonical", href: doctor.canonical_url }] : [],
+      links: canonical && !unpublished ? [{ rel: "canonical", href: canonical }] : [],
+      scripts: schema ? [{ type: "application/ld+json", children: JSON.stringify(schema) }] : [],
     };
   },
   component: DoctorDetail,

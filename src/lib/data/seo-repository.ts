@@ -75,7 +75,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       db
         .from("doctors")
         .select(
-          "id, name, slug, designation, qualifications, short_introduction, bio, seo_title, seo_description, canonical_url, photo_url, profile_image_alt, hero_image_url, hero_image_alt, published, doctor_specializations(enabled,display_order,department_specializations(name))",
+          "id, name, slug, designation, qualifications, short_introduction, bio, seo_title, seo_description, canonical_url, robots_index, photo_url, profile_image_alt, hero_image_url, hero_image_alt, published, doctor_specializations(enabled,display_order,department_specializations(name))",
         ),
       db
         .from("locations")
@@ -193,8 +193,9 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
       heading: text(row["name"]),
       seoTitle: text(row["seo_title"]),
       metaDescription: text(row["seo_description"]),
-      canonicalUrl: text(row["canonical_url"]),
-      indexable: true,
+      // Empty canonical means "automatic": the public page uses its own profile URL.
+      canonicalUrl: text(row["canonical_url"]) ?? (text(row["slug"]) ? `/doctors/${String(row["slug"])}` : null),
+      indexable: row["robots_index"] !== false,
       images,
       internalLinks: 0,
       fields: [
