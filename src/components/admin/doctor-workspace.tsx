@@ -396,6 +396,18 @@ export function DoctorWorkspace() {
         }
       }
       const data = { ...payload(), slug: slugify(String(values.slug ?? "")) };
+      // Replaced/removed images stay in Media & Content; only unmanaged files are cleaned up.
+      const removeStale = async () => {
+        const stalePaths = [...deletedImagePaths.current];
+        if (!stalePaths.length) return;
+        const managed = await mediaReferencedUrls(stalePaths.map((p) => doctorImageUrl(p)));
+        const unmanaged = stalePaths.filter((p) => !managed.has(doctorImageUrl(p)));
+        if (!unmanaged.length) return;
+        const { error: cleanupError } = await supabase.storage
+          .from(doctorImageBucket)
+          .remove(unmanaged);
+        if (cleanupError) throw cleanupError;
+      };
       if (isNew) {
         const { data: created, error: createError } = await db
           .from("doctors")
@@ -404,24 +416,14 @@ export function DoctorWorkspace() {
           .single();
         if (createError) throw createError;
         await professionalRef.current?.save(created.id as string);
-        const stalePaths = [...deletedImagePaths.current];
-        if (stalePaths.length) {
-          const { error: cleanupError } = await supabase.storage
-            .from(doctorImageBucket)
-            .remove(stalePaths);
-          if (cleanupError) throw cleanupError;
-        }
+        await syncDoctorMediaRoles(created.id as string, String(values.name ?? ""), values);
+        await removeStale();
         return created.id as string;
       }
       await saveRecord(doctorType, doctorId, data);
       if (section === "profile") await professionalRef.current?.save(doctorId);
-      const stalePaths = [...deletedImagePaths.current];
-      if (stalePaths.length) {
-        const { error: cleanupError } = await supabase.storage
-          .from(doctorImageBucket)
-          .remove(stalePaths);
-        if (cleanupError) throw cleanupError;
-      }
+      await syncDoctorMediaRoles(doctorId, String(values.name ?? ""), values);
+      await removeStale();
       return doctorId;
     },
     onSuccess: (savedId) => {
