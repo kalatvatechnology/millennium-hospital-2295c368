@@ -1,6 +1,8 @@
 import { useMemo, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle, CheckCircle2, ChevronDown, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { AlertCircle, CheckCircle2, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +13,8 @@ import {
   SEO_DESCRIPTION_RANGE,
   SEO_TITLE_RANGE,
   doctorProfileUrl,
+  absolutePublicUrl,
+  detectDoctorSchemaType,
   doctorStructuredData,
   suggestDoctorSeoDescription,
   suggestDoctorSeoTitle,
@@ -19,6 +23,45 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Values = any;
+
+/** Reads the SAVED doctor profile (same fields the public page uses) — never the unsaved form. */
+async function loadSavedSchemaSource(doctorId: string): Promise<{ source: DoctorSeoSource; updatedAt: string | null }> {
+  const { data, error } = await supabase
+    .from("doctors")
+    .select(
+      "name,slug,designation,specialty,qualifications,short_introduction,bio,location,photo_url,social_links,updated_at, department:departments!doctors_department_id_fkey(name), doctor_departments(departments!doctor_departments_department_id_fkey(name)), doctor_specializations(title,enabled,display_order)",
+    )
+    .eq("id", doctorId)
+    .single();
+  if (error) throw error;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const row = data as any;
+  return {
+    updatedAt: row.updated_at ?? null,
+    source: {
+      name: row.name,
+      slug: row.slug,
+      designation: row.designation,
+      specialty: row.specialty,
+      departmentName: row.department?.name ?? null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      departmentNames: (row.doctor_departments ?? []).map((l: any) => l.departments?.name).filter(Boolean),
+      specializations: (row.doctor_specializations ?? [])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((x: any) => x.enabled !== false)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .sort((a: any, b: any) => a.display_order - b.display_order)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((x: any) => x.title),
+      qualifications: row.qualifications ?? [],
+      shortIntroduction: row.short_introduction,
+      bio: row.bio,
+      location: row.location,
+      photoUrl: row.photo_url,
+      socialLinks: row.social_links ?? {},
+    },
+  };
+}
 
 function Group({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
@@ -119,8 +162,28 @@ export function DoctorSeoWorkspace({
   const autoCanonical = !canonical.trim() || canonical.trim() === profileUrl;
   const ogTitle = String(values.og_title ?? "").trim() || title.trim() || String(source.name ?? "");
   const ogDescription = String(values.og_description ?? "").trim() || description.trim();
-  const schema = useMemo(() => doctorStructuredData(source), [source]);
+  const saved = useQuery({
+    queryKey: ["doctor-schema-source", doctorId],
+    enabled: doctorId !== "new",
+    queryFn: () => loadSavedSchemaSource(doctorId),
+  });
+  const savedSource = saved.data?.source ?? null;
+  const schema = useMemo(() => (savedSource ? doctorStructuredData(savedSource) : null), [savedSource]);
+  const detected = savedSource ? detectDoctorSchemaType(savedSource) : null;
   const canSchema = Boolean(source.name && profileUrl);
+  const schemaChecks = savedSource
+    ? [
+        { ok: Boolean(detected), yes: `Schema type detected (${detected?.type})`, no: "Schema type not detected" },
+        { ok: Boolean(savedSource.name?.trim()), yes: "Doctor name available", no: "Doctor name missing" },
+        { ok: Boolean(doctorProfileUrl(savedSource.slug)), yes: "Profile URL available", no: "Profile URL missing" },
+        { ok: Boolean(savedSource.shortIntroduction?.trim() || savedSource.bio?.trim()), yes: "Description available", no: "Description missing" },
+        { ok: (savedSource.qualifications ?? []).length > 0, yes: "Qualification data available", no: "Qualification data missing" },
+        { ok: Boolean(savedSource.departmentName || (savedSource.departmentNames ?? []).length), yes: "Department available", no: "Department not assigned" },
+        { ok: true, yes: "Hospital available", no: "" },
+        { ok: Boolean(savedSource.photoUrl?.trim()), yes: "Profile image available", no: "Profile image missing" },
+        { ok: Boolean(absolutePublicUrl(savedSource.photoUrl)), yes: "Public image URL available", no: "Public image URL missing" },
+      ]
+    : [];
 
   const checks: { label: string; ok: boolean; fix?: string | undefined }[] = [
     { label: "SEO title present", ok: Boolean(title.trim()) },
@@ -237,18 +300,56 @@ export function DoctorSeoWorkspace({
       </Group>
 
       <Group title="Structured data">
-        <p className="text-sm">
-          Schema type: <span className="font-semibold">Physician</span>
+        <p className="text-sm text-muted-foreground">
+          Structured data is automatically generated from this doctor's profile. You do not need to manually edit JSON-LD.
         </p>
-        <p className="text-sm text-muted-foreground">Generated automatically from this doctor's profile.</p>
-        <details className="group border border-border">
-          <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm font-medium">
-            View generated data <ChevronDown className="size-4 transition group-open:rotate-180" />
-          </summary>
-          <pre className="max-h-80 overflow-auto border-t border-border bg-muted p-3 text-xs">
-            {JSON.stringify(schema, null, 2)}
-          </pre>
-        </details>
+        {doctorId === "new" ? (
+          <p className="text-sm text-muted-foreground">Save the doctor first to generate structured data.</p>
+        ) : saved.isError ? (
+          <p className="text-sm text-destructive">Could not read the saved profile. Try Refresh from Doctor Profile.</p>
+        ) : !schema ? (
+          <p className="text-sm text-muted-foreground">Reading saved profile…</p>
+        ) : (
+          <>
+            <dl className="grid gap-2 text-sm sm:grid-cols-[10rem_1fr]">
+              <dt className="text-muted-foreground">Schema type</dt>
+              <dd className="font-semibold">
+                {detected?.type}
+                {detected?.basis ? <span className="ml-2 font-normal text-muted-foreground">based on "{detected.basis}"</span> : null}
+              </dd>
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="flex items-center gap-1.5"><CheckCircle2 className="size-4 text-primary" /> Automatically synced with Doctor Profile</dd>
+              <dt className="text-muted-foreground">Last generated</dt>
+              <dd>
+                {saved.dataUpdatedAt ? new Date(saved.dataUpdatedAt).toLocaleString() : "—"}
+                {saved.data?.updatedAt ? <span className="ml-2 text-muted-foreground">(profile saved {new Date(saved.data.updatedAt).toLocaleString()})</span> : null}
+              </dd>
+            </dl>
+            <p className="text-xs text-muted-foreground">Uses the last saved profile. Unsaved changes appear here after you save. The public page always generates this data itself — Refresh is only a manual check.</p>
+            <div>
+              <Button type="button" size="sm" variant="outline" disabled={saved.isFetching} onClick={() => void saved.refetch()}>
+                <RefreshCw className={cn("size-3.5", saved.isFetching && "animate-spin")} /> Refresh from Doctor Profile
+              </Button>
+            </div>
+            <ul className="divide-y divide-border">
+              {schemaChecks.map((c) => (
+                <li key={c.yes} className="flex items-center gap-2 py-1.5 text-sm">
+                  {c.ok ? <CheckCircle2 className="size-4 text-primary" /> : <AlertCircle className="size-4 text-destructive" />}
+                  {c.ok ? c.yes : c.no}
+                </li>
+              ))}
+            </ul>
+            <details className="group border border-border">
+              <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm font-medium">
+                View Generated Schema <ChevronDown className="size-4 transition group-open:rotate-180" />
+              </summary>
+              <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">Generated automatically from Doctor Profile (read-only).</p>
+              <pre className="max-h-80 overflow-auto border-t border-border bg-muted p-3 text-xs">
+                {JSON.stringify(schema, null, 2)}
+              </pre>
+            </details>
+          </>
+        )}
       </Group>
 
       <Group title="Search visibility">

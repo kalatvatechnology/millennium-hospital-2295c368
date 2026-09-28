@@ -444,6 +444,7 @@ export function DoctorWorkspace() {
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-workspace-department-links"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-schema-source"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-department-professional"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-department-specialization-content"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-content", "doctors"] });

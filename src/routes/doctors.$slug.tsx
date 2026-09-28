@@ -73,8 +73,13 @@ export const Route = createFileRoute("/doctors/$slug")({
             slug: doctor.slug,
             designation: doctor.designation,
             specialty: doctor.specialty,
+            departmentName: doctor.department?.name ?? null,
+            departmentNames: doctor.departments.map((d) => d.name),
+            specializations: (loaderData?.specializations ?? []).map((s) => s.title),
             qualifications: doctor.qualifications,
             shortIntroduction: doctor.short_introduction,
+            bio: doctor.bio,
+            location: doctor.location,
             photoUrl: doctor.photo_url,
             socialLinks: doctor.social_links as Record<string, string>,
           })
