@@ -55,6 +55,7 @@ const navItems: NavItem[] = [
   { label: "SEO analytics", to: "/_admin/seo-analytics", permission: "seo.read" },
   { label: "Website keywords", to: "/_admin/seo-keywords", permission: "seo.read" },
   { label: "Target keywords", to: "/_admin/seo-targets", permission: "seo.read" },
+  { label: "SEO coverage", to: "/_admin/seo-coverage", permission: "seo.read" },
   { label: "SEO audit", to: "/_admin/seo-audit", permission: "seo.read" },
   { label: "Local SEO", to: "/_admin/seo-local", permission: "seo.read" },
   { label: "Technical SEO", to: "/_admin/seo-technical", permission: "seo.read" },
