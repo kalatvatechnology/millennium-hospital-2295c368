@@ -438,6 +438,8 @@ export function DoctorWorkspace() {
       setDetailReset((current) => current + 1);
       void queryClient.invalidateQueries({ queryKey: ["admin-doctor", savedId] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-section"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-image-roles"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-workspace-image-options"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-relation"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
