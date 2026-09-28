@@ -10,6 +10,9 @@ import { createPageMeta } from "@/lib/seo";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { userFacingDataError } from "@/lib/data/errors";
 import { onPageIssues, overallStatus } from "@/lib/seo/audit";
+import { countStatuses, countsByTargetType } from "@/lib/seo/coverage";
+import { useSeoCoverage } from "@/hooks/use-seo-coverage";
+import { CoverageSummaryCards, CoverageTypeBreakdown } from "@/components/admin/seo-coverage";
 import {
   fetchSeoEntities,
   listSeoDataSources,
@@ -62,6 +65,7 @@ function SeoDashboard() {
   const openIssues = issues.filter((issue) => issue.status !== "pass");
   const localKeywords = (keywords.data ?? []).filter((row) => row.category === "local").length;
   const lastScan = scans.data?.[0];
+  const coverage = useSeoCoverage();
 
   return (
     <AdminShell
@@ -103,6 +107,23 @@ function SeoDashboard() {
           <MetricCard label="Local keywords" value={localKeywords} />
         </div>
       )}
+
+      <section className="mt-10 grid gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">Target keyword coverage</h2>
+          <Link to="/_admin/seo-coverage" className="text-sm font-semibold text-primary underline">
+            Open SEO coverage
+          </Link>
+        </div>
+        {coverage.isPending ? (
+          <LoadingState />
+        ) : (
+          <>
+            <CoverageSummaryCards counts={countStatuses(coverage.results)} />
+            <CoverageTypeBreakdown counts={countsByTargetType(coverage.results)} />
+          </>
+        )}
+      </section>
 
       <section className="mt-10 grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

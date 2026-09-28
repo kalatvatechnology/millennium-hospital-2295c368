@@ -114,6 +114,28 @@ export type SeoKeywordUsageRecord = {
   occurrences: number;
 };
 
+/** Primary target kinds a target keyword can point at (seo_target_keywords.target_entity_type). */
+export const SEO_TARGET_TYPES = [
+  "department",
+  "professional_service",
+  "hospital_service",
+  "doctor",
+  "location",
+  "website_page",
+  "blog_post",
+] as const;
+export type SeoTargetType = (typeof SEO_TARGET_TYPES)[number];
+
+export const SEO_TARGET_TYPE_LABELS: Record<SeoTargetType, string> = {
+  department: "Department",
+  professional_service: "Professional service",
+  hospital_service: "Hospital service",
+  doctor: "Doctor",
+  location: "Location",
+  website_page: "Website page",
+  blog_post: "Blog article",
+};
+
 export type SeoTargetKeyword = {
   id: string;
   keyword: string;
@@ -122,9 +144,11 @@ export type SeoTargetKeyword = {
   searchIntent: SeoSearchIntent;
   priority: "primary" | "secondary";
   targetUrl: string | null;
-  targetEntityType: SeoEntityType | null;
+  targetEntityType: SeoTargetType | null;
   departmentId: string | null;
   professionalServiceId: string | null;
+  hospitalServiceId: string | null;
+  websitePageId: string | null;
   doctorId: string | null;
   locationId: string | null;
   blogPostId: string | null;

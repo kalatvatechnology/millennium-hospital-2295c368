@@ -2691,6 +2691,7 @@ export type Database = {
           created_at: string
           department_id: string | null
           doctor_id: string | null
+          hospital_service_id: string | null
           id: string
           keyword: string
           keyword_type: string
@@ -2704,12 +2705,14 @@ export type Database = {
           target_entity_type: string | null
           target_url: string | null
           updated_at: string
+          website_page_id: string | null
         }
         Insert: {
           blog_post_id?: string | null
           created_at?: string
           department_id?: string | null
           doctor_id?: string | null
+          hospital_service_id?: string | null
           id?: string
           keyword: string
           keyword_type?: string
@@ -2723,12 +2726,14 @@ export type Database = {
           target_entity_type?: string | null
           target_url?: string | null
           updated_at?: string
+          website_page_id?: string | null
         }
         Update: {
           blog_post_id?: string | null
           created_at?: string
           department_id?: string | null
           doctor_id?: string | null
+          hospital_service_id?: string | null
           id?: string
           keyword?: string
           keyword_type?: string
@@ -2742,6 +2747,7 @@ export type Database = {
           target_entity_type?: string | null
           target_url?: string | null
           updated_at?: string
+          website_page_id?: string | null
         }
         Relationships: [
           {
@@ -2766,6 +2772,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "seo_target_keywords_hospital_service_id_fkey"
+            columns: ["hospital_service_id"]
+            isOneToOne: false
+            referencedRelation: "hospital_services"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "seo_target_keywords_location_id_fkey"
             columns: ["location_id"]
             isOneToOne: false
@@ -2777,6 +2790,13 @@ export type Database = {
             columns: ["professional_service_id"]
             isOneToOne: false
             referencedRelation: "professional_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seo_target_keywords_website_page_id_fkey"
+            columns: ["website_page_id"]
+            isOneToOne: false
+            referencedRelation: "website_pages"
             referencedColumns: ["id"]
           },
         ]
@@ -2871,7 +2891,9 @@ export type Database = {
     Functions: {
       can_manage_content: { Args: never; Returns: boolean }
       can_manage_enquiries: { Args: never; Returns: boolean }
+      can_manage_seo: { Args: never; Returns: boolean }
       can_publish: { Args: never; Returns: boolean }
+      can_read_seo: { Args: never; Returns: boolean }
       delete_department: {
         Args: { _department_id: string }
         Returns: undefined

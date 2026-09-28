@@ -9,6 +9,9 @@ import { createPageMeta } from "@/lib/seo";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { SEO_KEYWORD_CATEGORIES } from "@/lib/seo/types";
 import { listTargetKeywords, listWebsiteKeywords } from "@/lib/data/seo-repository";
+import { CoverageStatusPill } from "@/components/admin/seo-coverage";
+import { useSeoCoverage } from "@/hooks/use-seo-coverage";
+import { COVERAGE_STATUSES, COVERAGE_STATUS_LABELS } from "@/lib/seo/coverage";
 
 export const Route = createFileRoute("/_admin/seo-targets")({
   head: () => ({
@@ -24,6 +27,8 @@ function TargetKeywords() {
   const { can } = useAdminSession();
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
+  const [coverageFilter, setCoverageFilter] = useState("all");
+  const coverage = useSeoCoverage();
   const targets = useQuery({ queryKey: ["seo-targets"], queryFn: listTargetKeywords });
   const keywords = useQuery({ queryKey: ["seo-keywords"], queryFn: listWebsiteKeywords });
 
@@ -37,9 +42,10 @@ function TargetKeywords() {
     return (targets.data ?? []).filter(
       (row) =>
         (!term || row.keyword.toLowerCase().includes(term)) &&
-        (type === "all" || row.keywordType === type),
+        (type === "all" || row.keywordType === type) &&
+        (coverageFilter === "all" || coverage.byTarget.get(row.id)?.status === coverageFilter),
     );
-  }, [targets.data, search, type]);
+  }, [targets.data, search, type, coverageFilter, coverage.byTarget]);
 
   const columns: Column<(typeof rows)[number]>[] = [
     {
@@ -58,7 +64,19 @@ function TargetKeywords() {
     { key: "type", header: "Type", cell: (row) => row.keywordType },
     { key: "intent", header: "Search intent", cell: (row) => row.searchIntent },
     { key: "priority", header: "Priority", cell: (row) => row.priority },
-    { key: "status", header: "Status", cell: (row) => row.status },
+    { key: "status", header: "Keyword status", cell: (row) => row.status },
+    {
+      key: "coverage",
+      header: "Coverage",
+      cell: (row) => {
+        const result = coverage.byTarget.get(row.id);
+        return result ? (
+          <CoverageStatusPill status={result.status} />
+        ) : (
+          <span className="text-muted-foreground">{coverage.isPending ? "Checking…" : "—"}</span>
+        );
+      },
+    },
     {
       key: "usage",
       header: "Found on website",
@@ -95,6 +113,15 @@ function TargetKeywords() {
           options={[
             { value: "all", label: "All types" },
             ...SEO_KEYWORD_CATEGORIES.map((value) => ({ value, label: value })),
+          ]}
+        />
+        <FilterSelect
+          label="Coverage"
+          value={coverageFilter}
+          onChange={setCoverageFilter}
+          options={[
+            { value: "all", label: "All coverage" },
+            ...COVERAGE_STATUSES.map((value) => ({ value, label: COVERAGE_STATUS_LABELS[value] })),
           ]}
         />
       </div>
