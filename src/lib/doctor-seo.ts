@@ -55,8 +55,8 @@ export function suggestDoctorSeoDescription(doctor: DoctorSeoSource) {
   const place = clean(doctor.location);
   const parts: string[] = [];
   let first = `Learn about ${name}`;
-  if (role || area) first += `, ${[area, role].filter(Boolean).join(" ").toLowerCase().replace(/^./, (c) => c)}`;
-  first += ` at ${siteConfig.name}${place ? ` in ${place}` : ""}.`;
+  if (role || area) first += `, ${role || "specialist"}${area ? ` in ${area}` : ""},`;
+  first += `${role || area ? "" : ","} at ${siteConfig.name}${place ? ` in ${place}` : ""}.`;
   parts.push(first);
   if (doctor.experienceYears && doctor.experienceYears > 0)
     parts.push(`${doctor.experienceYears}+ years of experience.`);
