@@ -117,7 +117,9 @@ function SeoAudit() {
                 {issue.entities.length ? (
                   <ul className="mt-3 grid">
                     {issue.entities.map((entity) => {
-                      const fix = seoFixTarget(issue.key, entity);
+                      const target = seoFixTarget(issue.key, entity);
+                      const manual = target && "manual" in target ? target : null;
+                      const fix = target && !("manual" in target) ? target : null;
                       const allowed = fix ? can(fix.permission) : false;
                       return (
                         <li
@@ -132,6 +134,9 @@ function SeoAudit() {
                             <p className="text-muted-foreground">
                               {ISSUE_MESSAGES[issue.key] ?? issue.label}
                             </p>
+                            {fix?.publishNote ? (
+                              <p className="text-xs text-muted-foreground">{fix.publishNote}</p>
+                            ) : null}
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {entity.path && showViewPage(issue.key) ? (
@@ -154,6 +159,10 @@ function SeoAudit() {
                             ) : fix ? (
                               <span className="text-xs text-muted-foreground">
                                 No edit access
+                              </span>
+                            ) : manual ? (
+                              <span className="text-xs text-muted-foreground">
+                                {manual.reason}
                               </span>
                             ) : null}
                           </div>

@@ -15,7 +15,14 @@ export type SeoFixField =
 /** Visible field labels used by the existing editors, per field key. */
 export const SEO_FIX_FIELD_LABELS: Record<SeoFixField, string[]> = {
   seo_title: ["SEO title", "Search engine title"],
-  meta_description: ["Meta description", "SEO description", "Search engine description"],
+  // Services use Summary and locations use Address as their search description.
+  meta_description: [
+    "Meta description",
+    "SEO description",
+    "Search engine description",
+    "Summary",
+    "Address",
+  ],
   canonical_url: ["Canonical URL"],
   indexable: ["Allow search engines to index this page", "Search engines may index"],
   image_alt: [
@@ -54,6 +61,18 @@ export type SeoFixTarget = {
   /** Compact breadcrumb, e.g. ["Departments", "Orthopedics", "SEO"]. */
   context: string[];
   permission: Permission;
+  /** Set when the audit reads published content, so edits only count after publishing. */
+  publishNote?: string;
+};
+
+/** Issue that exists but has no field in any CMS editor (e.g. set in site code). */
+export type SeoManualIssue = { manual: true; reason: string };
+
+const NO_FIELD: Partial<Record<SeoEntityType, SeoFixField[]>> = {
+  professional_service: ["seo_title", "canonical_url", "indexable"],
+  hospital_service: ["seo_title", "canonical_url", "indexable"],
+  location: ["seo_title", "canonical_url", "indexable"],
+  page: ["canonical_url", "indexable"],
 };
 
 function sectionFor(type: SeoEntityType, field: SeoFixField): { key: string; label: string } {
@@ -82,9 +101,13 @@ function sectionFor(type: SeoEntityType, field: SeoFixField): { key: string; lab
 export function seoFixTarget(
   issueKey: string,
   entity: { type: SeoEntityType; id: string; label: string },
-): SeoFixTarget | null {
+): SeoFixTarget | SeoManualIssue | null {
   const field = ISSUE_FIELD[issueKey];
   if (!field) return null;
+  if (NO_FIELD[entity.type]?.includes(field))
+    return { manual: true, reason: "This editor has no field for this yet — not fixable in the CMS." };
+  if (entity.type === "faq" && field !== "content")
+    return { manual: true, reason: "Set in the website code, not in the CMS." };
   const section = sectionFor(entity.type, field);
   switch (entity.type) {
     case "department":
@@ -96,6 +119,7 @@ export function seoFixTarget(
         }),
         context: ["Departments", entity.label, section.label],
         permission: "content.write",
+        publishNote: "Saved as a draft → publish the department → the audit updates.",
       };
     case "doctor":
       return {
@@ -144,8 +168,7 @@ export function seoFixTarget(
       };
     }
     case "faq":
-      // /faq's title and description live in site code; its content is the hospital-wide FAQ list.
-      if (field !== "content") return null;
+      // /faq's content is the hospital-wide FAQ list (title/description handled above as code-managed).
       return {
         link: linkOptions({ to: "/_admin/faqs" }),
         context: ["FAQs", "Hospital-wide FAQs"],
