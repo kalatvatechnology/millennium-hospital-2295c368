@@ -3,6 +3,7 @@ import { classifyDataError } from "./errors";
 import { siteConfig } from "@/config/site";
 import { extractWebsiteKeywords, normalizeKeyword, stripHtml } from "@/lib/seo/keywords";
 import { doctorSpecialty } from "./mappers";
+import { parseDepartmentPage } from "@/lib/department-page";
 import type {
   SeoDataSource,
   SeoEntity,
@@ -273,7 +274,7 @@ export async function fetchSeoEntities(): Promise<SeoEntity[]> {
     published: true,
     // Title and description of /faq are set in the site code (src/routes/faq.tsx).
     heading: "Frequently asked questions",
-    seoTitle: "Frequently asked questions | The Millennium Hospital",
+    seoTitle: `Frequently asked questions | ${siteConfig.name}`,
     metaDescription: "Answers to common questions about visiting The Millennium Hospital.",
     canonicalUrl: null,
     indexable: true,
