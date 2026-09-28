@@ -1,4 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { useAdminSession } from "@/hooks/use-admin-session";
+import { seoFixTarget, showViewPage } from "@/lib/seo/fix-links";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AdminShell } from "@/components/admin/admin-shell";
@@ -36,7 +39,23 @@ export const Route = createFileRoute("/_admin/seo-audit")({
   component: SeoAudit,
 });
 
+const ISSUE_MESSAGES: Record<string, string> = {
+  "title-missing": "SEO title is missing.",
+  "title-length": "SEO title is too short or too long.",
+  "title-duplicate": "SEO title is the same as another page.",
+  "description-missing": "Meta description is missing.",
+  "description-length": "Meta description is too short or too long.",
+  "description-duplicate": "Meta description is the same as another page.",
+  canonical: "Canonical URL is missing.",
+  heading: "Main heading is missing.",
+  "image-alt": "An image has no alt text.",
+  content: "Very little written content.",
+  "internal-links": "No links to other pages.",
+  indexable: "Page is set to no-index.",
+};
+
 function SeoAudit() {
+  const { can } = useAdminSession();
   const entities = useQuery({ queryKey: ["seo-entities"], queryFn: fetchSeoEntities });
   const keywords = useQuery({ queryKey: ["seo-keywords"], queryFn: listWebsiteKeywords });
   const usage = useQuery({ queryKey: ["seo-keyword-usage"], queryFn: listAllKeywordUsage });
@@ -89,17 +108,52 @@ function SeoAudit() {
                 </span>
               </AccordionTrigger>
               <AccordionContent>
-                <p className="text-sm text-muted-foreground">{issue.detail}</p>
+                <p className="text-sm text-muted-foreground">
+                  {issue.detail}
+                  {issue.entities.length
+                    ? ` ${issue.entities.length} ${issue.entities.length === 1 ? "page" : "pages"} affected.`
+                    : ""}
+                </p>
                 {issue.entities.length ? (
-                  <ul className="mt-3 grid gap-1 text-sm">
-                    {issue.entities.map((entity) => (
-                      <li key={`${issue.key}-${entity.label}`}>
-                        {entity.label}
-                        {entity.path ? (
-                          <span className="text-muted-foreground"> — {entity.path}</span>
-                        ) : null}
-                      </li>
-                    ))}
+                  <ul className="mt-3 grid">
+                    {issue.entities.map((entity) => {
+                      const fix = seoFixTarget(issue.key, entity);
+                      const allowed = fix ? can(fix.permission) : false;
+                      return (
+                        <li
+                          key={`${issue.key}-${entity.type}-${entity.id}`}
+                          className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3 text-sm last:border-0"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium">{entity.label}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {fix ? fix.context.join(" → ") : entity.path}
+                            </p>
+                            <p className="text-muted-foreground">
+                              {ISSUE_MESSAGES[issue.key] ?? issue.label}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {entity.path && showViewPage(issue.key) ? (
+                              <Button asChild size="sm" variant="ghost">
+                                <a href={entity.path} target="_blank" rel="noreferrer">
+                                  View page →
+                                </a>
+                              </Button>
+                            ) : null}
+                            {fix && allowed ? (
+                              <Button asChild size="sm" variant="outline">
+                                <Link {...fix.link}>Fix issue →</Link>
+                              </Button>
+                            ) : fix ? (
+                              <span className="text-xs text-muted-foreground">
+                                No edit access
+                              </span>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="mt-3 text-sm">No pages affected.</p>
