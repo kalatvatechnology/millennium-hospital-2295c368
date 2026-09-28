@@ -227,13 +227,19 @@ function DepartmentView({ department, doctors, page, faqs, media }: { department
               <BigNumber n={num()} />
               <p className={`${eyebrow} pt-3 text-muted-foreground lg:pt-0`}>{v.about.label === "About the department" ? <>About the<br className="hidden lg:block" /> department</> : v.about.label}</p>
             </div>
-            <div className="dept-reveal">
+            <div className="dept-reveal min-w-0">
               <h2 className="max-w-3xl text-3xl font-semibold leading-[1.15] sm:text-[2.75rem]">{v.about.title || `About ${department.name}`}</h2>
-              {v.about.intro ? <p className="mt-5 max-w-[40rem] whitespace-pre-line text-lg leading-8 text-muted-foreground">{v.about.intro}</p> : null}
+              {v.about.intro ? (
+                <div className="mt-5 max-w-[40rem] space-y-5 text-lg leading-8 text-muted-foreground">
+                  {v.about.intro.split(/\n\s*\n/).map((para) => para.trim()).filter(Boolean).map((para, i) => (
+                    <p key={i} className="m-0 whitespace-pre-line p-0 indent-0">{para}</p>
+                  ))}
+                </div>
+              ) : null}
               {v.about.items.length ? (
                 <dl className="mt-8 grid sm:grid-cols-2 xl:grid-cols-4">
                   {v.about.items.map((h, i) => (
-                    <div key={`${h.title}-${i}`} className={`border-t border-border py-5 sm:pr-6 xl:border-l xl:border-t-0 xl:py-1 xl:pl-6 ${i === 0 ? "xl:border-l-0 xl:pl-0" : ""}`}>
+                    <div key={`${h.title}-${i}`} className={`border-t border-border py-5 sm:pr-6 xl:border-t-0 xl:py-1 ${i === 0 ? "xl:pl-0" : "xl:border-l xl:pl-6"}`}>
                       <span className="block h-0.5 w-6 bg-brand-accent" aria-hidden />
                       <dt className="mt-4 font-heading text-base font-semibold text-foreground">{h.title}</dt>
                       <dd className="mt-2 text-sm leading-6 text-muted-foreground">{h.text}</dd>
