@@ -487,6 +487,8 @@ function toTarget(row: Row): SeoTargetKeyword {
     targetEntityType: text(row["target_entity_type"]) as SeoTargetKeyword["targetEntityType"],
     departmentId: text(row["department_id"]),
     professionalServiceId: text(row["professional_service_id"]),
+    hospitalServiceId: text(row["hospital_service_id"]),
+    websitePageId: text(row["website_page_id"]),
     doctorId: text(row["doctor_id"]),
     locationId: text(row["location_id"]),
     blogPostId: text(row["blog_post_id"]),
@@ -511,7 +513,51 @@ export type TargetKeywordInput = Omit<SeoTargetKeyword, "id" | "normalized" | "u
   id?: string;
 };
 
-export async function saveTargetKeyword(input: TargetKeywordInput): Promise<string> {
+/**
+ * Keeps exactly one primary target id (matching target_entity_type), as the database requires.
+ * location_id stays as separate location context unless location is the primary target.
+ */
+export function normalizeTargetIds(input: TargetKeywordInput): TargetKeywordInput {
+  const type = input.targetEntityType;
+  const keep = <T,>(match: boolean, value: T | null) => (match ? value : null);
+  return {
+    ...input,
+    departmentId: keep(type === "department", input.departmentId),
+    professionalServiceId: keep(type === "professional_service", input.professionalServiceId),
+    hospitalServiceId: keep(type === "hospital_service", input.hospitalServiceId),
+    doctorId: keep(type === "doctor", input.doctorId),
+    websitePageId: keep(type === "website_page", input.websitePageId),
+    blogPostId: keep(type === "blog_post", input.blogPostId),
+    // location_id: context for every type; required as the target when type = location.
+    locationId: input.locationId,
+    targetEntityType:
+      type && (type === "location" ? input.locationId : primaryId(input, type)) ? type : null,
+  };
+}
+
+function primaryId(input: TargetKeywordInput, type: SeoTargetKeyword["targetEntityType"]) {
+  switch (type) {
+    case "department":
+      return input.departmentId;
+    case "professional_service":
+      return input.professionalServiceId;
+    case "hospital_service":
+      return input.hospitalServiceId;
+    case "doctor":
+      return input.doctorId;
+    case "location":
+      return input.locationId;
+    case "website_page":
+      return input.websitePageId;
+    case "blog_post":
+      return input.blogPostId;
+    default:
+      return null;
+  }
+}
+
+export async function saveTargetKeyword(raw: TargetKeywordInput): Promise<string> {
+  const input = normalizeTargetIds(raw);
   const values: Row = {
     keyword: input.keyword.trim(),
     normalized: normalizeKeyword(input.keyword),
@@ -522,6 +568,8 @@ export async function saveTargetKeyword(input: TargetKeywordInput): Promise<stri
     target_entity_type: input.targetEntityType,
     department_id: input.departmentId,
     professional_service_id: input.professionalServiceId,
+    hospital_service_id: input.hospitalServiceId,
+    website_page_id: input.websitePageId,
     doctor_id: input.doctorId,
     location_id: input.locationId,
     blog_post_id: input.blogPostId,
@@ -576,13 +624,17 @@ export type SeoRelationOption = { id: string; label: string };
 export async function listSeoRelationOptions(): Promise<{
   departments: SeoRelationOption[];
   professionalServices: SeoRelationOption[];
+  hospitalServices: SeoRelationOption[];
+  websitePages: SeoRelationOption[];
   doctors: SeoRelationOption[];
   locations: SeoRelationOption[];
   blogPosts: SeoRelationOption[];
 }> {
-  const [departments, services, doctors, locations, posts] = await Promise.all([
+  const [departments, services, hospital, pages, doctors, locations, posts] = await Promise.all([
     db.from("departments").select("id, name").order("name"),
     db.from("professional_services").select("id, title").order("title"),
+    db.from("hospital_services").select("id, title").order("title"),
+    db.from("website_pages").select("id, title").order("title"),
     db.from("doctors").select("id, name").order("name"),
     db.from("locations").select("id, name").order("name"),
     db.from("blog_posts").select("id, title").order("title"),
@@ -592,6 +644,8 @@ export async function listSeoRelationOptions(): Promise<{
   return {
     departments: map(departments, "name"),
     professionalServices: map(services, "title"),
+    hospitalServices: map(hospital, "title"),
+    websitePages: map(pages, "title"),
     doctors: map(doctors, "name"),
     locations: map(locations, "name"),
     blogPosts: map(posts, "title"),
@@ -618,4 +672,63 @@ export async function listSeoLocations(): Promise<
     mapUrl: text(row["map_url"]),
     published: row["published"] === true,
   }));
+}
+
+/**
+ * Supporting data for SEO Coverage: location naming terms, real doctor ↔ location links
+ * and the scanned keyword usage index. Pure evaluation lives in src/lib/seo/coverage.ts.
+ */
+export async function fetchCoverageContext(): Promise<{
+  locations: { id: string; name: string; terms: string[] }[];
+  doctorLocations: { doctorId: string; locationId: string }[];
+  usage: { normalized: string; entityType: string; entityId: string | null; entityLabel: string; occurrences: number }[];
+}> {
+  const [locations, links, usage] = await Promise.all([
+    db.from("locations").select("id, name, slug, city"),
+    db.from("doctor_locations").select("doctor_id, location_id, enabled"),
+    db
+      .from("seo_keyword_usage")
+      .select("entity_type, entity_id, entity_label, occurrences, seo_keywords(normalized)"),
+  ]);
+  return {
+    locations: rows(locations).map((row) => ({
+      id: String(row["id"]),
+      name: String(row["name"] ?? "Location"),
+      terms: locationTerms(row),
+    })),
+    doctorLocations: rows(links)
+      .filter((row) => row["enabled"] !== false)
+      .map((row) => ({ doctorId: String(row["doctor_id"]), locationId: String(row["location_id"]) })),
+    usage: rows(usage).flatMap((row) => {
+      const keyword = row["seo_keywords"] as Row | null;
+      const normalized = keyword ? text(keyword["normalized"]) : null;
+      return normalized
+        ? [
+            {
+              normalized,
+              entityType: String(row["entity_type"]),
+              entityId: text(row["entity_id"]),
+              entityLabel: String(row["entity_label"] ?? ""),
+              occurrences: num(row["occurrences"]),
+            },
+          ]
+        : [];
+    }),
+  };
+}
+
+const GENERIC_LOCATION_WORDS = new Set(["main", "branch", "hospital", "centre", "center", "clinic"]);
+
+/** Real naming terms for a location: its name, city and the place words of its slug. */
+function locationTerms(row: Row): string[] {
+  const terms = new Set<string>();
+  const name = normalizeKeyword(String(row["name"] ?? ""));
+  if (name) terms.add(name);
+  const city = normalizeKeyword(String(row["city"] ?? ""));
+  if (city) terms.add(city);
+  for (const part of String(row["slug"] ?? "").split("-")) {
+    const word = normalizeKeyword(part);
+    if (word.length > 2 && !GENERIC_LOCATION_WORDS.has(word)) terms.add(word);
+  }
+  return [...terms];
 }
