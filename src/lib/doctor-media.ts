@@ -17,7 +17,7 @@ export const DOCTOR_MEDIA_ROLES = [
     altColumn: "hero_background_image_alt",
     label: "Hero background image",
   },
-  { usage: "og_image", column: "og_image_url", altColumn: null, label: "Open Graph image" },
+  { usage: "og_image", column: "og_image_url", altColumn: null, label: "Open Graph / Social Sharing" },
 ] as const;
 
 export type DoctorMediaUsage = (typeof DOCTOR_MEDIA_ROLES)[number]["usage"] | "gallery";
