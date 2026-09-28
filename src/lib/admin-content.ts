@@ -492,7 +492,7 @@ export function contentTypeByKey(key: string) {
 export function emptyContentValues(type: ContentType) {
   const values: Record<string, any> = {};
   for (const field of type.fields) {
-    values[field.name] = field.type === "boolean" ? false : field.type === "select" ? (field.options?.[0]?.value ?? "") : "";
+    values[field.name] = field.defaultValue !== undefined ? field.defaultValue : field.type === "boolean" ? false : field.type === "select" ? (field.options?.[0]?.value ?? "") : "";
   }
   return values;
 }
