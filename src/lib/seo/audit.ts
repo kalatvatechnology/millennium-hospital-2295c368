@@ -63,9 +63,17 @@ function issue(
   };
 }
 
+/**
+ * Records that own a public URL. Locations are content rendered on the shared /contact
+ * page, whose SEO belongs to Website Pages → "contact" — they are never page entities.
+ */
+export function isPageEntity(entity: SeoEntity): boolean {
+  return entity.type !== "location";
+}
+
 /** On-page checks computed from real CMS values only. */
 export function onPageIssues(entities: SeoEntity[]): SeoIssue[] {
-  const published = entities.filter((entity) => entity.published);
+  const published = entities.filter((entity) => entity.published && isPageEntity(entity));
   return [
     issue(
       "title-missing",

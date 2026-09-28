@@ -40,7 +40,8 @@ function TechnicalSeo() {
   const missingCanonical = published.filter((entity) => !entity.canonicalUrl?.trim());
   const noIndex = published.filter((entity) => !entity.indexable);
   const paths = new Map<string, number>();
-  for (const entity of published)
+  // Duplicate check evaluates real public URLs: records rendered on one shared page aren't pages.
+  for (const entity of published.filter(isPageEntity))
     if (entity.path) paths.set(entity.path, (paths.get(entity.path) ?? 0) + 1);
   const duplicatePaths = [...paths.entries()].filter(([, count]) => count > 1);
 
