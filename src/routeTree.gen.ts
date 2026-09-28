@@ -47,6 +47,7 @@ import { Route as AdminReviewsRouteImport } from './routes/[_]admin.reviews'
 import { Route as AdminSeoRouteImport } from './routes/[_]admin.seo'
 import { Route as AdminSeoAnalyticsRouteImport } from './routes/[_]admin.seo-analytics'
 import { Route as AdminSeoAuditRouteImport } from './routes/[_]admin.seo-audit'
+import { Route as AdminSeoCoverageRouteImport } from './routes/[_]admin.seo-coverage'
 import { Route as AdminSeoHistoryRouteImport } from './routes/[_]admin.seo-history'
 import { Route as AdminSeoKeywordsRouteImport } from './routes/[_]admin.seo-keywords'
 import { Route as AdminSeoLocalRouteImport } from './routes/[_]admin.seo-local'
@@ -271,6 +272,11 @@ const AdminSeoAuditRoute = AdminSeoAuditRouteImport.update({
   path: '/seo-audit',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSeoCoverageRoute = AdminSeoCoverageRouteImport.update({
+  id: '/seo-coverage',
+  path: '/seo-coverage',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSeoHistoryRoute = AdminSeoHistoryRouteImport.update({
   id: '/seo-history',
   path: '/seo-history',
@@ -478,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
   '/_admin/seo-audit': typeof AdminSeoAuditRoute
+  '/_admin/seo-coverage': typeof AdminSeoCoverageRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
   '/_admin/seo-local': typeof AdminSeoLocalRoute
@@ -540,6 +547,7 @@ export interface FileRoutesByTo {
   '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
   '/_admin/seo-audit': typeof AdminSeoAuditRoute
+  '/_admin/seo-coverage': typeof AdminSeoCoverageRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
   '/_admin/seo-local': typeof AdminSeoLocalRoute
@@ -613,6 +621,7 @@ export interface FileRoutesById {
   '/_admin/seo': typeof AdminSeoRoute
   '/_admin/seo-analytics': typeof AdminSeoAnalyticsRoute
   '/_admin/seo-audit': typeof AdminSeoAuditRoute
+  '/_admin/seo-coverage': typeof AdminSeoCoverageRoute
   '/_admin/seo-history': typeof AdminSeoHistoryRoute
   '/_admin/seo-keywords': typeof AdminSeoKeywordsRoute
   '/_admin/seo-local': typeof AdminSeoLocalRoute
@@ -687,6 +696,7 @@ export interface FileRouteTypes {
     | '/_admin/seo'
     | '/_admin/seo-analytics'
     | '/_admin/seo-audit'
+    | '/_admin/seo-coverage'
     | '/_admin/seo-history'
     | '/_admin/seo-keywords'
     | '/_admin/seo-local'
@@ -749,6 +759,7 @@ export interface FileRouteTypes {
     | '/_admin/seo'
     | '/_admin/seo-analytics'
     | '/_admin/seo-audit'
+    | '/_admin/seo-coverage'
     | '/_admin/seo-history'
     | '/_admin/seo-keywords'
     | '/_admin/seo-local'
@@ -821,6 +832,7 @@ export interface FileRouteTypes {
     | '/_admin/seo'
     | '/_admin/seo-analytics'
     | '/_admin/seo-audit'
+    | '/_admin/seo-coverage'
     | '/_admin/seo-history'
     | '/_admin/seo-keywords'
     | '/_admin/seo-local'
@@ -1141,6 +1153,13 @@ declare module '@tanstack/react-router' {
       path: '/seo-audit'
       fullPath: '/_admin/seo-audit'
       preLoaderRoute: typeof AdminSeoAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/seo-coverage': {
+      id: '/_admin/seo-coverage'
+      path: '/seo-coverage'
+      fullPath: '/_admin/seo-coverage'
+      preLoaderRoute: typeof AdminSeoCoverageRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/seo-history': {
@@ -1472,6 +1491,7 @@ interface AdminRouteChildren {
   AdminSeoRoute: typeof AdminSeoRoute
   AdminSeoAnalyticsRoute: typeof AdminSeoAnalyticsRoute
   AdminSeoAuditRoute: typeof AdminSeoAuditRoute
+  AdminSeoCoverageRoute: typeof AdminSeoCoverageRoute
   AdminSeoHistoryRoute: typeof AdminSeoHistoryRoute
   AdminSeoKeywordsRoute: typeof AdminSeoKeywordsRoute
   AdminSeoLocalRoute: typeof AdminSeoLocalRoute
@@ -1508,6 +1528,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSeoRoute: AdminSeoRoute,
   AdminSeoAnalyticsRoute: AdminSeoAnalyticsRoute,
   AdminSeoAuditRoute: AdminSeoAuditRoute,
+  AdminSeoCoverageRoute: AdminSeoCoverageRoute,
   AdminSeoHistoryRoute: AdminSeoHistoryRoute,
   AdminSeoKeywordsRoute: AdminSeoKeywordsRoute,
   AdminSeoLocalRoute: AdminSeoLocalRoute,
