@@ -82,10 +82,6 @@ export function DepartmentManager({ type }: { type: ContentType }) {
     onSuccess: async () => { toast.success("Department deleted"); setToDelete(null); await refresh(); },
     onError: (e: any) => toast.error(e?.message ?? "Could not delete department"),
   });
-  const orderedIds = useMemo(
-    () => [...(records.data ?? [])].sort((a, b) => (a["display_order"] ?? 0) - (b["display_order"] ?? 0) || String(a["name"]).localeCompare(String(b["name"]))).map((r) => String(r["id"])),
-    [records.data],
-  );
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [readiness, setReadiness] = useState("all");
@@ -94,6 +90,10 @@ export function DepartmentManager({ type }: { type: ContentType }) {
 
   const records = useQuery({ queryKey: ["admin-content", type.table], queryFn: () => listRecords(type) });
   const counts = useQuery({ queryKey: ["admin-department-counts"], queryFn: relationshipCounts });
+  const orderedIds = useMemo(
+    () => [...(records.data ?? [])].sort((a, b) => (a["display_order"] ?? 0) - (b["display_order"] ?? 0) || String(a["name"]).localeCompare(String(b["name"]))).map((r) => String(r["id"])),
+    [records.data],
+  );
 
   const enriched = useMemo(
     () =>
