@@ -490,9 +490,10 @@ export function evaluateCoverage(target: SeoTargetKeyword, context: CoverageCont
       const otherNamed = target.locationId
         ? mentioned.find((row) => row.id !== target.locationId)
         : undefined;
+      const loc = location;
       const linked =
         entity.type === "doctor" &&
-        context.doctorLocations.some((row) => row.doctorId === entity.id && row.locationId === location.id);
+        context.doctorLocations.some((row) => row.doctorId === entity.id && row.locationId === loc.id);
       const inText = location.terms.some((term) => countPhrase(allText(entity), term) > 0 || containsPhrase(entity.heading, [term]));
       if (otherNamed) {
         add({
@@ -660,12 +661,6 @@ function finish(
   const status = deriveStatus(evidence);
   const recommendations = evidence
     .filter((row) => row.result === "fail" || row.result === "warn")
-    // Title OR heading satisfies coverage — only suggest both when neither passes.
-    .filter((row) =>
-      row.key === "title_match" || row.key === "heading_match"
-        ? !(passed(evidence, "title_match") || passed(evidence, "heading_match")) || row.key === "title_match"
-        : true,
-    )
     .flatMap((row) => (RECOMMENDATIONS[row.key] ? [RECOMMENDATIONS[row.key] as string] : []));
   return { ...base, status, evidence, conflicts, recommendations: [...new Set(recommendations)] };
 }
