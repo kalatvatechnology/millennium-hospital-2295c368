@@ -49,7 +49,8 @@ const ISSUE_FIELD: Record<string, SeoFixField> = {
 const VIEW_PAGE_ISSUES = new Set(["heading", "image-alt", "content", "internal-links"]);
 
 export type SeoFixTarget = {
-  link: ReturnType<typeof linkOptions>;
+  /** Built with linkOptions(), so every destination is checked against the real route tree. */
+  link: { to: string; params?: Record<string, string>; search?: Record<string, string> };
   /** Compact breadcrumb, e.g. ["Departments", "Orthopedics", "SEO"]. */
   context: string[];
   permission: Permission;

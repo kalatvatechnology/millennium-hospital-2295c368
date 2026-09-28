@@ -143,7 +143,13 @@ function SeoAudit() {
                             ) : null}
                             {fix && allowed ? (
                               <Button asChild size="sm" variant="outline">
-                                <Link {...fix.link}>Fix issue →</Link>
+                                <Link
+                                  to={fix.link.to as never}
+                                  params={fix.link.params as never}
+                                  search={fix.link.search as never}
+                                >
+                                  Fix issue →
+                                </Link>
                               </Button>
                             ) : fix ? (
                               <span className="text-xs text-muted-foreground">
