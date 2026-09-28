@@ -951,8 +951,20 @@ export function DoctorWorkspace() {
                         options={ogImageOptions}
                         previewAspect="aspect-[1200/630] max-w-80"
                         showEmptyLibrary
-                        ratio="Social sharing image"
+                        ratio="Social sharing image, 1200 × 630 px"
+                        description="Choose an existing image from Media & Content or upload a dedicated image for sharing this doctor's profile on social media."
+                        chooseLabel="Choose Existing Image"
+                        uploadLabel="Upload New Image"
+                        uploadDirectory="media"
+                        doctorName={values.name ?? ""}
+                        canUpload={canWrite}
+                        canModify={canWrite}
                         onValue={(value) => set("og_image_url", value)}
+                        onUploaded={(nextValue, path) => {
+                          // Unsaved uploads are discarded on Cancel; on save it becomes a Media & Content asset.
+                          uploadedImagePaths.current.add(path);
+                          set("og_image_url", nextValue);
+                        }}
                       />
                     }
                   />
@@ -1219,7 +1231,11 @@ function ImageEditor({
   uploadDirectory,
   previewAspect,
   showEmptyLibrary = false,
+  chooseLabel,
+  uploadLabel,
 }: {
+  chooseLabel?: string;
+  uploadLabel?: string;
   previewAspect?: string;
   showEmptyLibrary?: boolean;
   label: string;
@@ -1378,14 +1394,14 @@ function ImageEditor({
               onClick={() => inputRef.current?.click()}
             >
               <Upload className="size-4" />{" "}
-              {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}
+              {uploading ? "Uploading…" : uploadLabel ?? (value ? "Replace image" : "Upload image")}
             </Button>
           </>
         ) : null}
         <InlineFieldError message={uploadError ?? undefined} />
         {options.length ? (
           <div>
-            <Label>Select an existing image</Label>
+            <Label>{chooseLabel ?? "Select an existing image"}</Label>
             <Select
               value={options.some((option) => option.value === value) ? value : ""}
               onValueChange={onValue}
