@@ -13,6 +13,7 @@ import { AdminError } from "@/components/admin/ui";
 import { userFacingDataError } from "@/lib/data/errors";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { DoctorLocationsEditor } from "@/components/admin/doctor-locations-editor";
+import { doctorUsageLabel, mediaImageSrc } from "@/lib/doctor-media";
 
 const db = supabase as any;
 type Row = {
@@ -95,6 +96,8 @@ type Relationship = {
   key: string;
   source: string;
   link: string;
+  /** Extra column filters limiting which link rows this editor owns (e.g. media gallery rows). */
+  scope?: Record<string, string>;
   sourceId: string;
   label: string;
   text: string;
@@ -128,6 +131,7 @@ const mediaRelationship: Relationship = {
   key: "media",
   source: "media_items",
   link: "media_doctors",
+  scope: { usage: "gallery" },
   sourceId: "media_id",
   label: "Media",
   text: "title",
@@ -227,6 +231,7 @@ export const DoctorProfileSections = forwardRef<
         />
       </div>
       <div hidden={activeTab !== "media"}>
+        <DoctorImageRoles doctorId={doctorId} />
         <RelationshipGroup
           doctorId={doctorId}
           relation={mediaRelationship}
@@ -532,7 +537,7 @@ function RelationshipGroup({
         : relation.sourceId;
       const [source, links] = await Promise.all([
         db.from(relation.source).select(`id,${relation.text}`).order(relation.text),
-        db.from(relation.link).select(select).eq("doctor_id", doctorId),
+        db.from(relation.link).select(select).eq("doctor_id", doctorId).match(relation.scope ?? {}),
       ]);
       if (source.error) throw source.error;
       if (links.error) throw links.error;
@@ -552,7 +557,8 @@ function RelationshipGroup({
         .from(relation.link)
         .delete()
         .eq("doctor_id", doctorId)
-        .eq(relation.sourceId, row[relation.sourceId]);
+        .eq(relation.sourceId, row[relation.sourceId])
+        .match(relation.scope ?? {});
       if (error) throw error;
     }
     const controls = relation.controls ?? [];
@@ -575,6 +581,7 @@ function RelationshipGroup({
             .update(payload)
             .eq("doctor_id", doctorId)
             .eq(relation.sourceId, row[relation.sourceId])
+            .match(relation.scope ?? {})
         : db.from(relation.link).insert(payload);
       const { error } = await command;
       if (error) throw error;
@@ -864,6 +871,64 @@ function ReviewSelector({
           <p className="text-sm text-muted-foreground">No approved doctor reviews are available.</p>
         )}
       </div>
+    </section>
+  );
+}
+
+/** Read-only view of the doctor's image role connections to Media & Content assets. */
+function DoctorImageRoles({ doctorId }: { doctorId: string }) {
+  const query = useQuery({
+    queryKey: ["doctor-image-roles", doctorId],
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("media_doctors")
+        .select("usage,enabled,media_id,media_items(id,title,media_type,url,thumbnail_url,published)")
+        .eq("doctor_id", doctorId)
+        .neq("usage", "gallery");
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  if (query.isPending) return <p className="mb-6 text-sm text-muted-foreground">Loading doctor images…</p>;
+  if (query.isError) return <AdminError message={userFacingDataError(query.error)} />;
+  return (
+    <section className="mb-8 rounded-md border border-border p-4" aria-labelledby="doctor-image-roles">
+      <h3 id="doctor-image-roles" className="font-semibold">Doctor images</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Images this doctor uses, from Media &amp; Content. Change them in Profile, Hero or SEO; removing one never deletes it from Media &amp; Content.
+      </p>
+      {query.data.length ? (
+        <ul className="mt-4 divide-y divide-border">
+          {query.data.map((row) => {
+            const item = row.media_items ?? {};
+            const src = mediaImageSrc(item);
+            return (
+              <li key={row.usage} className="flex flex-wrap items-center gap-4 py-3">
+                {src ? (
+                  <img src={src} alt="" className="size-14 rounded-md bg-secondary object-cover" />
+                ) : (
+                  <div className="size-14 rounded-md bg-secondary" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{item.title ?? "Media asset"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {doctorUsageLabel(row.usage)} · {item.media_type ?? "image"} · {row.enabled ? "Active" : "Disabled"}
+                  </p>
+                </div>
+                {item.id ? (
+                  <Button asChild size="sm" variant="outline">
+                    <a href={`/_admin/content/media/${item.id}`}>
+                      <Pencil className="size-4" /> Edit in Media &amp; Content
+                    </a>
+                  </Button>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm text-muted-foreground">No profile, hero or social sharing image connected yet.</p>
+      )}
     </section>
   );
 }

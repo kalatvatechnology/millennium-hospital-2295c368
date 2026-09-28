@@ -44,6 +44,7 @@ import {
   removeUnreferencedDepartmentImages,
 } from "@/lib/department-storage-cleanup";
 import { createPageMeta } from "@/lib/seo";
+import { loadDoctorMediaUses } from "@/lib/doctor-media";
 import {
   MediaAssociationPicker,
   applyMediaAssociations,
@@ -183,6 +184,13 @@ function ContentWorkspace() {
       );
     },
   });
+  // Doctor uses of this media asset (profile/hero/OG roles and profile media lists).
+  const doctorUses = useQuery({
+    queryKey: ["media-doctor-uses", recordId],
+    enabled: type.key === "media" && !isNew,
+    queryFn: () => loadDoctorMediaUses(recordId),
+  });
+  const doctorRoleUses = (doctorUses.data ?? []).filter((u) => u.usage !== "gallery");
   const remove = useMutation({
     mutationFn: async () => {
       // Read the department's own page images before the row disappears.
@@ -255,7 +263,22 @@ function ContentWorkspace() {
             </div>
           )}
           <AdminError message={error} />
-          {!isNew ? (
+          {!isNew && doctorRoleUses.length ? (
+            <div role="note" className="border border-border bg-muted p-4 text-sm">
+              <p className="font-semibold">This image can't be deleted while it is in use.</p>
+              <p className="mt-1 text-muted-foreground">It is currently used by:</p>
+              <ul className="mt-2 list-disc pl-5">
+                {doctorRoleUses.map((u) => (
+                  <li key={`${u.doctor}-${u.usage}`}>
+                    {u.doctor} — {u.label}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-muted-foreground">
+                Remove it from those doctors in the Doctor Workspace first.
+              </p>
+            </div>
+          ) : !isNew ? (
             <InlineDelete
               label={type.singular}
               description={
@@ -309,6 +332,21 @@ function ContentWorkspace() {
             title="Where this media appears"
             description="Link this one media record to departments, doctors and services. Saved together with the content above."
           >
+            {doctorRoleUses.length ? (
+              <div className="mb-5 border border-border p-4 text-sm">
+                <p className="font-semibold">Used as a doctor image</p>
+                <ul className="mt-2 grid gap-1">
+                  {doctorRoleUses.map((u) => (
+                    <li key={`${u.doctor}-${u.usage}`}>
+                      Doctor — {u.doctor} · Usage: {u.label}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Change or remove these in the Doctor Workspace. Edits to this image update those doctors automatically.
+                </p>
+              </div>
+            ) : null}
             <MediaAssociationPicker
               mediaId={isNew ? null : recordId}
               value={assoc}

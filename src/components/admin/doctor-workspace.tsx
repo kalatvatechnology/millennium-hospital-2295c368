@@ -53,6 +53,7 @@ import {
 import { googleReviewUrlError } from "@/lib/review-url";
 import { DoctorSeoWorkspace } from "@/components/admin/doctor-seo-workspace";
 import type { DoctorSeoSource } from "@/lib/doctor-seo";
+import { mediaReferencedUrls, syncDoctorMediaRoles } from "@/lib/doctor-media";
 
 const db = supabase as any;
 const doctorType = contentTypeByKey("doctors");
@@ -396,6 +397,18 @@ export function DoctorWorkspace() {
         }
       }
       const data = { ...payload(), slug: slugify(String(values.slug ?? "")) };
+      // Replaced/removed images stay in Media & Content; only unmanaged files are cleaned up.
+      const removeStale = async () => {
+        const stalePaths = [...deletedImagePaths.current];
+        if (!stalePaths.length) return;
+        const managed = await mediaReferencedUrls(stalePaths.map((p) => doctorImageUrl(p)));
+        const unmanaged = stalePaths.filter((p) => !managed.has(doctorImageUrl(p)));
+        if (!unmanaged.length) return;
+        const { error: cleanupError } = await supabase.storage
+          .from(doctorImageBucket)
+          .remove(unmanaged);
+        if (cleanupError) throw cleanupError;
+      };
       if (isNew) {
         const { data: created, error: createError } = await db
           .from("doctors")
@@ -404,24 +417,14 @@ export function DoctorWorkspace() {
           .single();
         if (createError) throw createError;
         await professionalRef.current?.save(created.id as string);
-        const stalePaths = [...deletedImagePaths.current];
-        if (stalePaths.length) {
-          const { error: cleanupError } = await supabase.storage
-            .from(doctorImageBucket)
-            .remove(stalePaths);
-          if (cleanupError) throw cleanupError;
-        }
+        await syncDoctorMediaRoles(created.id as string, String(values.name ?? ""), values);
+        await removeStale();
         return created.id as string;
       }
       await saveRecord(doctorType, doctorId, data);
       if (section === "profile") await professionalRef.current?.save(doctorId);
-      const stalePaths = [...deletedImagePaths.current];
-      if (stalePaths.length) {
-        const { error: cleanupError } = await supabase.storage
-          .from(doctorImageBucket)
-          .remove(stalePaths);
-        if (cleanupError) throw cleanupError;
-      }
+      await syncDoctorMediaRoles(doctorId, String(values.name ?? ""), values);
+      await removeStale();
       return doctorId;
     },
     onSuccess: (savedId) => {
@@ -435,6 +438,8 @@ export function DoctorWorkspace() {
       setDetailReset((current) => current + 1);
       void queryClient.invalidateQueries({ queryKey: ["admin-doctor", savedId] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-section"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-image-roles"] });
+      void queryClient.invalidateQueries({ queryKey: ["doctor-workspace-image-options"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-relation"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-reviews"] });
       void queryClient.invalidateQueries({ queryKey: ["doctor-profile-visibility"] });
@@ -518,7 +523,9 @@ export function DoctorWorkspace() {
   const imageOptions = useMemo(
     () =>
       (media.data ?? []).flatMap((item: any) =>
-        item.thumbnail_url ? [{ value: item.thumbnail_url, label: item.title }] : [],
+        (item.thumbnail_url || (item.media_type === "image" ? item.url : null))
+          ? [{ value: item.thumbnail_url || item.url, label: item.title }]
+          : [],
       ),
     [media.data],
   );
@@ -1396,7 +1403,7 @@ function ImageEditor({
             </Select>
             {value ? (
               <p className="mt-1 text-xs text-muted-foreground">
-                Selected: {options.find((option) => option.value === value)?.label ?? "Image outside Media & Content"}
+                Selected: {options.find((option) => option.value === value)?.label ?? "New upload — added to Media & Content when you save"}
               </p>
             ) : null}
           </div>
@@ -1438,6 +1445,11 @@ function ImageEditor({
           >
             <Trash2 className="size-4" /> Remove image
           </Button>
+        ) : null}
+        {value && canModify ? (
+          <p className="text-xs text-muted-foreground">
+            Removing only disconnects the image from this doctor. It stays in Media &amp; Content.
+          </p>
         ) : null}
       </div>
     </section>
