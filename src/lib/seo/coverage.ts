@@ -405,7 +405,7 @@ export function evaluateCoverage(target: SeoTargetKeyword, context: CoverageCont
 
   // Content checks (not possible when the address is external).
   const na = (key: EvidenceKey, label: string, detail: string, fixIssueKey?: string) =>
-    add({ key, label, result: "not_applicable", detail, fixIssueKey });
+    add({ key, label, result: "not_applicable", detail, ...(fixIssueKey ? { fixIssueKey } : {}) });
   if (external) {
     const reason = "Cannot be checked: the target address is external.";
     na("title_match", "Keyword in SEO title", reason);
